@@ -1,0 +1,18 @@
+? /home/joachim/.stack/programs/x86_64-linux/ghc-tinfo6-libc6-pre232-9.4.5/lib/ghc-9.4.5/lib/x86_64-linux-ghc-9.4.5/rts-1.0.2/include/ghcversion.h
+: hash: c9b68cecb81cc4db15f76a3c4ea40203c2521a885e12fd4f77d4966e7ff2588d
+? /home/joachim/Documents/github/phd/pun-lang/.stack-work/dist/x86_64-linux-tinfo6-libc6-pre232/Cabal-3.8.1.0/build/autogen/Paths_pun_lang.hs
+: hash: 678d032d242394dc9ea0477780cba3e8157898e11ba8ba82e61462f0ab1d1da9
+? /home/joachim/Documents/github/phd/pun-lang/.stack-work/dist/x86_64-linux-tinfo6-libc6-pre232/Cabal-3.8.1.0/build/autogen/cabal_macros.h
+: hash: ba49e4ef4e450552b06068a61e3e5b91629cb2af024d99528652d674b8120ffd
+/home/joachim/Documents/github/phd/pun-lang/CHANGELOG.md:
+  hash: ab62bc64795aa61e290e3af85a9e142854cf4f11d4376215c1bb9e5207a9eef3
+/home/joachim/Documents/github/phd/pun-lang/README.md:
+  hash: 3f5fb29f7db681e9a752d0c17cac4c7234054014fad1f36fa5387f12e25483f0
+/home/joachim/Documents/github/phd/pun-lang/package.yaml:
+  hash: e4fd998f7e459cc8c2b30ed7e47aa051d75604335117ddd583f5276c30182171
+/home/joachim/Documents/github/phd/pun-lang/pun-lang.cabal:
+  hash: aa910f5e051c7cf8112a8b829ecf15fafbdb22a96259d9f237bd4c16015b2596
+/home/joachim/Documents/github/phd/pun-lang/src/Lib.hs:
+  hash: 11d6d255cb397fa45980eb516ea685146565d9de2108c4eea356ea41db8364be
+/usr/include/stdc-predef.h:
+  hash: 7afa7fcfd2a1ac2d5fe86672db5828460a736519680da0b9fac4d91e5f227817

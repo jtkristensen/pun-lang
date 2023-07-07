@@ -1,0 +1,28 @@
+name: tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out repository'
+        uses: actions/checkout@v2
+
+      - name: 'Set up stack'
+        uses: haskell/actions/setup@v1
+        with:
+          ghc-version:   '9.4.5'
+          enable-stack:  true
+          stack-version: '2.11.1'
+
+      - name: 'Build with --pedantic'
+        run: stack build --pedantic
+
+      - name: 'Run tests with --pedantic'
+        run: stack test --pedantic
