@@ -26,6 +26,9 @@ source-repository head
 library
   exposed-modules:
       Fun
+      Interpreter
+      Syntax
+      TypeInference
   other-modules:
       Paths_pun_lang
   hs-source-dirs:
