@@ -1,7 +1,7 @@
 ---------------------------------------------------
--- Title : Implementing type systems.
--- By    : Joachim Tilsted Kristensen
--- Date  : May 23 2023.
+-- Title   : The Pun Programming Language.
+-- Authors : Joachim Tilsted Kristensen, Sophie Bosio, Triera Gashi.
+-- Date    : July 11 2023.
 ---------------------------------------------------
 
 {-# LANGUAGE TypeOperators, DeriveFunctor #-}
