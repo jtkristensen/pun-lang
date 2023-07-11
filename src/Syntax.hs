@@ -4,12 +4,29 @@ module Syntax where
 
 -- Abbreviations.
 type Name        = String
+type X           = Name
+type C           = Name
+type D           = Name
 type Index       = Integer
 type T0        a = Term a
 type T1        a = Term a
 type T2        a = Term a
 
--- Annotated terms.
+data Program a
+  = Declaration X Type     (Program a)
+  | Definition  X (Term a) (Program a)
+  -- | Data D [(C, [D])]      (Program a) -- todo.
+  deriving (Functor, Eq, Show)
+
+data Type
+  = Variable' Index
+  | Integer'
+  | Boolean'
+  -- | Datatype D -- todo.
+  | Type :*: Type
+  | Type :->: Type
+  deriving (Eq, Show)
+
 data Term a =
     Number    Integer                 a
   | Boolean   Bool                    a
@@ -24,7 +41,7 @@ data Term a =
   | Application        (T1 a) (T2 a)  a
   | Let Name           (T1 a) (T2 a)  a
   | Rec Name    (T0 a)                a
-  deriving (Functor, Show)
+  deriving (Functor, Eq, Show)
 
 -- Dealing with annotations.
 class Annotated thing where

@@ -5,14 +5,6 @@ module TypeInference where
 import Syntax
 import Control.Monad.RWS
 
-data Type
-  = Variable' Index
-  | Integer'
-  | Boolean'
-  | Type :*: Type
-  | Type :->: Type
-  deriving (Eq, Show)
-
 data Constraint
   = Type :=: Type
   deriving Show
@@ -134,23 +126,24 @@ indexes (t0 :*:  t1)  = indexes t0 ++ indexes t1
 indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
 indexes _             = mempty
 
-type_inference :: Term a -> Term Type
-type_inference term = refine bindings <$> term'
+
+infer :: Term a -> (Term Type, Index, [Constraint])
+infer term = runRWS (annotate term) gamma 0
   where
     gamma x                 = error $ x ++ " is unbound!"
-    (term', _, constraints) = runRWS (annotate term) gamma 0
-    bindings                =
-      case solve constraints of
-        Nothing       -> error "type error"
-        Just solution -> solution
-    refine :: Substitution -> (Type -> Type)
-    refine s o = refine' s o
-      where
-        refine' [          ] t                      = t
-        refine' ((i, t) : _) (Variable' j) | i == j = refine' s t
-        refine' (_   : rest) (Variable' j)          = refine' rest (Variable' j)
-        refine' _            Integer'               = Integer'
-        refine' _            Boolean'               = Boolean'
-        refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
-        refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
+
+-- Todo, better error handling.
+bindings :: [Constraint] -> Substitution
+bindings = maybe (error "type error") id . solve
+
+refine :: Substitution -> (Type -> Type)
+refine s o = refine' s o
+  where
+    refine' [          ] t                      = t
+    refine' ((i, t) : _) (Variable' j) | i == j = refine' s t
+    refine' (_   : rest) (Variable' j)          = refine' rest (Variable' j)
+    refine' _            Integer'               = Integer'
+    refine' _            Boolean'               = Boolean'
+    refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
+    refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
 
