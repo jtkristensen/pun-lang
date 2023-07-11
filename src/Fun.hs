@@ -4,7 +4,7 @@
 -- Date  : May 23 2023.
 ---------------------------------------------------
 
-{-# LANGUAGE GADTs, TypeOperators, DeriveFunctor #-}
+{-# LANGUAGE TypeOperators, DeriveFunctor #-}
 
 module Fun where
 
@@ -15,47 +15,6 @@ module Fun where
 -- In the latter approach, the syntax tree has been annotated with types.
 
 import Control.Monad.RWS
-
--- ========================== Intrincically typed ======================== --
-
-data Term' t where
-  Number'      :: Integer                           -> Term' Integer
-  Boolean'     :: Bool                              -> Term' Bool
-  Variable'    :: Name                              -> Term' a
-  Conditional' :: Term' Bool  -> Term' a -> Term' a -> Term' a
-  (:+:)        :: Term' Integer -> Term' Integer    -> Term' Integer
-  (:<=:)       :: Ord a => Term' a -> Term' a       -> Term' Bool
-  Pair'        :: Term' a -> Term' b                -> Term' (a, b)
-  First'       :: Term' (a, b)                      -> Term' a
-  Second'      :: Term' (a, b)                      -> Term' b
-  Lambda'      :: Name -> Term' b                   -> Term' (a -> b)
-  Application' :: Term' (a -> b) -> Term' a         -> Term' b
-  Let'         :: Name -> Term' a -> Term' b        -> Term' b
-  Rec'         :: Name -> Term' a                   -> Term' a
-
--- Evaluating Intrinsically typed terms.
-eval :: Term' t -> t
-eval (Number'   n          ) = n
-eval (Boolean'  b          ) = b
-eval (Variable' x          ) = error $ "the variable '" ++ x ++ "' is unbound"
-eval (t0 :+:  t1           ) = eval t0 +  eval t1
-eval (t0 :<=: t1           ) = eval t0 <= eval t1
-eval (Conditional' t0 t1 t2) = eval $ if (eval t0) then t1 else t2
-eval (Pair' t0 t1          ) = (eval t0, eval t1)
-eval (First'    t0         ) = fst $ eval t0
-eval (Second'   t0         ) = snd $ eval t0
-eval (Lambda' x t0         ) = \a -> eval $ subst x a t0
-eval (Application' f x     ) = eval f $ eval x
-eval (Let'         x t0 t1 ) = eval $ subst x (eval t0) t1
-eval (Rec'         f t0    ) = eval $ subst f (eval t0) t0
-
--- Left as an exercise (warning, this is hard).
--- Hint : you need a more precise type.
--- Hint : the big step semantics did not need an environment, how about the typing rules?
--- Hint : Debrujin Indexing.
--- Hint : Heterogeneous Lists.
-subst :: Name -> a -> Term' b -> Term' b
-subst = undefined
 
 -- ========================== Type annotations ======================== --
 
