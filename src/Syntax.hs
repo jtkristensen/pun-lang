@@ -15,14 +15,12 @@ type T2        a = Term a
 data Program a
   = Declaration X Type     (Program a)
   | Definition  X (Term a) (Program a)
-  -- | Data D [(C, [D])]      (Program a) -- todo.
   deriving (Functor, Eq, Show)
 
 data Type
   = Variable' Index
   | Integer'
   | Boolean'
-  -- | Datatype D -- todo.
   | Type :*: Type
   | Type :->: Type
   deriving (Eq, Show)
