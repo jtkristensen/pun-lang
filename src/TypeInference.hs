@@ -4,6 +4,7 @@ module TypeInference where
 
 import Syntax
 import Control.Monad.RWS
+import Data.Maybe (fromMaybe)
 
 data Constraint
   = Type :=: Type
@@ -20,7 +21,7 @@ hole :: Annotation Type
 hole = Variable' <$> (get >>= \i -> put (i + 1) >> return i)
 
 bind :: Eq x => x -> a -> x `Mapsto` a
-bind x a look = \y -> if x == y then a else look y
+bind x a look y = if x == y then a else look y
 
 hasSameTypeAs :: Term Type -> Term Type -> Annotation ()
 t0 `hasSameTypeAs` t1 = tell [annotation t0 :=: annotation t1]
@@ -89,7 +90,7 @@ annotate (Rec f t0 _) =
      return $ Rec f t0' $ annotation t0'
 
 solve :: [Constraint] -> Maybe Substitution
-solve [                 ] = return $ mempty
+solve [                 ] = return mempty
 solve (constraint : rest) =
   case constraint of
     Integer'      :=: Integer'      -> solve rest
@@ -98,12 +99,12 @@ solve (constraint : rest) =
     (t0 :->: t1)  :=: (t2 :->: t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (Variable' i) :=: t1            ->
       if   i `elem` indexes t1
-      then (if (Variable' i) /= t1 then Nothing else solve rest)
+      then (if Variable' i /= t1 then Nothing else solve rest)
       else do c <- solve (substitute t1 i <$> rest)
               return $ (i, t1) : c
-    t0            :=: (Variable' i) ->
+    t0            :=: Variable' i ->
       if   i `elem` indexes t0
-      then (if (Variable' i) /= t0 then Nothing else solve rest)
+      then (if Variable' i /= t0 then Nothing else solve rest)
       else do c <- solve (substitute t0 i <$> rest)
               return $ (i, t0) : c
     _                               -> Nothing
@@ -127,14 +128,14 @@ indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
 indexes _             = mempty
 
 
-infer :: Term a -> (Term Type, Index, [Constraint])
-infer term = runRWS (annotate term) gamma 0
+infer :: Index -> Term a -> (Term Type, Index, [Constraint])
+infer term = runRWS (annotate term) gamma
   where
     gamma x                 = error $ x ++ " is unbound!"
 
 -- Todo, better error handling.
 bindings :: [Constraint] -> Substitution
-bindings = maybe (error "type error") id . solve
+bindings = fromMaybe (error "type error") . solve
 
 refine :: Substitution -> (Type -> Type)
 refine s o = refine' s o

@@ -6,7 +6,7 @@ module Syntax where
 type Name        = String
 type X           = Name
 type C           = Name
-type D           = Name
+type P           = Name
 type Index       = Integer
 type T0        a = Term a
 type T1        a = Term a
@@ -15,6 +15,7 @@ type T2        a = Term a
 data Program a
   = Declaration X Type     (Program a)
   | Definition  X (Term a) (Program a)
+  | Property    P (Term a)
   deriving (Functor, Eq, Show)
 
 data Type
