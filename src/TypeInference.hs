@@ -128,9 +128,7 @@ indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
 indexes _             = mempty
 
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
-infer term = runRWS (annotate term) gamma
-  where
-    gamma x                 = error $ x ++ " is unbound!"
+infer term = runRWS (annotate term) $ error . (++ " is unbound!")
 
 -- Todo, better error handling.
 bindings :: [Constraint] -> Substitution
