@@ -130,7 +130,7 @@ indexes _             = mempty
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
 infer term = runRWS (annotate term) $ error . (++ " is unbound!")
 
--- Todo, better error handling.
+-- TODO: Better error handling {^o^}!
 bindings :: [Constraint] -> Substitution
 bindings = fromMaybe (error "type error") . solve
 
@@ -144,4 +144,3 @@ refine s o = refine' s o
     refine' _            Boolean'               = Boolean'
     refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
-
