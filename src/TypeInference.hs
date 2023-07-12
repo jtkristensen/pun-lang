@@ -128,7 +128,7 @@ indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
 indexes _             = mempty
 
 
-infer :: Index -> Term a -> (Term Type, Index, [Constraint])
+infer :: Term a -> Index -> (Term Type, Index, [Constraint])
 infer term = runRWS (annotate term) gamma
   where
     gamma x                 = error $ x ++ " is unbound!"
