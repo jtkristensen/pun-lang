@@ -4,8 +4,8 @@ module Parser where
 import Syntax
 
 import Text.Parsec
-import Control.Monad  (void, when)
-import Data.Bifunctor (bimap, first, second)
+-- import Control.Monad  (void, when)
+-- import Data.Bifunctor (bimap, first, second)
 
 -- Shorthands.
 type Source      = String

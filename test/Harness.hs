@@ -1,6 +1,6 @@
 import Test.Tasty
 
-import ParserTests
+-- import ParserTests
 
 main :: IO ()
 main = defaultMain tests

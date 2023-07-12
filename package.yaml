@@ -12,9 +12,9 @@ extra-source-files:
 description: Please see the README on GitHub at <https://github.com/jtkristensen/pun-lang#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- mtl
-- parsec
+- base              >= 4.7 && < 5
+- parsec            >= 3.1  && < 3.2
+- mtl               >= 2.2  && < 2.3
 
 ghc-options:
 - -Wall
@@ -43,7 +43,7 @@ executables:
 
 tests:
   pun-lang-test:
-    main:                Spec.hs
+    main:                Harness.hs
     source-dirs:         test
     ghc-options:
     - -threaded
@@ -51,4 +51,7 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - pun-lang
-    - tasty
+    - tasty             >= 1.4  && < 1.5
+    - tasty-hunit       >= 0.10 && < 0.11
+    - tasty-quickcheck  >= 0.10 && < 0.11
+    - tasty-smallcheck  >= 0.8  && < 0.9
