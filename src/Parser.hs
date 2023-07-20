@@ -2,6 +2,7 @@
 module Parser where
 
 import Syntax
+import Data.List (nub, (\\))
 
 import Text.Parsec
 -- import Control.Monad  (void, when)
@@ -12,6 +13,33 @@ type Source      = String
 type ParserState = (Integer, [X])
 type Parser      = Parsec Source ParserState
 type Info        = (SourcePos, SourcePos)
+
+-- Should this go into the parser?
+data Problem =
+    SeveralDeclarationsOf          X
+  | SeveralDefinitionsOf           X
+  | PropertyIsDeclaredMoreThanOnes P
+
+validate :: Program a -> Maybe Problem
+validate p = definitions' \+ declarations' \+ properties'
+  where
+    Nothing \+ t = t
+    t       \+ _ = t
+    ts           = fst <$> definitions  p
+    ds           = fst <$> declarations p
+    ps           = fst <$> properties   p
+    definitions' =
+      case ts \\ nub ts of
+        (x : _) -> return $ SeveralDefinitionsOf x
+        _       -> Nothing
+    declarations' =
+      case ds \\ nub ds of
+        (x : _) -> return $ SeveralDeclarationsOf x
+        _       -> Nothing
+    properties' =
+      case ps \\ nub ps of
+        (x : _) -> return $ PropertyIsDeclaredMoreThanOnes x
+        _       -> Nothing
 
 -- * Usage:
 

@@ -13,9 +13,10 @@ type T1        a = Term a
 type T2        a = Term a
 
 data Program a
-  = Declaration X Type     (Program a)
-  | Definition  X (Term a) (Program a)
-  | Property    P (Term a)
+  = Declaration X     Type     (Program a)
+  | Definition  X     (Term a) (Program a)
+  | Property    P [X] (Term a) (Program a)
+  | EndOfProgram
   deriving (Functor, Eq, Show)
 
 data Type
@@ -62,3 +63,21 @@ instance Annotated Term where
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
   annotation  term                  = head $ annotations term
+
+definitions :: Program a -> [(X, Term a)]
+definitions (Definition  x t rest) = (x, t) : definitions rest
+definitions (Declaration _ _ rest) = definitions rest
+definitions (Property  _ _ _ rest) = definitions rest
+definitions _                      = mempty
+
+declarations :: Program a -> [(X, Type)]
+declarations (Definition  _ _ rest) = declarations rest
+declarations (Declaration x t rest) = (x, t) : declarations rest
+declarations (Property  _ _ _ rest) = declarations rest
+declarations _                      = mempty
+
+properties :: Program a -> [(P, ([X], Term a))]
+properties (Definition  _ _ rest) = properties rest
+properties (Declaration _ _ rest) = properties rest
+properties (Property  p x t rest) = (p, (x, t)) : properties rest
+properties _                      = mempty
