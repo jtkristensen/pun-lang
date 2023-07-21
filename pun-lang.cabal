@@ -57,6 +57,7 @@ test-suite pun-lang-test
   type: exitcode-stdio-1.0
   main-is: Harness.hs
   other-modules:
+      Examples
       ParserTests
       Paths_pun_lang
   hs-source-dirs:
