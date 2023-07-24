@@ -20,8 +20,8 @@ data Problem =
   | SeveralDefinitionsOf           X
   | PropertyIsDeclaredMoreThanOnes P
 
-validate :: Program a -> Maybe Problem
-validate p = definitions' \+ declarations' \+ properties'
+problems :: Program a -> Maybe Problem
+problems p = definitions' \+ declarations' \+ properties'
   where
     Nothing \+ t = t
     t       \+ _ = t
