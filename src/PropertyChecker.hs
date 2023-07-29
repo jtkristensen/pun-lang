@@ -26,9 +26,13 @@ generateGenerator Boolean' = do
     generatedBool <- arbitrary
     return $ (Boolean generatedBool Boolean')
 generateGenerator (type1 :*: type2) = do
-    arbitraryTerm1 <- generateGenerator type1   -- Term Type
-    arbitraryTerm2 <- generateGenerator type2   -- Term Type
+    arbitraryTerm1 <- generateGenerator type1
+    arbitraryTerm2 <- generateGenerator type2
     return $ Pair arbitraryTerm1 arbitraryTerm2 (type1 :*: type2)
+generateGenerator (type1 :->: type2) = do
+    arbitraryTerm1 <- generateGenerator type1
+    arbitraryTerm2 <- generateGenerator type2
+    return $ Application arbitraryTerm1 arbitraryTerm2 (type1 :*: type2)
 
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
 check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
