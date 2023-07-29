@@ -21,7 +21,7 @@ generateGenerator Boolean' = do
 generateGenerator (Variable' index) =
   case infer term index of
     (inferredTermType, _, _) ->
-      return $ (Variable varName (getType inferredTermType))
+      return $ Variable varName (getType inferredTermType)
   where
     varName = show index
     term    = Variable varName index
