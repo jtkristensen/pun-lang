@@ -14,10 +14,10 @@ generateGenerators _ = undefined
 generateGenerator :: Type -> Gen (Term Type)
 generateGenerator Integer' = do
     generatedInt <- arbitrary
-    return $ (Number generatedInt Integer')
+    return $ Number generatedInt Integer'
 generateGenerator Boolean' = do
     generatedBool <- arbitrary
-    return $ (Boolean generatedBool Boolean')
+    return $ Boolean generatedBool Boolean'
 generateGenerator (Variable' index) =
   case infer term index of
     (inferredTermType, _, _) ->
@@ -25,6 +25,14 @@ generateGenerator (Variable' index) =
   where
     varName = show index
     term    = Variable varName index
+generateGenerator (type1 :*: type2) = do
+    arbitraryTerm1 <- generateGenerator type1
+    arbitraryTerm2 <- generateGenerator type2
+    return $ Pair arbitraryTerm1 arbitraryTerm2 (type1 :*: type2)
+generateGenerator (type1 :->: type2) = do
+    arbitraryTerm1 <- generateGenerator type1
+    arbitraryTerm2 <- generateGenerator type2
+    return $ Application arbitraryTerm1 arbitraryTerm2 (type1 :->: type2)
 
 getType :: Term Type -> Type
 getType (Number      _ Integer') = Integer'
