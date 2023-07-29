@@ -5,7 +5,6 @@ import PropertyChecker
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit
 
-{-
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "GenerateGenerator tests."
@@ -16,4 +15,3 @@ generateGenerator_tests =
             _ -> False
         @= True
     ]
--}
