@@ -21,10 +21,10 @@ getType termType =
 generateGenerator :: Type -> Gen (Term Type)
 generateGenerator Integer' = do
     generatedInt <- arbitrary
-    return $ (Number generatedInt Integer')
+    return $ Number generatedInt Integer'
 generateGenerator Boolean' = do
     generatedBool <- arbitrary
-    return $ (Boolean generatedBool Boolean')
+    return $ Boolean generatedBool Boolean'
 generateGenerator (type1 :*: type2) = do
     arbitraryTerm1 <- generateGenerator type1
     arbitraryTerm2 <- generateGenerator type2
