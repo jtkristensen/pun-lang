@@ -2,7 +2,7 @@
 module PropertyChecker where
 
 import Syntax
-import TypeInference
+-- import TypeInference
 
 import Test.Tasty.QuickCheck
 
@@ -12,11 +12,7 @@ generateGenerators :: Program Type -> [Generator]
 generateGenerators _ = undefined
 
 getType :: Term Type -> Type
-getType termType =
-    case termType of
-        (Number  i Integer') -> Integer'
-        (Boolean b Boolean') -> Boolean'
-        _                    -> Integer'
+getType = annotation
 
 generateGenerator :: Type -> Gen (Term Type)
 generateGenerator Integer' = do
@@ -29,10 +25,7 @@ generateGenerator (type1 :*: type2) = do
     arbitraryTerm1 <- generateGenerator type1
     arbitraryTerm2 <- generateGenerator type2
     return $ Pair arbitraryTerm1 arbitraryTerm2 (type1 :*: type2)
-generateGenerator (type1 :->: type2) = do
-    arbitraryTerm1 <- generateGenerator type1
-    arbitraryTerm2 <- generateGenerator type2
-    return $ Application arbitraryTerm1 arbitraryTerm2 (type1 :->: type2)
+generateGenerator _ = undefined
 
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
 check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
