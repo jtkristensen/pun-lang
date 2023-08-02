@@ -12,7 +12,7 @@ generateGenerators :: Program Type -> [Generator]
 generateGenerators _ = undefined
 
 getType :: Term Type -> Type
-getType termType = 
+getType termType =
     case termType of
         (Number  i Integer') -> Integer'
         (Boolean b Boolean') -> Boolean'
