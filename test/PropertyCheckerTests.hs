@@ -1,9 +1,9 @@
 module PropertyCheckerTests where
 
-import Syntax
-import PropertyChecker
-import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit
+-- import Syntax
+-- import PropertyChecker
+-- import Test.Tasty (TestTree, testGroup)
+-- import Test.Tasty.HUnit
 
 {-
 generateGenerator_tests :: TestTree
