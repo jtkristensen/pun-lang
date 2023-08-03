@@ -9,17 +9,7 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck
 import Test.Tasty.HUnit
 
--- TODO! Any way to get this to work, to abstract away common code?
--- testGenOK :: Term Type -> TestTree
--- testGenOK termType = testCase ("Generate " ++ show typeName) $
---   do
---     generatedValue <- generate $ generateGenerator typeName
---     case (getTerm generatedValue, getType generatedValue) of
---       (termName, typeName) -> True
---       _                    -> False
---   where
---     termName = getTerm termType
---     typeName = getType termType
+-- Is there a more general test case, that relies on something that commutes with `infer` (Joachim).
 
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
@@ -84,4 +74,3 @@ generateGenerator_tests =
             _                                                          -> False
             @?= True
     ]
-
