@@ -11,7 +11,7 @@ type Generator = Gen (Term Type)
 generateGenerators :: Program Type -> [Generator]
 generateGenerators _ = undefined
 
-generateGenerator :: Type -> Gen (Term Type)
+generateGenerator :: Type -> Gen (Term Type, Substitution)
 generateGenerator Integer' = flip Number  Integer' <$> arbitrary
 generateGenerator Boolean' = flip Boolean Boolean' <$> arbitrary
 generateGenerator (Variable' index) = return $ Variable (show index) (annotation inferredTermType)

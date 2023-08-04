@@ -36,6 +36,8 @@ generateGenerator_tests =
     ]
 
 -- Todo, we want to use more complicated types.
+-- Todo, should this actually live in `PropertyChecker`?
+-- Todo, Where do we get the index for Variable' from?
 aType :: Gen Type
 aType =
   oneof $
@@ -43,4 +45,5 @@ aType =
     , return Boolean'
     -- , ( :*:  ) <$> aType <*> aType
     -- , ( :->: ) <$> aType <*> aType
+    -- What do we do about variable here ??
     ]
