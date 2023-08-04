@@ -15,20 +15,14 @@ import Test.Tasty.HUnit
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "`generateGenerator` tests :"
-    [ testCase "Generate Integer'" $
+    [ testCase "Pairs and Functions are not primitives" $
         -- TODO: check if generatedInt has type Integer?
         do
-          generatedValue <- generate $ generateGenerator Integer'
+          generatedValue <- generate $ oneof $ generateGenerator <$> [Integer', Boolean']
           case generatedValue of
-            (Number _ Integer') -> True
-            _                   -> False
-            @?= True
-    , testCase "Generate Boolean'" $
-        do
-          generatedValue <- generate $ generateGenerator Boolean'
-          case generatedValue of
-            (Boolean _ Boolean') -> True
-            _                    -> False
+            (Pair    _ _ _) -> False
+            (Lambda  _ _ _) -> False
+            _               -> True
             @?= True
     ]
     -- testCase "Generate (Integer' :*: Integer')" $
