@@ -16,7 +16,6 @@ generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "`generateGenerator` tests :"
     [ testCase "Pairs and Functions are not primitives" $
-        -- TODO: check if generatedInt has type Integer?
         do
           generatedValue <- generate $ oneof $ generateGenerator <$> [Integer', Boolean']
           case generatedValue of
