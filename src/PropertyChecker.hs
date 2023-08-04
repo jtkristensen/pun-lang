@@ -6,19 +6,18 @@ import TypeInference
 
 import Test.Tasty.QuickCheck
 
-type Generator = Gen (Term Type)
+type Generator      = Gen (Term Type)
+type CurrentIndices = Substitution
 
-generateGenerators :: Program Type -> [Generator]
-generateGenerators _ = undefined
+generateGenerator :: CurrentIndices -> (Type -> Generator)
+generateGenerator _ Integer'          = flip Number  Integer' <$> arbitrary
+generateGenerator _ Boolean'          = flip Boolean Boolean' <$> arbitrary
+generateGenerator s (Variable' index) = generateGenerator s (what index s)
+generateGenerator _ _ = undefined
 
-generateGenerator :: Type -> Gen (Term Type, Substitution)
-generateGenerator Integer' = flip Number  Integer' <$> arbitrary
-generateGenerator Boolean' = flip Boolean Boolean' <$> arbitrary
-generateGenerator (Variable' index) = return $ Variable (show index) (annotation inferredTermType)
-  where
-    -- Joachim: Are you shure this is what you want to compute?
-    (inferredTermType, _, _) = infer (Variable (show index) index) index
-generateGenerator _ = undefined
+-- Todo, give it a better name {^o^}!
+what :: Index -> CurrentIndices -> Type
+what _ _ = undefined
 
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
 check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
