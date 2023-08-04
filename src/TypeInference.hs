@@ -41,7 +41,7 @@ annotate (If t0 t1 t2 _) =
      t2' <- annotate t2
      t0' `hasType` Boolean'
      t1' `hasSameTypeAs` t2'
-     return $ If t0' t1' t2' (annotation t0')
+     return $ If t0' t1' t2' (annotation t1')
 annotate (Plus t0 t1 _) =
   do t0' <- annotate t0
      t1' <- annotate t1
@@ -144,3 +144,8 @@ refine s o = refine' s o
     refine' _            Boolean'               = Boolean'
     refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
+
+-- Just here for documentation
+usage :: Term a -> Index -> (Term Type, Index)
+usage t i = (fmap (refine (bindings cs)) t', j)
+  where (t', j, cs) = infer t i
