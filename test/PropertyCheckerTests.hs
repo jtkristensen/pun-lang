@@ -22,5 +22,5 @@ generateGenerator_tests =
             (Pair    _ _ _) -> False
             (Lambda  _ _ _) -> False
             _               -> True
-            @?= True
+            @? (show generatedValue ++ " should have been a primitive {^_^}")
     ]
