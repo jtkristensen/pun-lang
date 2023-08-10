@@ -10,7 +10,10 @@ type Generator      = Gen (Term Type)
 type CurrentIndices = Substitution
 
 generateGenerator :: CurrentIndices -> (Type -> Generator)
-generateGenerator _ Integer'           = flip Number  Integer' <$> arbitrary
+generateGenerator _ Integer'           =
+  oneof
+    [ flip Number  Integer' <$> arbitrary ]
+    -- ++ [] -- what else?
 generateGenerator _ Boolean'           = flip Boolean Boolean' <$> arbitrary
 generateGenerator s (Variable' index)  = generateGenerator s (resolve index s)
 -- generateGenerator s (type1 :*: type2)  = undefined
