@@ -19,10 +19,11 @@ generateGenerator _ _ = undefined
 
 -- Todo, give it a better name {^o^}!
 resolve :: Index -> CurrentIndices -> Type
-resolve i cs = case lookup i cs of
-  Just s  -> s
-  Nothing -> error $ "Unable to resolve index to type. Index "
-    ++ show i ++ " was not among current indices"
+resolve i cs =
+  case lookup i cs of
+    Just s  -> s
+    Nothing -> error $ "Unable to resolve index to type. Index "
+      ++ show i ++ " was not among current indices"
 
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
 check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
