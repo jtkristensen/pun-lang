@@ -27,15 +27,16 @@ resolve i cs =
 
 generateType :: CurrentIndices -> Gen Type
 generateType cs =
-  oneof $ [ return Integer'
-          , return Boolean'
-          , do type1 <- generateType cs
-               type2 <- generateType cs
-               return $ type1 :*: type2
-          , do type1 <- generateType cs
-               type2 <- generateType cs
-               return $ type1 :->: type2
-          ] ++ (return . Variable' . fst <$> cs)
+  oneof $
+    [ return Integer'
+    , return Boolean'
+    , do type1 <- generateType cs
+         type2 <- generateType cs
+         return $ type1 :*: type2
+    , do type1 <- generateType cs
+         type2 <- generateType cs
+         return $ type1 :->: type2
+    ] ++ (return . Variable' . fst <$> cs)
 
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
 check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
