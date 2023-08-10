@@ -24,6 +24,7 @@ generateGenerator_tests =
            (Lambda  _ _ _) -> False
            _               -> True
            @? (show generatedValue ++ " should have been a primitive {^_^}")
+    -- Todo: "now, it is `generateGenerator s t`, and we need to say something in the paper about `s`.
     , testCase "generateGenerator t has type Term t forall t." $
       do t    <- generate aType
          term <- generate $ generateGenerator mempty t
@@ -45,7 +46,7 @@ aType =
   oneof $
     [ return Integer'
     , return Boolean'
-    -- , ( :*:  ) <$> aType <*> aType
+    , ( :*:  ) <$> aType <*> aType
     -- , ( :->: ) <$> aType <*> aType
     -- What do we do about variable here ??
     ]
