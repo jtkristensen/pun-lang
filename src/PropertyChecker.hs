@@ -10,7 +10,13 @@ type Generator      = Gen (Term Type)
 type CurrentIndices = Substitution
 
 generateGenerator :: CurrentIndices -> (Type -> Generator)
-generateGenerator _ Integer'           = flip Number  Integer' <$> arbitrary
+generateGenerator _ Integer'          = flip Number  Integer' <$> arbitrary
+generateGenerator _ Boolean'          = flip Boolean Boolean' <$> arbitrary
+generateGenerator s (Variable' index) = generateGenerator s (what index s)
+generateGenerator _ Integer'           =
+  oneof
+    [ flip Number  Integer' <$> arbitrary ]
+    -- ++ [] -- what else?
 generateGenerator _ Boolean'           = flip Boolean Boolean' <$> arbitrary
 generateGenerator s (Variable' index)  = generateGenerator s (resolve index s)
 -- generateGenerator s (type1 :*: type2)  = undefined
@@ -21,6 +27,19 @@ resolve :: Index -> CurrentIndices -> Type
 resolve i cs = case lookup i cs of
   Just s  -> s
   Nothing -> error $ "Unable to resolve index " ++ show i ++ " to type"
+
+generateType :: CurrentIndices -> Gen Type
+generateType cs =
+  oneof $
+    [ return Integer'
+    , return Boolean'
+    , do type1 <- generateType cs
+         type2 <- generateType cs
+         return $ type1 :*: type2
+    , do type1 <- generateType cs
+         type2 <- generateType cs
+         return $ type1 :->: type2
+    ] ++ (return . Variable' . fst <$> cs)
 
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
 check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
