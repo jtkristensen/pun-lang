@@ -97,8 +97,8 @@ resolve :: Index -> CurrentIndices -> Type
 resolve i cs =
   case lookup i cs of
     Just s  -> s
-    Nothing -> error $ "Unable to resolve index to type. Index "
-      ++ show i ++ " was not among current indices"
+    Nothing -> error $ "Index " ++ show i ++
+      " impossible to resolve from current indices"
 
 generateName :: Gen Name
 generateName = elements $ pure <$> ['a'..'z']
