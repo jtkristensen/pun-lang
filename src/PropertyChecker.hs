@@ -96,9 +96,12 @@ generateGenerator (is, bs) (type1 :->: type2) =
 resolve :: Index -> CurrentIndices -> Type
 resolve i cs =
   case lookup i cs of
-    Just s  -> s
+    Just s -> 
+      case s of
+        (Variable' i') -> resolve i' cs
+        _              -> s
     Nothing -> error $ "Unable to resolve index to type. Index "
-      ++ show i ++ " was not among current indices"
+               ++ show i ++ " was not among current indices"
 
 generateName :: Gen Name
 generateName = elements $ pure <$> ['a'..'z']
