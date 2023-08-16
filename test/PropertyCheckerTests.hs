@@ -25,7 +25,8 @@ generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "`generateGenerator` tests :"
     [ testCase "Pairs and Functions are not primitives" $
-      do generatedValue <- generate $ oneof $ generateGenerator mempty <$> [Integer', Boolean']
+      do subs           <- generate $ generateSubstitution
+         generatedValue <- generate $ oneof $ generateGenerator (subs, []) <$> [Integer', Boolean']
          case generatedValue of
            (Pair    _ _ _) -> False
            (Lambda  _ _ _) -> False
@@ -60,3 +61,4 @@ aType =
     -- , ( :->: ) <$> aType <*> aType
     -- What do we do about variable here ??
     ]
+
