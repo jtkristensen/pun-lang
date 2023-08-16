@@ -14,6 +14,13 @@ import Test.Tasty.HUnit
 
 -- Todo, do something better than the empty substitution in : generateGenerator <mempty>.
 
+{-
+Generated input that made the second test case fail:
+
+Rec "a" (Rec "i" (Rec "e" (Variable "a" (Variable' 0)) (Variable' 0)) (Variable' 0)) (Variable' 0)
+Had the type Variable' 0 but we expected the type Boolean'
+-}
+
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "`generateGenerator` tests :"
@@ -36,6 +43,9 @@ generateGenerator_tests =
                 " had the type " ++ show typeOfT' ++
                 " but we expected the type " ++ show t
               )
+      -- Todo: move this, create better test case
+      , testCase "Resolve resolves 'chains' of variables" $
+        resolve 2 [(0, Integer'), (1, Variable' 2), (2, Boolean')] @?= Boolean'
     ]
 
 -- Todo, we want to use more complicated types.
