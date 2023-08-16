@@ -126,6 +126,30 @@ generateType cs =
          return $ type1 :->: type2
     ] ++ (return . Variable' . fst <$> cs)
 
+generateSubstitution :: Gen Substitution
+generateSubstitution = sized (generateSizedSubstitution 0)
+
+generateSizedSubstitution :: Index -> Int -> Gen Substitution
+generateSizedSubstitution current size =
+  if current < (toInteger size)
+    then do
+      t    <- newType current
+      rest <- generateSizedSubstitution (current + 1) size
+      return $ (current, t) : rest
+    else do
+      t <- newType current
+      return $ [(current, t)]
+
+newType :: Index -> Gen Type
+newType i =
+  oneof $
+    [ return Integer'
+    , return Boolean'
+    , ( :*:  ) <$> (newType i) <*> (newType i)
+    , ( :->: ) <$> (newType i) <*> (newType i)
+    , return (Variable' i)
+    ]
+
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
 check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
 check _ _ = undefined
