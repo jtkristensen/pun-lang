@@ -36,15 +36,16 @@ generateGenerator_tests =
     , testCase "generateGenerator t has type Term t forall t." $
       do subs <- generate $ generateSubstitution
          t    <- generate $ generateType subs
-         term <- generate $ generateGenerator (subs, []) t
-         let i           = (maximum $ map fst subs) + 1
+         let canonT = refine subs t
+         term <- generate $ generateGenerator (subs, []) canonT
+         let i           = (maximum $ map fst subs)
          let (t', _, cs) = infer term i
          let subs'       = bindings cs
          let typeOfT'    = annotation (refine subs' <$> t')
-         (t == typeOfT')
+         (canonT == typeOfT')
            @? ( "the term " ++ show t' ++
                 " had the type " ++ show typeOfT' ++
-                " but we expected the type " ++ show t
+                " but we expected the type " ++ show canonT
               )
       -- Todo: move this, create better test case
       , testCase "Resolve resolves 'chains' of variables" $

@@ -133,21 +133,27 @@ generateSizedSubstitution :: Index -> Int -> Gen Substitution
 generateSizedSubstitution current size =
   if current < (toInteger size)
     then do
-      t    <- newType current
-      rest <- generateSizedSubstitution (current + 1) size
+      t      <- newType current
+      rest   <- generateSizedSubstitution (current + 1) size
       return $ (current, t) : rest
     else do
-      t <- newType current
+      t      <- newCanon current
       return $ [(current, t)]
 
 newType :: Index -> Gen Type
 newType i =
   oneof $
+    [ newCanon i
+    , return $ Variable' (i + 1)
+    ]
+
+newCanon :: Index -> Gen Type
+newCanon i =
+  oneof $
     [ return Integer'
     , return Boolean'
     , ( :*:  ) <$> (newType i) <*> (newType i)
     , ( :->: ) <$> (newType i) <*> (newType i)
-    , return (Variable' i)
     ]
 
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
