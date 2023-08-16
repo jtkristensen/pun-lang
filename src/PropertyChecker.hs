@@ -107,8 +107,8 @@ resolve i cs =
       case s of
         (Variable' i') -> resolve i' cs
         _              -> s
-    Nothing -> error $ "Unable to resolve index to type. Index "
-               ++ show i ++ " was not among current indices"
+    Nothing -> error $ "Unable to resolve index " ++ show i ++
+      " to type, was not among current indices"
 
 generateName :: Gen Name
 generateName = elements $ pure <$> ['a'..'z']
