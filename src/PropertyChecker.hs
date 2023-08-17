@@ -102,11 +102,11 @@ generateGeneratorSized (is, bs) (type1 :->: type2) sizedNumber =
      return $ Lambda x t0 type2
 
 resolve :: Index -> CurrentIndices -> Type
-resolve i cs =
-  case lookup i cs of
+resolve i is =
+  case lookup i is of
     Just s -> 
       case s of
-        (Variable' i') -> resolve i' cs
+        (Variable' i') -> resolve i' is
         _              -> s
     Nothing -> error $ "Unable to resolve index " ++ show i ++
       " to type, was not among current indices."
@@ -115,17 +115,17 @@ generateName :: Gen Name
 generateName = elements $ pure <$> ['a'..'z']
 
 generateType :: CurrentIndices -> Gen Type
-generateType cs =
+generateType is =
   oneof $
     [ return Integer'
     , return Boolean'
-    , do type1 <- generateType cs
-         type2 <- generateType cs
+    , do type1 <- generateType is
+         type2 <- generateType is
          return $ type1 :*: type2
-    , do type1 <- generateType cs
-         type2 <- generateType cs
+    , do type1 <- generateType is
+         type2 <- generateType is
          return $ type1 :->: type2
-    ] ++ (return . Variable' . fst <$> cs)
+    ] ++ (return . Variable' . fst <$> is)
 
 generateSubstitution :: Gen Substitution
 generateSubstitution = sized (generateSizedSubstitution 0)
