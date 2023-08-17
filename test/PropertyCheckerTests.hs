@@ -49,7 +49,8 @@ generateGenerator_tests =
          t    <- generate $ generateType subs
          let canonT = refine subs t
          term <- generate $ generateGenerator (subs, []) canonT
-         let i           = (maximum $ map fst subs) + 1
+         -- TODO ask Joachim about what index to use for infer
+         -- let i           = (maximum $ map fst subs) + 1
          let (t', _, cs) = infer term 0
          let subs'       = bindings cs
          let typeOfT'    = annotation (refine subs' <$> t')
@@ -72,7 +73,7 @@ aType =
     [ return Integer'
     , return Boolean'
     , ( :*:  ) <$> aType <*> aType
-    -- , ( :->: ) <$> aType <*> aType
+    , ( :->: ) <$> aType <*> aType
     -- What do we do about variable here ??
     ]
 
