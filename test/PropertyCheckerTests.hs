@@ -50,7 +50,7 @@ generateGenerator_tests =
          let canonT = refine subs t
          term <- generate $ generateGenerator (subs, []) canonT
          let i           = (maximum $ map fst subs) + 1
-         let (t', _, cs) = infer term i
+         let (t', _, cs) = infer term 0
          let subs'       = bindings cs
          let typeOfT'    = annotation (refine subs' <$> t')
          (canonT == typeOfT')
