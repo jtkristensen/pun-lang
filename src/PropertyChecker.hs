@@ -88,6 +88,7 @@ generateGeneratorSized s@(is, bs) Boolean' sizedNumber           =
                          ]
                     ++ (return . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
           False -> flip Boolean Boolean' <$> arbitrary
+-- TODO! Make sure generated Variable's index to canonical type
 generateGeneratorSized s (Variable' index) sizedNumber   = generateGeneratorSized s (resolve index $ fst s) (sizedNumber `div` 2)
 -- Todo, generate more interesting things here!
 generateGeneratorSized s t@(type1 :*: type2) sizedNumber =
@@ -108,7 +109,7 @@ resolve i cs =
         (Variable' i') -> resolve i' cs
         _              -> s
     Nothing -> error $ "Unable to resolve index " ++ show i ++
-      " to type, was not among current indices"
+      " to type, was not among current indices."
 
 generateName :: Gen Name
 generateName = elements $ pure <$> ['a'..'z']
@@ -133,28 +134,24 @@ generateSizedSubstitution :: Index -> Int -> Gen Substitution
 generateSizedSubstitution current size =
   if current < (toInteger size)
     then do
-      t      <- newType current
+      t      <- oneof $ [ newType current, newVariable current ]
       rest   <- generateSizedSubstitution (current + 1) size
       return $ (current, t) : rest
     else do
-      t      <- newCanon current
+      t      <- newType current
       return $ [(current, t)]
 
 newType :: Index -> Gen Type
 newType i =
   oneof $
-    [ newCanon i
-    , return $ Variable' (i + 1)
-    ]
-
-newCanon :: Index -> Gen Type
-newCanon i =
-  oneof $
     [ return Integer'
     , return Boolean'
-    , ( :*:  ) <$> (newType i) <*> (newType i)
-    , ( :->: ) <$> (newType i) <*> (newType i)
+    , ( :*:  ) <$> (newType i) <*> (newType $ i + 1)
+    , ( :->: ) <$> (newType i) <*> (newType $ i + 1)
     ]
+
+newVariable :: Index -> Gen Type
+newVariable i = return $ Variable' (i + 1)
 
 -- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
 check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
