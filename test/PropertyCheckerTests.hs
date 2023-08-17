@@ -44,6 +44,12 @@ generateGenerator_tests =
                 " had the type " ++ show typeOfT' ++
                 " but we expected the type " ++ show t
               )
+    , testCase "Only valid types are generated from a substitution." $
+      do subs <- generate $ generateSubstitution
+         t    <- generate $ generateType subs
+         let t' = refine subs t
+         (elem t' $ map snd subs)
+           @? ( "the type " ++ show t ++ " was not present in the generated substitution" )
     , testCase "generateGenerator generates appropriate type for generated substitution." $
       do subs <- generate $ generateSubstitution
          t    <- generate $ generateType subs
