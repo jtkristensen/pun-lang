@@ -34,11 +34,22 @@ generateGenerator_tests =
            @? (show generatedValue ++ " should have been a primitive {^_^}")
     -- Todo: "now, it is `generateGenerator s t`, and we need to say something in the paper about `s`.
     , testCase "generateGenerator t has type Term t forall t." $
+      do t    <- generate aType
+         term <- generate $ generateGenerator mempty t
+         let (t', _, cs) = infer term 0
+         let subs        = bindings cs
+         let typeOfT'    = annotation (refine subs <$> t')
+         (t == typeOfT')
+           @? ( "the term " ++ show t' ++
+                " had the type " ++ show typeOfT' ++
+                " but we expected the type " ++ show t
+              )
+    , testCase "generateGenerator generates appropriate type for generated substitution." $
       do subs <- generate $ generateSubstitution
          t    <- generate $ generateType subs
          let canonT = refine subs t
          term <- generate $ generateGenerator (subs, []) canonT
-         let i           = (maximum $ map fst subs)
+         let i           = (maximum $ map fst subs) + 1
          let (t', _, cs) = infer term i
          let subs'       = bindings cs
          let typeOfT'    = annotation (refine subs' <$> t')

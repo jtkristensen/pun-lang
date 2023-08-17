@@ -134,20 +134,22 @@ generateSizedSubstitution :: Index -> Int -> Gen Substitution
 generateSizedSubstitution current size =
   if current < (toInteger size)
     then do
-      t      <- oneof $ [ newType current, newVariable current ]
+      t      <- oneof $ [ sized (newType current), newVariable current ]
       rest   <- generateSizedSubstitution (current + 1) size
       return $ (current, t) : rest
     else do
-      t      <- newType current
+      t      <- sized (newType current)
       return $ [(current, t)]
 
-newType :: Index -> Gen Type
-newType i =
+newType :: Index -> Int -> Gen Type
+newType i size
+  | i == (toInteger size) = oneof $ [ return Integer', return Boolean' ]
+newType i size =
   oneof $
     [ return Integer'
     , return Boolean'
-    , ( :*:  ) <$> (newType i) <*> (newType $ i + 1)
-    , ( :->: ) <$> (newType i) <*> (newType $ i + 1)
+    , ( :*:  ) <$> (newType (i + 1) size) <*> (newType (i + 2) size)
+    , ( :->: ) <$> (newType (i + 1) size) <*> (newType (i + 2) size)
     ]
 
 newVariable :: Index -> Gen Type
