@@ -89,7 +89,8 @@ generateGeneratorSized s@(is, bs) Boolean' size           =
          ]
     ++ (return . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
 -- TODO! Make sure generated Variable's index resolves to canonical type
-generateGeneratorSized s (Variable' index) size   = generateGeneratorSized s (resolve index $ fst s) (size `div` 2)
+generateGeneratorSized s (Variable' index) size   =
+  generateGeneratorSized s (resolve index $ fst s) (size `div` 2)
 -- Todo, generate more interesting things here!
 generateGeneratorSized s t@(type1 :*: type2) size =
   do t1 <- generateGeneratorSized s type1 (size `div` 2)
