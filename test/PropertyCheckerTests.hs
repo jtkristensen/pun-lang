@@ -89,6 +89,34 @@ aType =
     -- What do we do about variable here ??
     ]
 
+generateSubstitution :: Gen Substitution
+generateSubstitution = sized (generateSizedSubstitution 0)
+
+generateSizedSubstitution :: Index -> Int -> Gen Substitution
+generateSizedSubstitution current size =
+  if current < (toInteger size)
+    then do
+      t      <- oneof $ [ sized (newType current), newVariable current ]
+      rest   <- generateSizedSubstitution (current + 1) size
+      return $ (current, t) : rest
+    else do
+      t      <- sized (newType current)
+      return $ [(current, t)]
+
+newType :: Index -> Int -> Gen Type
+newType i size
+  | i == (toInteger size) = oneof $ [ return Integer', return Boolean' ]
+newType i size =
+  oneof $
+    [ return Integer'
+    , return Boolean'
+    , ( :*:  ) <$> (newType (i + 1) size) <*> (newType (i + 2) size)
+    , ( :->: ) <$> (newType (i + 1) size) <*> (newType (i + 2) size)
+    ]
+
+newVariable :: Index -> Gen Type
+newVariable i = return $ Variable' (i + 1)
+
 unifiesWith :: Type -> Type -> Maybe Substitution
 unifiesWith Integer' Integer' = return []
 unifiesWith Boolean' Boolean' = return []
