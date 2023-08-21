@@ -70,11 +70,6 @@ generateGenerator_tests =
            @? ( "the term " ++ show t' ++
                 " had the type " ++ show typeOfT' ++
                 " but we expected the type " ++ show canonT
-                ++ "\n Asked for type: " ++ show t
-                ++ "\n Substitution: " ++ show subs
-                ++ "\n Constraints: " ++ show cs
-                ++ "\n New substitution: " ++ show subs'
-                ++ "\n"
               )
     -- Todo: move this, create better test case
     , testCase "Resolve resolves 'chains' of variables" $
