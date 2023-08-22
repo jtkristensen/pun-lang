@@ -15,7 +15,7 @@ type T2        a = Term a
 data Program a
   = Declaration X     Type     (Program a)
   | Definition  X     (Term a) (Program a)
-  | Property    P [X] (Term a) (Program a)
+  | Property    P [(X, a)] (Term a) (Program a)
   | EndOfProgram
   deriving (Functor, Eq, Show)
 
@@ -76,7 +76,7 @@ declarations (Declaration x t rest) = (x, t) : declarations rest
 declarations (Property  _ _ _ rest) = declarations rest
 declarations _                      = mempty
 
-properties :: Program a -> [(P, ([X], Term a))]
+properties :: Program a -> [(P, ([(X, a)], Term a))]
 properties (Definition  _ _ rest) = properties rest
 properties (Declaration _ _ rest) = properties rest
 properties (Property  p x t rest) = (p, (x, t)) : properties rest
