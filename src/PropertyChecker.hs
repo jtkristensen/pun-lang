@@ -105,7 +105,7 @@ generateGeneratorSized (is, bs) (type1 :->: type2) size =
 resolve :: Index -> CurrentIndices -> Type
 resolve i is =
   case lookup i is of
-    Just s -> 
+    Just s ->
       case s of
         (Variable' i') -> resolve i' is
         _              -> s
@@ -128,7 +128,12 @@ generateType is =
          return $ type1 :->: type2
     ] ++ (return . Variable' . fst <$> is)
 
--- Check takes the components of a property, and returns a generator for terms of type `Boolean'` that we can evaluate inside of QuickCheck.
-check :: [(Name, Type)] -> Term Type -> Gen [(Name, Term Type)]
+
+-- should Thing = Gen Bool ?
+-- should Thing be Testable ?
+-- what does a counterexample of Thing look like?
+type Thing = Property
+
+check :: [(Name, Type)] -> Term Type -> Thing
 check _ _ = undefined
 
