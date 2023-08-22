@@ -149,9 +149,13 @@ subst s (t1 :->: t2) = subst s t1 :->: subst s t2
 equivalent :: Type -> Type -> Bool
 equivalent t1 t2 =
   case t1 `unifiesWith` t2 of
-    (Just _) -> True
+    (Just s) -> subst s t1 == subst s t2
     _        -> False
 
 -- Think about it {~_^}.
 -- instance Eq Type where
 --   (==) = equivalent
+
+-- Also an option {^o^}!
+-- unify :: Type -> Type -> Maybe Substitution
+-- unify t1 t2 = t1 `unifiesWith` t2
