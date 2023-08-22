@@ -4,6 +4,7 @@ module Syntax where
 
 -- Abbreviations.
 type Name        = String
+type F           = Name
 type X           = Name
 type C           = Name
 type P           = Name
@@ -13,8 +14,8 @@ type T1        a = Term a
 type T2        a = Term a
 
 data Program a
-  = Declaration X     Type     (Program a)
-  | Definition  X     (Term a) (Program a)
+  = Declaration X           Type    (Program a)
+  | Definition  F          (Term a) (Program a)
   | Property    P [(X, a)] (Term a) (Program a)
   | EndOfProgram
   deriving (Functor, Eq, Show)
@@ -64,7 +65,7 @@ instance Annotated Term where
   annotations (Rec    _ t0       a) = a : annotations t0
   annotation  term                  = head $ annotations term
 
-definitions :: Program a -> [(X, Term a)]
+definitions :: Program a -> [(F, Term a)]
 definitions (Definition  x t rest) = (x, t) : definitions rest
 definitions (Declaration _ _ rest) = definitions rest
 definitions (Property  _ _ _ rest) = definitions rest
