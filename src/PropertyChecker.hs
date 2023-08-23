@@ -10,6 +10,9 @@ type Generator       = Gen (Term Type)
 type CurrentIndices  = Substitution
 type CurrentBindings = [(Name, Type)]
 
+frac :: Int -> Int
+frac size = size `div` 2
+
 generateGenerator :: (CurrentIndices, CurrentBindings) -> (Type -> Generator)
 generateGenerator s t = sized (generateGeneratorSized s t)
 
@@ -19,38 +22,38 @@ generateGeneratorSized _          Integer' 1 = flip Number  Integer' <$> arbitra
 generateGeneratorSized s@(is, bs) Integer' size =
   oneof $
     [ flip Number  Integer' <$> arbitrary
-    , do cond <- generateGeneratorSized s Boolean' (size `div` 2)
-         t1   <- generateGeneratorSized s Integer' (size `div` 2)
-         t2   <- generateGeneratorSized s Integer' (size `div` 2)
+    , do cond <- generateGeneratorSized s Boolean' (frac size)
+         t1   <- generateGeneratorSized s Integer' (frac size)
+         t2   <- generateGeneratorSized s Integer' (frac size)
          return $ If cond t1 t2 Integer'
-    , do t1   <- generateGeneratorSized s Integer' (size `div` 2)
-         t2   <- generateGeneratorSized s Integer' (size `div` 2)
+    , do t1   <- generateGeneratorSized s Integer' (frac size)
+         t2   <- generateGeneratorSized s Integer' (frac size)
          return $ Plus t1 t2 Integer'
-    , do t1    <- generateGeneratorSized s Integer' (size `div` 2)
+    , do t1    <- generateGeneratorSized s Integer' (frac size)
          type2 <- generateType is
-         t2    <- generateGeneratorSized s type2 (size `div` 2)
+         t2    <- generateGeneratorSized s type2 (frac size)
          return $ Fst (Pair t1 t2 $ Integer' :*: type2) Integer'
     , do type1 <- generateType is
-         t1    <- generateGeneratorSized s type1 (size `div` 2)
-         t2    <- generateGeneratorSized s Integer' (size `div` 2)
+         t1    <- generateGeneratorSized s type1 (frac size)
+         t2    <- generateGeneratorSized s Integer' (frac size)
          return $ Snd (Pair t1 t2 $ type1 :*: Integer') Integer'
     , do argType <- generateType is
-         f       <- generateGeneratorSized s (argType :->: Integer') (size `div` 2)
-         arg     <- generateGeneratorSized s argType (size `div` 2)
+         f       <- generateGeneratorSized s (argType :->: Integer') (frac size)
+         arg     <- generateGeneratorSized s argType (frac size)
          return $ Application f arg Integer'
     --     Gamma |- t1 : T1         Gamma[x -> T1] |- t2 : T
     -- Let --------------------------------------------------
     --             Gamma |- let x = t1 in t2 : T
     , do x     <- generateName
          type1 <- generateType is
-         t1    <- generateGeneratorSized s type1 (size `div` 2)
-         t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) Integer' (size `div` 2)
+         t1    <- generateGeneratorSized s type1 (frac size)
+         t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) Integer' (frac size)
          return $ Let x t1 t2 Integer'
     --            Gamma[x -> T] |- rec x t : T
     -- Let --------------------------------------------------
     --               Gamma |- rec x t : T
     , do x     <- generateName
-         t1    <- generateGeneratorSized (is, (x, Integer') : filter ((/=x) . fst) bs) Integer' (size `div` 2)
+         t1    <- generateGeneratorSized (is, (x, Integer') : filter ((/=x) . fst) bs) Integer' (frac size)
          return $ Rec x t1 Integer'
          ]
     ++ (return . flip Variable Integer' <$> [ n | (n, t) <- bs , t == Integer' ])
@@ -59,47 +62,47 @@ generateGeneratorSized _          Boolean' 1 = flip Boolean Boolean' <$> arbitra
 generateGeneratorSized s@(is, bs) Boolean' size           =
   oneof $
     [ flip Boolean  Boolean' <$> arbitrary
-    , do cond <- generateGeneratorSized s Boolean' (size `div` 2)
-         t1   <- generateGeneratorSized s Boolean' (size `div` 2)
-         t2   <- generateGeneratorSized s Boolean' (size `div` 2)
+    , do cond <- generateGeneratorSized s Boolean' (frac size)
+         t1   <- generateGeneratorSized s Boolean' (frac size)
+         t2   <- generateGeneratorSized s Boolean' (frac size)
          return $ If cond t1 t2 Boolean'
-    , do t1   <- generateGeneratorSized s Integer' (size `div` 2)
-         t2   <- generateGeneratorSized s Integer' (size `div` 2)
+    , do t1   <- generateGeneratorSized s Integer' (frac size)
+         t2   <- generateGeneratorSized s Integer' (frac size)
          return $ Leq t1 t2 Boolean'
-    , do t1    <- generateGeneratorSized s Boolean' (size `div` 2)
+    , do t1    <- generateGeneratorSized s Boolean' (frac size)
          type2 <- generateType is
-         t2    <- generateGeneratorSized s type2 (size `div` 2)
+         t2    <- generateGeneratorSized s type2 (frac size)
          return $ Fst (Pair t1 t2 $ Boolean' :*: type2) Boolean'
     , do type1 <- generateType is
-         t1    <- generateGeneratorSized s type1 (size `div` 2)
-         t2    <- generateGeneratorSized s Boolean' (size `div` 2)
+         t1    <- generateGeneratorSized s type1 (frac size)
+         t2    <- generateGeneratorSized s Boolean' (frac size)
          return $ Snd (Pair t1 t2 $ type1 :*: Boolean') Boolean'
     , do argType <- generateType is
-         f       <- generateGeneratorSized s (argType :->: Boolean') (size `div` 2)
-         arg     <- generateGeneratorSized s argType (size `div` 2)
+         f       <- generateGeneratorSized s (argType :->: Boolean') (frac size)
+         arg     <- generateGeneratorSized s argType (frac size)
          return $ Application f arg Boolean'
     , do x     <- generateName
          type1 <- generateType is
-         t1    <- generateGeneratorSized s type1 (size `div` 2)
-         t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) Boolean' (size `div` 2)
+         t1    <- generateGeneratorSized s type1 (frac size)
+         t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) Boolean' (frac size)
          return $ Let x t1 t2 Boolean'
     , do x     <- generateName
-         t1    <- generateGeneratorSized (is, (x, Boolean') : filter ((/=x) . fst) bs) Boolean' (size `div` 2)
+         t1    <- generateGeneratorSized (is, (x, Boolean') : filter ((/=x) . fst) bs) Boolean' (frac size)
          return $ Rec x t1 Boolean'
          ]
     ++ (return . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
 -- TODO! Make sure generated Variable's index resolves to canonical type
 generateGeneratorSized s (Variable' index) size   =
-  generateGeneratorSized s (resolve index $ fst s) (size `div` 2)
+  generateGeneratorSized s (resolve index $ fst s) (frac size)
 -- Todo, generate more interesting things here!
 generateGeneratorSized s t@(type1 :*: type2) size =
-  do t1 <- generateGeneratorSized s type1 (size `div` 2)
-     t2 <- generateGeneratorSized s type2 (size `div` 2)
+  do t1 <- generateGeneratorSized s type1 (frac size)
+     t2 <- generateGeneratorSized s type2 (frac size)
      return $ Pair t1 t2 t
 -- Todo, generate more interesting things here!
 generateGeneratorSized (is, bs) (type1 :->: type2) size =
   do x  <- generateName
-     t0 <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) type2 (size `div` 2)
+     t0 <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) type2 (frac size)
      return $ Lambda x t0 type2
 
 resolve :: Index -> CurrentIndices -> Type
