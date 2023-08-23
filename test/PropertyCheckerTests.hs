@@ -14,13 +14,6 @@ import Test.Tasty.QuickCheck
 
 -- Todo, do something better than the empty substitution in : generateGenerator <mempty>.
 
-{-
-Generated input that made the second test case fail:
-
-Rec "a" (Rec "i" (Rec "e" (Variable "a" (Variable' 0)) (Variable' 0)) (Variable' 0)) (Variable' 0)
-Had the type Variable' 0 but we expected the type Boolean'
--}
-
 newtype Primitive
     = Primitive (Term Type)
   deriving Show
