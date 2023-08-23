@@ -22,19 +22,19 @@ generateGeneratorSized _          Integer' 1 = flip Number  Integer' <$> arbitra
 generateGeneratorSized s@(is, bs) Integer' size =
   oneof $
     [ flip Number  Integer' <$> arbitrary
-    , do cond <- generateGeneratorSized s Boolean' (frac size)
-         t1   <- generateGeneratorSized s Integer' (frac size)
-         t2   <- generateGeneratorSized s Integer' (frac size)
+    , do cond <- generateGeneratorSized s Boolean'  (frac size)
+         t1   <- generateGeneratorSized s Integer'  (frac size)
+         t2   <- generateGeneratorSized s Integer'  (frac size)
          return $ If cond t1 t2 Integer'
-    , do t1   <- generateGeneratorSized s Integer' (frac size)
-         t2   <- generateGeneratorSized s Integer' (frac size)
+    , do t1   <- generateGeneratorSized s Integer'  (frac size)
+         t2   <- generateGeneratorSized s Integer'  (frac size)
          return $ Plus t1 t2 Integer'
     , do t1    <- generateGeneratorSized s Integer' (frac size)
          type2 <- generateType is
-         t2    <- generateGeneratorSized s type2 (frac size)
+         t2    <- generateGeneratorSized s type2    (frac size)
          return $ Fst (Pair t1 t2 $ Integer' :*: type2) Integer'
     , do type1 <- generateType is
-         t1    <- generateGeneratorSized s type1 (frac size)
+         t1    <- generateGeneratorSized s type1    (frac size)
          t2    <- generateGeneratorSized s Integer' (frac size)
          return $ Snd (Pair t1 t2 $ type1 :*: Integer') Integer'
     , do argType <- generateType is
@@ -62,19 +62,19 @@ generateGeneratorSized _          Boolean' 1 = flip Boolean Boolean' <$> arbitra
 generateGeneratorSized s@(is, bs) Boolean' size           =
   oneof $
     [ flip Boolean  Boolean' <$> arbitrary
-    , do cond <- generateGeneratorSized s Boolean' (frac size)
-         t1   <- generateGeneratorSized s Boolean' (frac size)
-         t2   <- generateGeneratorSized s Boolean' (frac size)
+    , do cond <- generateGeneratorSized s Boolean'  (frac size)
+         t1   <- generateGeneratorSized s Boolean'  (frac size)
+         t2   <- generateGeneratorSized s Boolean'  (frac size)
          return $ If cond t1 t2 Boolean'
-    , do t1   <- generateGeneratorSized s Integer' (frac size)
-         t2   <- generateGeneratorSized s Integer' (frac size)
+    , do t1   <- generateGeneratorSized s Integer'  (frac size)
+         t2   <- generateGeneratorSized s Integer'  (frac size)
          return $ Leq t1 t2 Boolean'
     , do t1    <- generateGeneratorSized s Boolean' (frac size)
          type2 <- generateType is
-         t2    <- generateGeneratorSized s type2 (frac size)
+         t2    <- generateGeneratorSized s type2    (frac size)
          return $ Fst (Pair t1 t2 $ Boolean' :*: type2) Boolean'
     , do type1 <- generateType is
-         t1    <- generateGeneratorSized s type1 (frac size)
+         t1    <- generateGeneratorSized s type1    (frac size)
          t2    <- generateGeneratorSized s Boolean' (frac size)
          return $ Snd (Pair t1 t2 $ type1 :*: Boolean') Boolean'
     , do argType <- generateType is
