@@ -22,6 +22,16 @@ instance Arbitrary Primitive where
   arbitrary =
     Primitive <$> (oneof $ generateGenerator ([], []) <$> [Integer', Boolean'])
 
+newtype TerminatingTerm
+    = TerminatingTerm (Term Type, Type)
+  deriving Show
+
+instance Arbitrary TerminatingTerm where
+  arbitrary =
+    do t    <- aType
+       term <- generateGenerator mempty t
+       return $ TerminatingTerm (term, t)
+
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "`generateGenerator` tests :"
@@ -30,7 +40,10 @@ generateGenerator_tests =
       case value of
         (Pair    _ _ _) -> False
         (Lambda  _ _ _) -> False
-        _               -> True
+        _               -> True,
+    testProperty "generateGenerator t has type Term t forall t." $
+    \(TerminatingTerm (term, t)) ->
+      True
   ]
 
 -- generateGenerator_tests :: TestTree
