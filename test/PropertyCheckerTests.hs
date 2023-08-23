@@ -43,7 +43,11 @@ generateGenerator_tests =
         _               -> True,
     testProperty "generateGenerator t has type Term t forall t." $
     \(TerminatingTerm (term, t)) ->
-      True
+      let (t', _, cs) = infer term 0
+          subs        = bindings cs
+          typeOfT'    = annotation (refine subs <$> t')
+      in
+        (equivalent t typeOfT')
   ]
 
 -- generateGenerator_tests :: TestTree
