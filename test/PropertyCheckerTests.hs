@@ -32,6 +32,17 @@ instance Arbitrary TerminatingTerm where
        term <- generateGenerator mempty t
        return $ TerminatingTerm (term, t)
 
+newtype SubstType = SubstType (Substitution, Type, Term Type, Type)
+  deriving Show
+
+instance Arbitrary (SubstType) where
+  arbitrary =
+    do subs  <- generateSubstitution
+       t     <- generateType subs
+       let canonT = refine subs t
+       term  <- generateGenerator (subs, []) canonT
+       return $ SubstType (subs, t, term, canonT)
+
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "`generateGenerator` tests :"
@@ -47,8 +58,34 @@ generateGenerator_tests =
           subs        = bindings cs
           typeOfT'    = annotation (refine subs <$> t')
       in
-        (equivalent t typeOfT')
+        (equivalent t typeOfT'),
+    -- testProperty "Only valid types are generated from a substitution." $
+    -- \(SubstType (subs, t, term, canonT)) ->
+    --   let t' = refine subs t
+    --   in
+    --     (elem t' $ map snd subs)
+    testProperty "generateGenerator generates appropriate type for generated substitution." $
+    \(SubstType (subs, t, term, canonT)) ->
+      let (t', _, cs) = infer term 0
+          subs'       = bindings cs
+          typeOfT'    = annotation (refine subs' <$> t')
+      in
+        (equivalent canonT typeOfT')
   ]
+
+-- testCase "generateGenerator generates appropriate type for generated substitution." $
+--       do subs <- generate $ generateSubstitution
+--          t    <- generate $ generateType subs
+--          let canonT = refine subs t
+--          term <- generate $ generateGenerator (subs, []) canonT
+--          let (t', _, cs) = infer term 0
+--          let subs'       = bindings cs
+--          let typeOfT'    = annotation (refine subs' <$> t')
+--          (equivalent canonT typeOfT')
+--            @? ( "the term " ++ show t' ++
+--                 " had the type " ++ show typeOfT' ++
+--                 " but we expected the type " ++ show canonT
+--               )
 
 -- generateGenerator_tests :: TestTree
 -- generateGenerator_tests =
