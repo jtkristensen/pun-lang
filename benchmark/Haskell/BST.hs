@@ -39,6 +39,9 @@ findMin :: Ord k => BST k v -> k
 findMin (Branch Leaf k' _ _) = k'
 findMin (Branch left _  _ _) = findMin left
 
+nil :: BST k v
+nil = Leaf
+
 {-
 delete 3
 Branch Leaf 1 "1" (Branch Leaf 3 "3" (Branch Leaf 5 "5" Leaf))
