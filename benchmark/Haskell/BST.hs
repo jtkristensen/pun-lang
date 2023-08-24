@@ -28,10 +28,6 @@ findMin (Branch left _  _ _) = findMin left
 nil :: BST k v
 nil = Leaf
 
-{-
-Test:
-insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
--}
 insert :: Ord k => k -> v -> BST k v -> BST k v
 insert k v Leaf = Branch (Leaf) k v (Leaf)
 insert k v (Branch left k' v' right)
@@ -40,10 +36,6 @@ insert k v (Branch left k' v' right)
     | k >  k' = Branch left              k' v' (insert k v right)
 insert k v _  = Branch (Leaf) k v (Leaf)
 
-{-
-delete 3
-Branch Leaf 1 "1" (Branch Leaf 3 "3" (Branch Leaf 5 "5" Leaf))
--}
 delete :: Ord k => k -> BST k v -> BST k v
 delete _ Leaf = Leaf
 delete k tree@(Branch left k' v' right)
@@ -70,3 +62,6 @@ toList (Branch left k' v' right) = (toList left) ++ [(k', v')] ++ (toList right)
 keys :: BST k v -> [k]
 keys Leaf = []
 keys (Branch left k' v' right) = (keys left) ++ [k'] ++ (keys right)
+
+insertionExample = insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
+treeExample = Branch Leaf 1 "1" (Branch Leaf 3 "3" (Branch Leaf 5 "5" Leaf))
