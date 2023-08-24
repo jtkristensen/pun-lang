@@ -35,7 +35,7 @@ instance Arbitrary TerminatingTerm where
 newtype SubstType = SubstType (Substitution, Type, Term Type, Type)
   deriving Show
 
-instance Arbitrary (SubstType) where
+instance Arbitrary SubstType where
   arbitrary =
     do subs  <- generateSubstitution
        t     <- generateType subs
@@ -43,32 +43,15 @@ instance Arbitrary (SubstType) where
        term  <- generateGenerator (subs, []) canonT
        return $ SubstType (subs, t, term, canonT)
 
-newtype AcyclicIndices = AcyclicIndices (CurrentIndices)
+newtype AcyclicIndices = AcyclicIndices CurrentIndices
   deriving Show
 
-instance Arbitrary (AcyclicIndices) where
+instance Arbitrary AcyclicIndices where
   arbitrary = 
-    do length' <- choose (0, 100)
-       indices <- (acyclicIndices 0 length' [0..length'] mempty)
-       return $ AcyclicIndices (indices)
-
-removeElement :: Index -> [Index] -> [Index]
-removeElement _ [] = []
-removeElement x (y:ys) = 
-  case x == y of
-    True  -> removeElement x ys
-    False -> y : removeElement x ys
-
--- Todo: refactor, a bit unreadable
--- Todo: shuffle the elements?
-acyclicIndices :: Integer -> Integer -> [Integer] -> CurrentIndices -> Gen CurrentIndices
-acyclicIndices previousIndex 0 _ indices = do
-  canonical <- elements [Integer', Boolean']
-  return $ indices ++ [(previousIndex, canonical)]
-acyclicIndices previousIndex length' availableIndices indices = do
-  let newAvailableIndices = (removeElement previousIndex availableIndices)
-  index      <- elements newAvailableIndices
-  acyclicIndices index (length' - 1) newAvailableIndices (indices ++ [(previousIndex, Variable' index)])
+    do length'   <- choose (0, 100)
+       let indices = [(index, Variable' index') | index <- [0..length'], index' <- [index + 1]]
+       canonical <- elements [Integer', Boolean']
+       return $ AcyclicIndices (indices ++ [(length' + 1, canonical)])
 
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
@@ -85,21 +68,21 @@ generateGenerator_tests =
           subs        = bindings cs
           typeOfT'    = annotation (refine subs <$> t')
       in
-        (equivalent t typeOfT'),
+        equivalent t typeOfT',
     -- testProperty "Only valid types are generated from a substitution." $
     -- \(SubstType (subs, t, term, canonT)) ->
     --   let t' = refine subs t
     --   in
     --     (elem t' $ map snd subs)
     testProperty "generateGenerator generates appropriate type for generated substitution." $
-    \(SubstType (subs, t, term, canonT)) ->
+    \(SubstType (_, _, term, canonT)) ->
       let (t', _, cs) = infer term 0
           subs'       = bindings cs
           typeOfT'    = annotation (refine subs' <$> t')
       in
-        (equivalent canonT typeOfT'),
+        equivalent canonT typeOfT',
     testProperty "Resolve resolves 'chains' of variables" $
-    \(AcyclicIndices (indices)) ->
+    \(AcyclicIndices indices) ->
       let solution = resolve 0 indices
       in
         (solution == Integer' || solution == Boolean')
@@ -110,7 +93,7 @@ generateGenerator_tests =
 -- Todo, Where do we get the index for Variable' from?
 aType :: Gen Type
 aType =
-  oneof $
+  oneof
     [ return Integer'
     , return Boolean'
     , ( :*:  ) <$> aType <*> aType
