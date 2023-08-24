@@ -5,12 +5,12 @@ module BST where
 import Test.Tasty.QuickCheck
 import GHC.Generics
 
--- ----------------------------------------------
+-- ---------------------------------------------------
 -- From 'How to Specify It! ...' by John Hughes
--- ----------------------------------------------
+-- Implementation of insert, find and delete is based
+-- off the algorithms from IN2010
+-- ---------------------------------------------------
 
--- k : key
--- v : value
 data BST k v = Leaf | Branch (BST k v) k v (BST k v)
     deriving (Eq, Show, Generic)
 
@@ -33,7 +33,6 @@ Test:
 insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
 -}
 
--- key and value we want to insert into a BST
 insert :: Ord k => k -> v -> BST k v -> BST k v
 insert k v Leaf = Branch (Leaf) k v (Leaf)
 insert k v (Branch left k' v' right)
@@ -57,3 +56,14 @@ delete' :: Ord k => BST k v -> BST k v
 delete' (Branch Leaf _  _  right) = right
 delete' (Branch left _  _  Leaf ) = left
 delete' (Branch left k' v' right) = Branch left (findMin right) v' (delete k' right)
+
+union :: Ord k => BST k v -> BST k v -> BST k v
+union bst1 Leaf = bst1
+union bst1 bst2@(Branch left k' v' right) = do
+    let bst1' = insert k' v' bst1
+    let bst2' = delete k'    bst2
+    union bst1' bst2'
+
+toList :: BST k v -> [(k, v)]
+toList Leaf = []
+toList (Branch left k' v' right) = (toList left) ++ [(k', v')] ++ (toList right)
