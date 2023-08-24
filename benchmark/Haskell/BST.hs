@@ -14,20 +14,6 @@ import GHC.Generics
 data BST k v = Leaf | Branch (BST k v) k v (BST k v)
     deriving (Eq, Show, Generic)
 
-{-
-Test:
-insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
--}
-
--- key and value we want to insert into a BST
-insert :: Ord k => k -> v -> BST k v -> BST k v
-insert k v Leaf = Branch (Leaf) k v (Leaf)
-insert k v (Branch left k' v' right)
-    | k == k' = Branch left              k' v' right
-    | k <  k' = Branch (insert k v left) k' v' right
-    | k >  k' = Branch left              k' v' (insert k v right)
-insert k v _  = Branch (Leaf) k v (Leaf)
-
 find :: Ord k => k -> BST k v -> Maybe v
 find k (Branch left k' v' right)
     | k == k' = Just v'
@@ -41,6 +27,20 @@ findMin (Branch left _  _ _) = findMin left
 
 nil :: BST k v
 nil = Leaf
+
+{-
+Test:
+insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
+-}
+
+-- key and value we want to insert into a BST
+insert :: Ord k => k -> v -> BST k v -> BST k v
+insert k v Leaf = Branch (Leaf) k v (Leaf)
+insert k v (Branch left k' v' right)
+    | k == k' = Branch left              k' v' right
+    | k <  k' = Branch (insert k v left) k' v' right
+    | k >  k' = Branch left              k' v' (insert k v right)
+insert k v _  = Branch (Leaf) k v (Leaf)
 
 {-
 delete 3
