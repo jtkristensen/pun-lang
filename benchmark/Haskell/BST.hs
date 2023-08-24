@@ -32,7 +32,6 @@ nil = Leaf
 Test:
 insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
 -}
-
 insert :: Ord k => k -> v -> BST k v -> BST k v
 insert k v Leaf = Branch (Leaf) k v (Leaf)
 insert k v (Branch left k' v' right)
@@ -67,3 +66,7 @@ union bst1 bst2@(Branch left k' v' right) = do
 toList :: BST k v -> [(k, v)]
 toList Leaf = []
 toList (Branch left k' v' right) = (toList left) ++ [(k', v')] ++ (toList right)
+
+keys :: BST k v -> [k]
+keys Leaf = []
+keys (Branch left k' v' right) = (keys left) ++ [k'] ++ (keys right)
