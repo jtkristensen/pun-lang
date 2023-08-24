@@ -20,7 +20,7 @@ newtype Primitive
 
 instance Arbitrary Primitive where
   arbitrary =
-    Primitive <$> (oneof $ generateGenerator ([], []) <$> [Integer', Boolean'])
+    Primitive <$> oneof (generateGenerator ([], []) <$> [Integer', Boolean'])
 
 newtype TerminatingTerm
     = TerminatingTerm (Term Type, Type)
@@ -55,7 +55,7 @@ instance Arbitrary AcyclicIndices where
 
 elem' :: Type -> [Type] -> Bool
 elem' _ [] = False
-elem' x (y:ys) = if (equivalent x y) then True else elem' x ys
+elem' x (y:ys) = equivalent x y || elem' x ys
 
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
@@ -63,9 +63,9 @@ generateGenerator_tests =
   [ testProperty "Pairs and Functions are not primitives" $
     \(Primitive value) ->
       case value of
-        (Pair    _ _ _) -> False
-        (Lambda  _ _ _) -> False
-        _               -> True,
+        Pair    {} -> False
+        Lambda  {} -> False
+        _          -> True,
     testProperty "generateGenerator t has type Term t forall t." $ whenFail (print "hello") $
     \(TerminatingTerm (term, t)) ->
       let (t', _, cs) = infer term 0
@@ -110,24 +110,24 @@ generateSubstitution = sized (generateSizedSubstitution 0)
 
 generateSizedSubstitution :: Index -> Int -> Gen Substitution
 generateSizedSubstitution current size =
-  if current < (toInteger size)
+  if current < toInteger size
     then do
-      t      <- oneof $ [ sized (newType current), newVariable current ]
+      t      <- oneof [ sized (newType current), newVariable current ]
       rest   <- generateSizedSubstitution (current + 1) size
       return $ (current, t) : rest
     else do
       t      <- sized (newType current)
-      return $ [(current, t)]
+      return [(current, t)]
 
 newType :: Index -> Int -> Gen Type
 newType i size
-  | i == (toInteger size) = oneof $ [ return Integer', return Boolean' ]
+  | i == toInteger size = oneof [ return Integer', return Boolean' ]
 newType i size =
-  oneof $
+  oneof
     [ return Integer'
     , return Boolean'
-    , ( :*:  ) <$> (newType (i + 1) size) <*> (newType (i + 2) size)
-    , ( :->: ) <$> (newType (i + 1) size) <*> (newType (i + 2) size)
+    , ( :*:  ) <$> newType (i + 1) size <*> newType (i + 2) size
+    , ( :->: ) <$> newType (i + 1) size <*> newType (i + 2) size
     ]
 
 newVariable :: Index -> Gen Type
@@ -156,7 +156,7 @@ subst _ Integer'      = Integer'
 subst _ Boolean'      = Boolean'
 subst s (Variable' a) =
   case [ t | (b, t) <- s , a == b ] of
-    [ ] -> (Variable' a)
+    [ ] -> Variable' a
     [t] -> t
     _   -> error "internal error about unification"
 subst s (t1 :*:  t2) = subst s t1 :*:  subst s t2
