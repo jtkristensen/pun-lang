@@ -71,3 +71,20 @@ keys (Branch left k' v' right) = (keys left) ++ [k'] ++ (keys right)
 
 insertionExample = insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
 treeExample = Branch Leaf 1 "1" (Branch Leaf 3 "3" (Branch Leaf 5 "5" Leaf))
+
+instance (Ord k, Arbitrary k, Arbitrary v) => Arbitrary (BST k v) where
+    arbitrary = do
+        kvs <- arbitrary
+        return $ foldr (uncurry insert) nil (kvs :: [(k, v)])
+    shrink = genericShrink
+
+valid Leaf = True
+valid (Branch l k _v r) =
+    valid l && valid r &&
+    all (< k) (keys l) && all (> k) (keys r)
+
+-- Validity properties
+prop_NilValid             = valid (nil :: Tree    )
+prop_InsertValid k v t    = valid (insert k v t   )
+prop_DeleteValid k   t    = valid (delete k   t   )
+prop_UnionValid      t t' = valid (union      t t')
