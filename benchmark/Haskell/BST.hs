@@ -2,7 +2,9 @@
 
 module BST where
 
+import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck
+import Test.QuickCheck
 import GHC.Generics
 
 -- ---------------------------------------------------
@@ -13,6 +15,10 @@ import GHC.Generics
 
 data BST k v = Leaf | Branch (BST k v) k v (BST k v)
     deriving (Eq, Show, Generic)
+
+type Key = Int
+type Val = Int
+type Tree = BST Int Int
 
 find :: Ord k => k -> BST k v -> Maybe v
 find k (Branch left k' v' right)
