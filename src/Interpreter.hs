@@ -93,10 +93,3 @@ notAtTopLevel (x, _) =
      if x `elem` (fst <$> definitions program)
        then error $ "the name " ++ x ++ "shadows the top level declaration of " ++ x
        else return ()
-
-canonical :: (Term a) -> Bool
-canonical (Number  _     _) = True
-canonical (Boolean _     _) = True
-canonical (Pair    t1 t2 _) = canonical t1 && canonical t2
-canonical (Lambda  _  _  _) = True
-canonical _                 = False
