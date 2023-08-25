@@ -12,6 +12,8 @@ type Index       = Integer
 type T0        a = Term a
 type T1        a = Term a
 type T2        a = Term a
+type Left      a = Term a
+type Right     a = Term a
 type Key         = Type
 type Value       = Type
 
@@ -32,6 +34,8 @@ data Type
   deriving (Eq, Show)
 
 data Term a =
+  --   Leaf                           a
+  -- | Node (Left a) (T0 a) (Right a) a
     Number    Integer                 a
   | Boolean   Bool                    a
   | Variable  Name                    a
