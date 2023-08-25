@@ -53,10 +53,6 @@ instance Arbitrary AcyclicIndices where
        canonical <- elements [Integer', Boolean']
        return $ AcyclicIndices (indices ++ [(length' + 1, canonical)])
 
-elem' :: Type -> [Type] -> Bool
-elem' _ [] = False
-elem' x (y:ys) = equivalent x y || elem' x ys
-
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "`generateGenerator` tests :"
@@ -73,11 +69,9 @@ generateGenerator_tests =
           typeOfT'    = annotation (refine subs <$> t')
       in
         equivalent t typeOfT',
-    -- testProperty "Only valid types are generated from a substitution." $
-    -- \(SubstType (subs, t, term, canonT)) ->
-    --   let t' = refine subs t
-    --   in
-    --     (elem' t' $ map snd subs),
+    testProperty "Only valid types are generated from a substitution." $
+    \(SubstType (subs, t, _, _)) ->
+      all (`elem` (fst <$> subs)) (indicies t),
     testProperty "generateGenerator generates appropriate type for generated substitution." $
     \(SubstType (_, _, term, canonT)) ->
       let (t', _, cs) = infer term 0
