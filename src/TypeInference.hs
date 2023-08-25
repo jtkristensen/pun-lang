@@ -88,6 +88,21 @@ annotate (Rec f t0 _) =
   do tau <- hole
      t0' <- local (bind f tau) $ annotate t0
      return $ Rec f t0' $ annotation t0'
+annotate (Leaf _) =
+     return $ Leaf (BST Integer' Integer')
+annotate (Node l t0 r _) =
+  do tau <- hole
+     l'  <- annotate l
+     t0' <- annotate t0
+     r'  <- annotate r
+     return $ Node l' t0' r' tau
+annotate (Case t0 l (p, t) _) =
+  do tau <- hole
+     t0' <- annotate t0
+     l'  <- annotate l
+     p'  <- annotate p
+     t'  <- annotate t
+     return $ Case t0' l' (p', t') tau
 
 solve :: [Constraint] -> Maybe Substitution
 solve [                 ] = return mempty
@@ -144,6 +159,7 @@ refine s o = refine' s o
     refine' _            Boolean'               = Boolean'
     refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
+    refine' _            (BST    k v)           = BST k v
 
 -- Just here for documentation
 usage :: Term a -> Index -> (Term Type, Index)

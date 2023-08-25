@@ -74,6 +74,9 @@ instance Annotated Term where
   annotations (Snd      t0       a) = a : annotations t0
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
+  annotations (Leaf              a) = return a
+  annotations (Node      l t0  r a) = a : ([l, t0, r]    >>= annotations)
+  annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
   annotation  term                  = head $ annotations term
 
 definitions :: Program a -> [(F, Term a)]
@@ -95,8 +98,9 @@ properties (Property  p x t rest) = (p, (x, t)) : properties rest
 properties _                      = mempty
 
 indicies :: Type -> [Index]
-indicies (Variable' a) = [a]
-indicies  Integer'     = []
-indicies  Boolean'     = []
-indicies (t1 :*:   t2) = indicies t1 <> indicies t2
-indicies (t1 :->:  t2) = indicies t1 <> indicies t2
+indicies (Variable' a)  = [a]
+indicies  Integer'      = []
+indicies  Boolean'      = []
+indicies (t1 :*:   t2)  = indicies t1 <> indicies t2
+indicies (t1 :->:  t2)  = indicies t1 <> indicies t2
+indicies (BST     _ _)  = []
