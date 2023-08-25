@@ -12,6 +12,8 @@ type Index       = Integer
 type T0        a = Term a
 type T1        a = Term a
 type T2        a = Term a
+type Key         = Type
+type Value       = Type
 
 data Program a
   = Declaration X           Type    (Program a)
@@ -26,6 +28,7 @@ data Type
   | Boolean'
   | Type :*: Type
   | Type :->: Type
+  -- | BST Key Value
   deriving (Eq, Show)
 
 data Term a =
