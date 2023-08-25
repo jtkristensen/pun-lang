@@ -4,7 +4,7 @@ module BST where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck
-import Test.QuickCheck
+-- import Test.QuickCheck
 import GHC.Generics
 
 -- ---------------------------------------------------
