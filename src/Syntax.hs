@@ -16,6 +16,8 @@ type Left      a = Term a
 type Right     a = Term a
 type Key         = Type
 type Value       = Type
+type Leaf      a = Term a
+type Node      a = Term a
 
 data Program a
   = Declaration X           Type    (Program a)
@@ -36,6 +38,7 @@ data Type
 data Term a =
   --   Leaf                           a
   -- | Node (Left a) (T0 a) (Right a) a
+  -- | case (T0 a) (Leaf a) (Node a)  a
     Number    Integer                 a
   | Boolean   Bool                    a
   | Variable  Name                    a
