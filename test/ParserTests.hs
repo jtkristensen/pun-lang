@@ -19,6 +19,8 @@ parserTests =
   , testGroup "negative tests for parsing ints"  intParserTests_negative
   , testGroup "positive tests for parsing types" typeParserTests_positive
   , testGroup "negative tests for parsing types" typeParserTests_negative
+  , testGroup "positive tests for parsing terms" termParserTests_positive
+  -- , testGroup "negative tests for parsing terms" termParserTests_negative
   ]
 
 natParserTests_positive :: [TestTree]
@@ -90,15 +92,25 @@ typeParserTests_negative =
 
 termParserTests_positive :: [TestTree]
 termParserTests_positive =
-  map (\(s, v) -> positive term_ s v)
-  [ ("0", Variable'  0)
+  map (\(s, v) -> testCase s $ positive term_ s v)
+  [ ("0", Number 0 ())
+  , ("leaf", Leaf ())
+  , ("5 5", Application (Number 5 ()) (Number 5 ()) ())
+  , ("f x", Application (Variable "f" ()) (Variable "x" ()) ())
+  , ("f(x)", Application (Variable "f" ()) (Variable "x" ()) ())
+  , ("2+2", Plus (Number 2 ()) (Number 2 ()) ())
+  , ("0 <= 1", Leq (Number 0 ()) (Number 1 ()) ())
+  -- , ("if 5 <= 7 then 0 else true",
+  --    If (Leq (Number 5 ()) (Number 7 ()) ()) (Number 0 ()) (Boolean True ()) ()
+    -- )
+  -- , ("[node leaf 5 leaf]", Node (Leaf ()) (Number 5 ()) (Leaf ()) ())
   ]
 
 termParserTests_negative :: [TestTree]
-termParserTests_negative =
-  map (\s -> negative term_ s)
-  [ ("0", Variable'  0)
-  ]
+termParserTests_negative = undefined
+--   map (\s -> negative term_ s)
+--   [ ("0", Variable'  0)
+--   ]
 
 
 -- * Dealing with lore in unit-tests.

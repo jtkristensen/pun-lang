@@ -78,14 +78,14 @@ simple =
   , try $ parens $ term_
   , info $
     brackets $
-      keyword "node" >>
+      symbol "node" >>
         Node <$> term_ <*> term_ <*> term_
   ]
 
 term_ :: Parser (Term Info)
 term_ =
   choice $
-    chainl1 simple (return $ app) :
+    chainl1 simple (return $ \f x -> Application f x $ about f x) :
    map info
   [ do _ <- keyword "case"
        t <- term_
@@ -103,35 +103,14 @@ term_ =
   , pre "\\" $ Lambda <$> name <*> (pre "->" term_)
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
-  , simple >>= operator
   ]
   where
-    neg t     a = If (t a) (Boolean False a) (Boolean True a) a
-    eq  t1 t2 a = If (Leq t1 t2 a) (Leq t2 t1 a) (Boolean False a) a
-    app f x     = Application f x (fst $ annotation f, snd $ annotation x)
-    operator t1 =
-      choice
-      [ do _  <- symbol "+"
-           t2 <- simple
-           return $ Plus t1 t2
-      , do _  <- symbol "<="
-           t2 <- simple
-           return $ Leq t1 t2
-      , do _  <- symbol ">"
-           t2 <- simple
-           return $ neg (Leq t1 t2)
-      , do _  <- symbol ">="
-           t2 <- simple
-           return $ Leq t2 t1
-      , do _  <- symbol "<"
-           t2 <- simple
-           return $ neg (Leq t2 t1)
-      , do _  <- symbol "=="
-           t2 <- simple
-           return $ eq t1 t2
-      , do _  <- symbol "/="
-           t2 <- simple
-           return $ neg (eq t1 t2)
+    about t1 t2   = (fst $ annotation t1, snd $ annotation t2)
+    operator      =
+      choice $
+      [ pre  "+" $ return $ \t1 t2 -> Plus t1 t2 $ about t1 t2
+      , pre "<=" $ return $ \t1 t2 -> Leq t1 t2 $ about t1 t2
+      , return $ \f x -> Application f x $ about f x
       ]
 
 -- -- * Utility:
