@@ -2,9 +2,6 @@
 
 module BST where
 
-import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.QuickCheck
--- import Test.QuickCheck
 import GHC.Generics
 
 -- ---------------------------------------------------
@@ -25,11 +22,12 @@ find k (Branch left k' v' right)
     | k == k' = Just v'
     | k >  k' = find k right
     | k <  k' = find k left
-find k _ = Nothing
+find _ _ = Nothing
 
-findMin :: Ord k => BST k v -> k
-findMin (Branch Leaf k' _ _) = k'
+findMin :: Ord k => BST k v -> Maybe k
+findMin (Branch Leaf k' _ _) = Just k'
 findMin (Branch left _  _ _) = findMin left
+findMin _ = Nothing
 
 nil :: BST k v
 nil = Leaf
@@ -52,11 +50,15 @@ delete k tree@(Branch left k' v' right)
 delete' :: Ord k => BST k v -> BST k v
 delete' (Branch Leaf _  _  right) = right
 delete' (Branch left _  _  Leaf ) = left
-delete' (Branch left k' v' right) = Branch left (findMin right) v' (delete k' right)
+delete' (Branch left _ v' right) = do
+    case findMin right of
+        (Just k) -> Branch left k v' (delete k right)
+        Nothing  -> Leaf
+delete' _ = Leaf
 
 union :: Ord k => BST k v -> BST k v -> BST k v
 union bst1 Leaf = bst1
-union bst1 bst2@(Branch left k' v' right) = do
+union bst1 bst2@(Branch _ k' v' _) = do
     let bst1' = insert k' v' bst1
     let bst2' = delete k'    bst2
     union bst1' bst2'
@@ -67,7 +69,7 @@ toList (Branch left k' v' right) = (toList left) ++ [(k', v')] ++ (toList right)
 
 keys :: BST k v -> [k]
 keys Leaf = []
-keys (Branch left k' v' right) = (keys left) ++ [k'] ++ (keys right)
+keys (Branch left k' _ right) = (keys left) ++ [k'] ++ (keys right)
 
-insertionExample = insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
-treeExample = Branch Leaf 1 "1" (Branch Leaf 3 "3" (Branch Leaf 5 "5" Leaf))
+-- insertionExample = insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
+-- treeExample = Branch Leaf 1 "1" (Branch Leaf 3 "3" (Branch Leaf 5 "5" Leaf))
