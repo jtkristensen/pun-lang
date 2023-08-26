@@ -103,39 +103,36 @@ term_ =
   , pre "\\" $ Lambda <$> name <*> (pre "->" term_)
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
-  , do t1 <- simple
-       _  <- symbol "+"
-       t2 <- simple
-       return $ Plus t1 t2
-  , do t1 <- simple
-       _  <- symbol "<="
-       t2 <- simple
-       return $ Leq t1 t2
-  , do t1 <- simple
-       _  <- symbol ">"
-       t2 <- simple
-       return $ neg (Leq t1 t2)
-  , do t1 <- simple
-       _  <- symbol ">="
-       t2 <- simple
-       return $ Leq t2 t1
-  , do t1 <- simple
-       _  <- symbol "<"
-       t2 <- simple
-       return $ neg (Leq t2 t1)
-  , do t1 <- simple
-       _  <- symbol "=="
-       t2 <- simple
-       return $ eq t1 t2
-  , do t1 <- simple
-       _  <- symbol "/="
-       t2 <- simple
-       return $ neg (eq t1 t2)
+  , simple >>= operator
   ]
   where
     neg t     a = If (t a) (Boolean False a) (Boolean True a) a
     eq  t1 t2 a = If (Leq t1 t2 a) (Leq t2 t1 a) (Boolean False a) a
     app f x     = Application f x (fst $ annotation f, snd $ annotation x)
+    operator t1 =
+      choice
+      [ do _  <- symbol "+"
+           t2 <- simple
+           return $ Plus t1 t2
+      , do _  <- symbol "<="
+           t2 <- simple
+           return $ Leq t1 t2
+      , do _  <- symbol ">"
+           t2 <- simple
+           return $ neg (Leq t1 t2)
+      , do _  <- symbol ">="
+           t2 <- simple
+           return $ Leq t2 t1
+      , do _  <- symbol "<"
+           t2 <- simple
+           return $ neg (Leq t2 t1)
+      , do _  <- symbol "=="
+           t2 <- simple
+           return $ eq t1 t2
+      , do _  <- symbol "/="
+           t2 <- simple
+           return $ neg (eq t1 t2)
+      ]
 
 -- -- * Utility:
 
