@@ -1,6 +1,3 @@
-
-add : integer -> integer -> integer.
-
+add : integer -> integer -> integer .
 add m n = m + n .
-
 property add-is-commutative m n . m + n == n + m .

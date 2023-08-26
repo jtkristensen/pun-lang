@@ -15,22 +15,47 @@ parserTests :: [TestTree]
 parserTests =
   [ testGroup "positive tests for parsing nats"  natParserTests_positive
   , testGroup "negative tests for parsing nats"  natParserTests_negative
+  , testGroup "positive tests for parsing ints"  intParserTests_positive
+  , testGroup "negative tests for parsing ints"  intParserTests_negative
   , testGroup "positive tests for parsing types" typeParserTests_positive
   , testGroup "negative tests for parsing types" typeParserTests_negative
   ]
 
 natParserTests_positive :: [TestTree]
 natParserTests_positive =
-  [ testCase "Natural  0"    $ (nat,  "0") `parsesTo`  0
-  , testCase "Natural 00"    $ (nat, "00") `parsesTo`  0
-  , testCase "Natural 10"    $ (nat, "10") `parsesTo` 10
+  map (\(s, v) -> testCase s $ (nat, s) `parsesTo` v)
+  [ ( "0",  0)
+  , ("00",  0)
+  , ("10", 10)
   ]
 
 natParserTests_negative :: [TestTree]
 natParserTests_negative =
-  [ testCase "Empty Natural" $ nat `shallNotParse` ""
-  , testCase "Leading space" $ nat `shallNotParse` " 00"
+  map (\s -> testCase ("'" ++ s ++ "' is not a nat") $ nat `shallNotParse` s)
+  [ ""
+  , " 00"
   ]
+
+intParserTests_positive :: [TestTree]
+intParserTests_positive =
+  map (\(s, v) -> testCase s $ (int, s) `parsesTo` v)
+  [ (   "0",   0)
+  , (  "00",   0)
+  , (  "10",  10)
+  , ( "~ 5",  -5)
+  , ( "~05",  -5)
+  , ( "~10", -10)
+  , ("~ 42", -42)
+  ]
+
+intParserTests_negative :: [TestTree]
+intParserTests_negative =
+  map (\s -> testCase ("'" ++ s ++ "' is not an int") $ int `shallNotParse` s)
+  [ ""
+  , "-0"
+  , " ~0"
+  ]
+
 
 typeParserTests_positive :: [TestTree]
 typeParserTests_positive =
@@ -61,6 +86,18 @@ typeParserTests_negative =
   , "integers"
   , "integer*b"
   , "(boolean -> boolean"
+  ]
+
+termParserTests_positive :: [TestTree]
+termParserTests_positive =
+  map (\(s, v) -> positive term_ s v)
+  [ ("0", Variable'  0)
+  ]
+
+termParserTests_negative :: [TestTree]
+termParserTests_negative =
+  map (\s -> negative term_ s)
+  [ ("0", Variable'  0)
   ]
 
 

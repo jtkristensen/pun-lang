@@ -10,8 +10,7 @@ import Data.Bifunctor (bimap, first, second)
 
 -- Shorthands.
 type Source      = String
-type ParserState = (Integer, [X])
-type Parser      = Parsec Source ParserState
+type Parser      = Parsec Source ()
 type Info        = (SourcePos, SourcePos)
 
 -- Should this go into the parser?
@@ -44,7 +43,7 @@ problems p = definitions' \+ declarations' \+ properties'
 -- * Usage:
 
 parseString :: Parser a -> Source -> Either ParseError a
-parseString p = runParser p (0, []) "<no-such-file>"
+parseString p = runParser p () "<no-such-file>"
 
 -- * Implementation:
 
@@ -69,31 +68,98 @@ type_ =
       , parens type_
       ]
 
+simple :: Parser (Term Info)
+simple =
+  choice
+  [ info $ int  >>= return . Number
+  , info $ bool >>= return . Boolean
+  , info $ symbol "leaf" >> return Leaf
+  , info $ name >>= return . Variable
+  , try $ parens $ term_
+  , info $
+    brackets $
+      keyword "node" >>
+        Node <$> term_ <*> term_ <*> term_
+  ]
+
 term_ :: Parser (Term Info)
-term_ = undefined
+term_ =
+  choice $
+    chainl1 simple (return $ app) :
+   map info
+  [ do _ <- keyword "case"
+       t <- term_
+       _ <- keyword "of"
+       _ <- symbol ";" >> symbol "leaf" >> symbol "->"
+       l <- term_
+       p <- symbol ";" >> term_
+       _ <- symbol "->"
+       r <- term_
+       return $ Case t l (p, r)
+  , do If <$> (pre "if" term_) <*> (pre "then" term_) <*> (pre "else" term_)
+  , parens $ Pair <$> term_ <*> (pre "," term_)
+  , pre "fst" (Fst <$> term_)
+  , pre "snd" (Snd <$> term_)
+  , pre "\\" $ Lambda <$> name <*> (pre "->" term_)
+  , pre "let" $ Let <$> name <*> pre "=" term_ <*> term_
+  , pre "rec" $ Rec <$> name <*> pre "." term_
+  , do t1 <- simple
+       _  <- symbol "+"
+       t2 <- simple
+       return $ Plus t1 t2
+  , do t1 <- simple
+       _  <- symbol "<="
+       t2 <- simple
+       return $ Leq t1 t2
+  , do t1 <- simple
+       _  <- symbol ">"
+       t2 <- simple
+       return $ neg (Leq t1 t2)
+  , do t1 <- simple
+       _  <- symbol ">="
+       t2 <- simple
+       return $ Leq t2 t1
+  , do t1 <- simple
+       _  <- symbol "<"
+       t2 <- simple
+       return $ neg (Leq t2 t1)
+  , do t1 <- simple
+       _  <- symbol "=="
+       t2 <- simple
+       return $ eq t1 t2
+  , do t1 <- simple
+       _  <- symbol "/="
+       t2 <- simple
+       return $ neg (eq t1 t2)
+  ]
+  where
+    neg t     a = If (t a) (Boolean False a) (Boolean True a) a
+    eq  t1 t2 a = If (Leq t1 t2 a) (Leq t2 t1 a) (Boolean False a) a
+    app f x     = Application f x (fst $ annotation f, snd $ annotation x)
 
 -- -- * Utility:
 
--- Supplies a fresh existential identifier.
-fresh :: Parser Name
-fresh =
-  do (i, xs) <- getState
-     let  x = "_x" ++ show i
-     y <- if   x `elem` xs
-          then modifyState (first (+1)) >> fresh
-          else return x
-     modifyState $ bimap (+1) (y:)
-     return y
+pre, post :: String -> Parser a -> Parser a
+pre  s p = symbol s >> p
+post s p = p >>= \x -> symbol s >> return x
 
 nat :: Parser Integer
 nat = lexeme $ read <$> many1 digit
 
--- Parses a name.
+int :: Parser Integer
+int = option id (symbol "~" >> return negate) <*> nat
+
+bool :: Parser Bool
+bool =
+  choice
+  [ symbol "true"  >> return True
+  , symbol "false" >> return False
+  ]
+
 name :: Parser Name
 name = try $
   do n <- lexeme $ many1 charAllowedInName
      when (isReserved n) $ fail $ "Unexpected keyword " ++ n
-     modifyState $ second (n:)
      return n
 
 -- Adds source position information to a parser that consumes it.
@@ -114,7 +180,13 @@ brackets = between (symbol "[") (symbol "]")
 
 -- These are reserved keywords in the Jeopardy language.
 reserved :: [Name]
-reserved = ["property", "if", "then", "else", "leaf", "node", "case", "of"]
+reserved =
+  [ "property"
+  , "if", "then", "else"
+  , "leaf", "node", "case", "of"
+  , "fst", "snd"
+  , "let", "rec"
+  ]
 
 -- Parses p and anny trailing whitespace following it.
 lexeme :: Parser a -> Parser a
