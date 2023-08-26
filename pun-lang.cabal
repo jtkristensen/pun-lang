@@ -64,6 +64,8 @@ test-suite pun-lang-test
       ParserTests
       PropertyCheckerTests
       Paths_pun_lang
+      BST
+      BSTTests
   hs-source-dirs:
       test
       benchmark/Haskell
