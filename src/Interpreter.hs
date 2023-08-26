@@ -1,10 +1,13 @@
 
-module Interpreter where
+module Interpreter (normalize, substitute) where
 
 import Syntax
 import Control.Monad.Reader
 
 type Runtime a = Reader (Program a)
+
+normalize :: Program a -> (Term a -> Term a)
+normalize p t = runReader (interpret t) p
 
 interpret :: Term a -> Runtime a (Term a)
 interpret  t | canonical t = return t
@@ -41,10 +44,10 @@ interpret (Application t1 t2 _) =
      interpret (f x)
 interpret (Let x t0 t1 a) =
   do notAtTopLevel (x, a)
-     interpret t0 >>= interpret . subst x t1
+     interpret t0 >>= interpret . substitute x t1
 interpret (Rec x t0 a) =
   do notAtTopLevel (x, a)
-     interpret (subst x t0 (Rec x t0 a))
+     interpret (substitute x t0 (Rec x t0 a))
 interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).
@@ -64,11 +67,11 @@ pair _              = error "expected a pair"
 function :: (Term a) -> Runtime a (Term a -> Term a)
 function (Lambda x t a) =
   do notAtTopLevel (x, a)
-     return $ subst x t
+     return $ substitute x t
 function _ = error "expected a function"
 
-subst :: X -> Term a -> (Term a -> Term a)
-subst x t v = -- computes t[v/x].
+substitute :: X -> Term a -> (Term a -> Term a)
+substitute x t v = -- computes t[v/x].
   case t of
     (Variable y  _) | x == y -> v
     (If t1 t2 t3 a)          -> If   (f t1) (f t2) (f t3)                    a
@@ -83,7 +86,7 @@ subst x t v = -- computes t[v/x].
     (Rec y t1    a) | x /= y -> Rec y (f t1)                                 a
     _                        -> t
   where
-    f = flip (subst x) v
+    f = flip (substitute x) v
 
 -- Todo : can be avoided by renaming toplevel stuff, or by extending the
 -- runtime monad to deal with variable bindings.
