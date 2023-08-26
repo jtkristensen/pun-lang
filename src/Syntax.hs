@@ -4,6 +4,7 @@ module Syntax where
 
 -- Abbreviations.
 type Name        = String
+type F           = Name
 type X           = Name
 type C           = Name
 type P           = Name
@@ -11,11 +12,18 @@ type Index       = Integer
 type T0        a = Term a
 type T1        a = Term a
 type T2        a = Term a
+type Left      a = Term a
+type Right     a = Term a
+type Key         = Type
+type Value       = Type
+type Leaf      a = Term a
+type Node      a = (Pattern a, Term a)
+type Pattern   a = Term a
 
 data Program a
-  = Declaration X     Type     (Program a)
-  | Definition  X     (Term a) (Program a)
-  | Property    P [X] (Term a) (Program a)
+  = Declaration X           Type    (Program a)
+  | Definition  F          (Term a) (Program a)
+  | Property    P [(X, a)] (Term a) (Program a)
   | EndOfProgram
   deriving (Functor, Eq, Show)
 
@@ -25,11 +33,15 @@ data Type
   | Boolean'
   | Type :*: Type
   | Type :->: Type
+  | BST Key Value
   deriving (Eq, Show)
 
 data Term a =
     Number    Integer                 a
   | Boolean   Bool                    a
+  | Leaf                              a
+  | Node (Left a) (T0 a) (Right a)    a
+  | Case (T0 a) (Leaf a) (Node a)     a
   | Variable  Name                    a
   | If          (T0 a) (T1 a) (T2 a)  a
   | Plus        (T0 a) (T1 a)         a
@@ -62,9 +74,12 @@ instance Annotated Term where
   annotations (Snd      t0       a) = a : annotations t0
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
+  annotations (Leaf              a) = return a
+  annotations (Node      l t0  r a) = a : ([l, t0, r]    >>= annotations)
+  annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
   annotation  term                  = head $ annotations term
 
-definitions :: Program a -> [(X, Term a)]
+definitions :: Program a -> [(F, Term a)]
 definitions (Definition  x t rest) = (x, t) : definitions rest
 definitions (Declaration _ _ rest) = definitions rest
 definitions (Property  _ _ _ rest) = definitions rest
@@ -76,8 +91,16 @@ declarations (Declaration x t rest) = (x, t) : declarations rest
 declarations (Property  _ _ _ rest) = declarations rest
 declarations _                      = mempty
 
-properties :: Program a -> [(P, ([X], Term a))]
+properties :: Program a -> [(P, ([(X, a)], Term a))]
 properties (Definition  _ _ rest) = properties rest
 properties (Declaration _ _ rest) = properties rest
 properties (Property  p x t rest) = (p, (x, t)) : properties rest
 properties _                      = mempty
+
+indicies :: Type -> [Index]
+indicies (Variable' a)  = [a]
+indicies  Integer'      = []
+indicies  Boolean'      = []
+indicies (t1 :*:   t2)  = indicies t1 <> indicies t2
+indicies (t1 :->:  t2)  = indicies t1 <> indicies t2
+indicies (BST     _ _)  = []
