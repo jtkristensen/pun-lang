@@ -49,6 +49,10 @@ interpret (Let x t0 t1 a) =
 interpret (Rec x t0 a) =
   do notAtTopLevel (x, a)
      interpret (substitute x t0 (Rec x t0 a))
+-- TODO: Should Leaf be canonical?
+interpret (Leaf a) = return $ Leaf a
+interpret (Node l t0 r a) = undefined
+interpret (Case t0 l (p, t) a) = undefined
 interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).
