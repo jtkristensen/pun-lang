@@ -1,6 +1,6 @@
 import Test.Tasty
 
--- import ParserTests
+import ParserTests
 import PropertyCheckerTests
 
 main :: IO ()
@@ -10,7 +10,9 @@ tests :: TestTree
 tests =
   testGroup "Pun-lang - Main Test Suite."
     [
-      testGroup "Property checker : "
+      testGroup "Property checker :"
         [ generateGenerator_tests
         ]
+    , testGroup "Parser :"
+        parserTests
     ]

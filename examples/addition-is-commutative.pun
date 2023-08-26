@@ -1,0 +1,6 @@
+
+add : Integer -> Integer -> Integer .
+
+add m n = m + n .
+
+property +-is-commutative m n . m + n == n + m .
