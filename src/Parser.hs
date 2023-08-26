@@ -48,6 +48,27 @@ parseString p = runParser p (0, []) "<no-such-file>"
 
 -- * Implementation:
 
+type_ :: Parser Type
+type_ =
+  choice
+  [ try $ type' >>= \t1 -> symbol "->" >> (t1 :->:) <$> type_
+  , type'
+  ]
+  where
+    type'  =
+      choice
+      [ try $ parens $ type'' >>= \t1 -> symbol  "," >> (t1  :*:) <$> type_
+      , type''
+      ]
+    type'' =
+      choice
+      [ symbol "integer" >> return Integer'
+      , symbol "boolean" >> return Boolean'
+      , symbol "bst" >> BST <$> type' <*> type'
+      , Variable' <$> nat
+      , parens type_
+      ]
+
 term_ :: Parser (Term Info)
 term_ = undefined
 
@@ -63,6 +84,9 @@ fresh =
           else return x
      modifyState $ bimap (+1) (y:)
      return y
+
+nat :: Parser Integer
+nat = lexeme $ read <$> many1 digit
 
 -- Parses a name.
 name :: Parser Name
@@ -90,7 +114,7 @@ brackets = between (symbol "[") (symbol "]")
 
 -- These are reserved keywords in the Jeopardy language.
 reserved :: [Name]
-reserved = ["main", "data", "invert", "case", "of"]
+reserved = ["property", "if", "then", "else", "leaf", "node", "case", "of"]
 
 -- Parses p and anny trailing whitespace following it.
 lexeme :: Parser a -> Parser a
