@@ -64,6 +64,16 @@ prop_InsertPostSameKey k v t = prop_InsertPost k v t k
 prop_UnionPost :: Tree -> Tree -> Key -> Property
 prop_UnionPost t t' k = find k (union t t') === (find k t <|> find k t')
 
+-- ------------------ Metamorphic properties  ------------------
+(~) :: Tree -> Tree -> Property
+t1 ~ t2 = toList t1 === toList t2
+
+prop_InsertInsert :: (Key, Val) -> (Key, Val) -> Tree -> Property
+prop_InsertInsert (k, v) (k', v') t =
+  (insert k v (insert k' v' t))
+  ~
+  (if k == k' then insert k v t else insert k' v' (insert k v t))
+
 bst_tests :: TestTree
 bst_tests =
   testGroup "Properties: "
@@ -91,5 +101,10 @@ bst_tests =
       prop_InsertPostSameKey,
       testProperty "Union post condition" $
       prop_UnionPost
+    ],
+    testGroup "Metamorphic properties: "
+    [ testProperty ("Inserting twice gives same keys and values " ++
+                   "regardless of the insertion order ") $
+      prop_InsertInsert
     ]
   ]
