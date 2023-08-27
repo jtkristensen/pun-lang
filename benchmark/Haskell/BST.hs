@@ -35,7 +35,7 @@ nil = Leaf
 insert :: Ord k => k -> v -> BST k v -> BST k v
 insert k v Leaf = Branch (Leaf) k v (Leaf)
 insert k v (Branch left k' v' right)
-    | k == k' = Branch left              k' v' right
+    | k == k' = Branch left              k' v  right
     | k <  k' = Branch (insert k v left) k' v' right
     | k >  k' = Branch left              k' v' (insert k v right)
 insert k v _  = Branch (Leaf) k v (Leaf)
@@ -50,17 +50,21 @@ delete k tree@(Branch left k' v' right)
 delete' :: Ord k => BST k v -> BST k v
 delete' (Branch Leaf _  _  right) = right
 delete' (Branch left _  _  Leaf ) = left
-delete' (Branch left _ v' right) = do
+delete' (Branch left _ _ right) = do
     case findMin right of
-        (Just k) -> Branch left k v' (delete k right)
-        Nothing  -> Leaf
+        (Just k) -> 
+            case find k right of
+                (Just v) -> Branch left k v (delete k right)
+                Nothing -> Leaf
+        Nothing -> Leaf
 delete' _ = Leaf
 
 union :: Ord k => BST k v -> BST k v -> BST k v
 union bst1 Leaf = bst1
-union bst1 bst2@(Branch _ k' v' _) = do
-    let bst1' = insert k' v' bst1
-    let bst2' = delete k'    bst2
+union Leaf bst2 = bst2
+union bst1@(Branch _ k' v' _) bst2 = do
+    let bst1' = delete k' bst1
+    let bst2' = insert k' v' bst2
     union bst1' bst2'
 
 toList :: BST k v -> [(k, v)]
