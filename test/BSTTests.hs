@@ -122,7 +122,18 @@ prop_ShrinkEquivs (t :~: t') =
   where t ~ t' = toList t == toList t'
 
 -- ------------------ Inductive testing  ------------------
--- TODO
+insertions :: Tree -> [(Key, Val)]
+insertions Leaf = []
+insertions (Branch l k v r) = (k, v) : insertions l ++ insertions r
+
+prop_InsertComplete :: Tree -> Property
+prop_InsertComplete t = t === foldl (flip $ uncurry insert) nil (insertions t)
+
+prop_InsertCompleteForDelete :: Key -> Tree -> Property
+prop_InsertCompleteForDelete k t = prop_InsertComplete (delete k t)
+
+prop_InsertCompleteForUnion :: Tree -> Tree -> Property
+prop_InsertCompleteForUnion t t' = prop_InsertComplete (union t t')
 
 -- ------------------ Model-based properties  ------------------
 deleteKey :: Key -> [(Key, Val)] -> [(Key, Val)]
@@ -195,6 +206,14 @@ bst_tests =
       prop_Equivs,
       testProperty "Shrink preserves equivalence" $
       prop_ShrinkEquivs
+    ],
+    testGroup "Inductive testing: "
+    [ testProperty "Insertion complete" $
+      prop_InsertComplete,
+      testProperty "Insert complete for delete" $
+      prop_InsertCompleteForDelete,
+      testProperty "Insert complete for union" $
+      prop_InsertCompleteForUnion
     ],
     testGroup "Model-based properties: "
     [ testProperty "Nil model" $
