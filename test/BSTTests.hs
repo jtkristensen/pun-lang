@@ -173,7 +173,7 @@ bst_tests =
     testGroup "Post conditions: "
     [ testProperty "Find key after inserting it" $
       prop_FindPostPresent,
-      testProperty "Do not find key after deleting it" $
+      testProperty "Cannot find key after deleting it" $
       prop_FindPostAbsent,
       testProperty "Insert delete post condition" $
       prop_InsertDeleteComplete,
@@ -185,8 +185,7 @@ bst_tests =
       prop_UnionPost
     ],
     testGroup "Metamorphic properties: "
-    [ testProperty ("Inserting twice gives same keys and values " ++
-                   "regardless of the insertion order ") $
+    [ testProperty ("Insert twice") $
       prop_InsertInsert,
       testProperty "Insert delete"  $
       prop_InsertDelete,
