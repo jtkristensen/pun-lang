@@ -5,6 +5,10 @@ module BSTTests where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck
+-- Data.List for using nubBy
+import Data.List as L hiding (insert, delete, find, union)
+-- Data.Function for using the `on` operator
+import Data.Function
 -- Control.Applicative for using <|>
 import Control.Applicative
 import BST
@@ -84,6 +88,39 @@ prop_InsertUnion :: (Key, Val) -> Tree -> Tree -> Property
 prop_InsertUnion (k, v) t t' =
   (insert k v (union t t')) ~ union (insert k v t) t'
 
+-- ------------------ Preservation of equivalence  ------------------
+data Equivs k v = (BST k v) :~: (BST k v) deriving Show
+
+instance (Arbitrary k, Arbitrary v, Ord k) => Arbitrary (Equivs k v) where
+  arbitrary = do
+    kvs  <- L.nubBy ((==) `on` fst) <$> arbitrary
+    kvs' <- shuffle kvs
+    return (tree kvs :~: tree kvs')
+    where tree = foldr (uncurry insert) nil
+  -- TODO: write shrinker
+  -- shrink (t1 :~: t2) =
+
+prop_InsertPreservesEquiv :: Key -> Val -> Equivs Key Val -> Property
+prop_InsertPreservesEquiv k v (t :~: t') = (insert k v t) ~ (insert k v t')
+
+prop_DeletePreservesEquiv :: Key -> Equivs Key Val -> Property
+prop_DeletePreservesEquiv k (t :~: t') = (delete k t) ~ (delete k t')
+
+prop_UnionPreservesEquiv :: Equivs Key Val -> Equivs Key Val -> Property
+prop_UnionPreservesEquiv (t1 :~: t1') (t2 :~: t2') = (union t1 t2) ~ (union t1' t2')
+
+prop_FindPreservesEquiv :: Key -> Equivs Key Val -> Property
+prop_FindPreservesEquiv k (t :~: t') = find k t === find k t'
+
+prop_Equivs :: Equivs Key Val -> Property
+prop_Equivs (t :~: t') = t ~ t'
+
+-- TODO: check warning where t and t' shadow previous bindings
+prop_ShrinkEquivs :: Equivs Key Val -> Property
+prop_ShrinkEquivs (t :~: t') =
+  t ~ t' ==> all (\(t :~: t') -> t ~ t') (shrink (t :~: t'))
+  where t ~ t' = toList t == toList t'
+
 bst_tests :: TestTree
 bst_tests =
   testGroup "Properties: "
@@ -120,5 +157,19 @@ bst_tests =
       prop_InsertDelete,
       testProperty "Insert union" $
       prop_InsertUnion
+    ],
+    testGroup "Preservation of equivalence: "
+    [ testProperty "Insert preserves equivalence" $
+      prop_InsertPreservesEquiv,
+      testProperty "Delete preserves equivalence" $
+      prop_DeletePreservesEquiv,
+      testProperty "Union preserves equivalence" $
+      prop_UnionPreservesEquiv,
+      testProperty "Find preserves equivalence" $
+      prop_FindPreservesEquiv,
+      testProperty "Equivalence" $
+      prop_Equivs,
+      testProperty "Shrink preserves equivalence" $
+      prop_ShrinkEquivs
     ]
   ]
