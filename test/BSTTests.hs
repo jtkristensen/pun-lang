@@ -6,7 +6,7 @@ module BSTTests where
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck
 -- Data.List for using nubBy
-import Data.List as L hiding (insert, delete, find, union)
+import qualified Data.List as L
 -- Data.Function for using the `on` operator
 import Data.Function
 -- Control.Applicative for using <|>
@@ -121,6 +121,30 @@ prop_ShrinkEquivs (t :~: t') =
   t ~ t' ==> all (\(t :~: t') -> t ~ t') (shrink (t :~: t'))
   where t ~ t' = toList t == toList t'
 
+-- ------------------ Inductive testing  ------------------
+-- TODO
+
+-- ------------------ Model-based properties  ------------------
+deleteKey :: Key -> [(Key, Val)] -> [(Key, Val)]
+deleteKey k = filter (((/=) k) . fst)
+
+prop_NilModel :: Property
+prop_NilModel = toList (nil :: Tree) === []
+
+prop_InsertModel :: Key -> Val -> Tree -> Property
+prop_InsertModel k v t =
+  toList (insert k v t) === L.insert (k, v) (deleteKey k $ toList t)
+
+prop_DeleteModel :: Key -> Val -> Tree -> Property
+prop_DeleteModel k _ t = toList (delete k t) === deleteKey k (toList t)
+
+prop_UnionModel :: Tree -> Tree -> Property
+prop_UnionModel t t' =
+  toList (union t t') === L.sort (L.unionBy ((==) `on` fst) (toList t) (toList t'))
+
+prop_FindModel :: Key -> Tree -> Property
+prop_FindModel k t = find k t === L.lookup k (toList t)
+
 bst_tests :: TestTree
 bst_tests =
   testGroup "Properties: "
@@ -171,5 +195,17 @@ bst_tests =
       prop_Equivs,
       testProperty "Shrink preserves equivalence" $
       prop_ShrinkEquivs
+    ],
+    testGroup "Model-based properties: "
+    [ testProperty "Nil model" $
+      prop_NilModel,
+      testProperty "Insert model" $
+      prop_InsertModel,
+      testProperty "Delete model" $
+      prop_DeleteModel,
+      testProperty "Union model" $
+      prop_UnionModel,
+      testProperty "Find model" $
+      prop_FindModel
     ]
   ]
