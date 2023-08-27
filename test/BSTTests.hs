@@ -74,6 +74,12 @@ prop_InsertInsert (k, v) (k', v') t =
   ~
   (if k == k' then insert k v t else insert k' v' (insert k v t))
 
+prop_InsertDelete :: (Key, Val) -> Key -> Tree -> Property
+prop_InsertDelete (k, v) k' t = 
+  (insert k v (delete k' t))
+  ~
+  if k == k' then insert k v t else delete k' (insert k v t)
+
 bst_tests :: TestTree
 bst_tests =
   testGroup "Properties: "
@@ -105,6 +111,8 @@ bst_tests =
     testGroup "Metamorphic properties: "
     [ testProperty ("Inserting twice gives same keys and values " ++
                    "regardless of the insertion order ") $
-      prop_InsertInsert
+      prop_InsertInsert,
+      testProperty "Insert delete"  $
+      prop_InsertDelete
     ]
   ]
