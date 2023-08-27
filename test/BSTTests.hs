@@ -5,6 +5,8 @@ module BSTTests where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck
+-- Control.Applicative for using <|>
+import Control.Applicative
 import BST
 
 instance (Ord k, Arbitrary k, Arbitrary v) => Arbitrary (BST k v) where
@@ -39,15 +41,55 @@ prop_ArbitraryValid t = valid t
 prop_ShrinkValid :: Tree -> Property
 prop_ShrinkValid t = valid t ==> filter (not . valid) (shrink t) === []
 
+-- ------------------ Post conditions  ------------------
+prop_FindPostPresent :: Key -> Val -> Tree -> Property
+prop_FindPostPresent k v t = find k (insert k v t) === Just v
+
+prop_FindPostAbsent :: Key -> Tree -> Property
+prop_FindPostAbsent k t = find k (delete k t) === Nothing
+
+prop_InsertDeleteComplete :: Key -> Tree -> Property
+prop_InsertDeleteComplete k t =
+  case find k t of
+    Nothing -> t === delete k t
+    Just v  -> t === insert k v t
+
+prop_InsertPost :: Key -> Val -> Tree -> Key -> Property
+prop_InsertPost k v t k' =
+  find k' (insert k v t) === if k == k' then Just v else find k' t
+
+prop_InsertPostSameKey :: Key -> Val -> Tree -> Property
+prop_InsertPostSameKey k v t = prop_InsertPost k v t k
+
+prop_UnionPost :: Tree -> Tree -> Key -> Property
+prop_UnionPost t t' k = find k (union t t') === (find k t <|> find k t')
+
 bst_tests :: TestTree
 bst_tests =
-  testGroup "Binary search tree :"
-  [ testProperty "Nil is valid" $
-    prop_NilValid,
-    testProperty "Insert is valid" $
-    prop_InsertValid,
-    testProperty "Delete is valid" $
-    prop_DeleteValid,
-    testProperty "Union is valid" $
-    prop_UnionValid
+  testGroup "Properties: "
+  [
+    testGroup "Validity properties: "
+    [ testProperty "Nil is valid" $
+      prop_NilValid,
+      testProperty "Insert is valid" $
+      prop_InsertValid,
+      testProperty "Delete is valid" $
+      prop_DeleteValid,
+      testProperty "Union is valid" $
+      prop_UnionValid
+    ],
+    testGroup "Post conditions: "
+    [ testProperty "Find key after inserting it" $
+      prop_FindPostPresent,
+      testProperty "Do not find key after deleting it" $
+      prop_FindPostAbsent,
+      testProperty "Insert delete post condition" $
+      prop_InsertDeleteComplete,
+      testProperty "Insert post condition" $
+      prop_InsertPost,
+      testProperty "Insert same key post condition" $
+      prop_InsertPostSameKey,
+      testProperty "Union post condition" $
+      prop_UnionPost
+    ]
   ]
