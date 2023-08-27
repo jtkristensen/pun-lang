@@ -49,7 +49,7 @@ newtype AcyclicIndices = AcyclicIndices CurrentIndices
 instance Arbitrary AcyclicIndices where
   arbitrary = 
     do length'   <- choose (0, 100)
-       let indices = [(index, Variable' index') | index <- [0..length'], index' <- [index + 1]]
+       indices   <- shuffle ([(index, Variable' index') | index <- [0..length'], index' <- [index + 1]])
        canonical <- elements [Integer', Boolean']
        return $ AcyclicIndices (indices ++ [(length' + 1, canonical)])
 
