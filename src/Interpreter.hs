@@ -2,12 +2,11 @@
 module Interpreter (normalize, substitute) where
 
 import Syntax
--- import TypeInference hiding (substitute)
+import Unification
 import Control.Monad.Reader
 import Control.Monad (when)
 
 type Runtime a = Reader (Program a)
-type Unifier a = [(Name, Pattern a)]
 
 normalize :: Program a -> (Term a -> Term a)
 normalize p t = runReader (interpret t) p
@@ -53,8 +52,20 @@ interpret (Rec x t0 a) =
      interpret (substitute x t0 (Rec x t0 a))
 -- TODO: Should Leaf be canonical?
 interpret (Leaf a) = return $ Leaf a
-interpret (Node l t0 r a) = undefined
-interpret (Case t0 l (p, t) a) = undefined
+interpret (Node l t0 r a) =
+  do l'  <- interpret l
+     t0' <- interpret t0
+     r'  <- interpret r
+     return $ Node l' t0' r' a
+interpret (Case t0 t1 (t2, t3) a) =
+  do v <- interpret t0
+     case v of
+       (Leaf _) -> interpret t1
+       _        ->
+         case unify v t2 of
+           Just u  -> substituteWithUnifier u t3
+           Nothing -> error $ "non-exhaustive or illegal pattern " ++
+                              show t2 ++ " in case-statement"
 interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).
@@ -95,6 +106,11 @@ substitute x t v = -- computes t[v/x].
   where
     f = flip (substitute x) v
 
+substituteWithUnifier :: [(Name, Term a)] -> Term a -> Term a
+substituteWithUnifier ((x, v):rest) t =
+  substituteWithUnifier rest (substitute x t v)
+substituteWithUnifier [] t = t
+
 -- Todo : can be avoided by renaming toplevel stuff, or by extending the
 -- runtime monad to deal with variable bindings.
 notAtTopLevel :: (X, a) -> Runtime a ()
@@ -102,46 +118,3 @@ notAtTopLevel (x, _) =
   do program <- ask
      when (x `elem` (fst <$> definitions program)) $
        error $ "the name " ++ x ++ "shadows the top level declaration of " ++ x
-       
--- Term unification (for case-statements)
-unify :: Term a -> Term a -> Maybe (Unifier a)
-unify (Number v _) (Number v' _)
-  | v == v' = return []
-unify p@(Plus  t0 t1 t) (Number v _) =
-  do let (Number v' _) = simpleEval p
-     if v == v' then return [] else Nothing
-unify (Boolean v _) (Boolean v' _)
-  | v == v' = return $ []
-unify p@(Leq t0 t1 a) (Boolean  v _) =
-  do let (Boolean v' _) = simpleEval p
-     if v == v' then return [] else Nothing
-unify (Variable x t) p
-  | not (p `contains` x) = return $ p `substitutes` x
--- unify (Leaf        _) (Leaf        _) = return $ []
--- unify (Variable n1 _) (Variable n2 _) | n1 == n2 = return $ []
--- unify (Node l1 t0 r1 _) (Node l2 t0' r2 _) =
---   do unify l1  l2
---      unify t0  t0'
---      unify r1  r2
--- unify (If t0 t1 t2) (If )
-unify _ _ = Nothing
-
-contains :: Pattern a -> X -> Bool
-contains (Variable y _) x = x == y
-contains (Pair t0 t1 _) x = t0 `contains` x || t1 `contains` x
-contains _              _ = False
-
-substitutes :: Pattern a -> X -> Unifier a
-substitutes p x = return $ (x, p)
-
-simpleEval :: Term a -> Term a
-simpleEval (Plus t0 t1 a) =
-  case (simpleEval t0, simpleEval t1) of
-    ((Number v _), (Number v' _)) -> Number (v + v') a
-    _ -> error "expected two integers"
-simpleEval (Leq t0 t1 a) =
-  case (simpleEval t0, simpleEval t1) of
-    ((Number v _), (Number v' _)) -> Boolean (v <= v') a
-    _ -> error "expected two integers"
-simpleEval t = t
->>>>>>> 1a8c110 (Unification attempt for integers, booleans, and variables)
