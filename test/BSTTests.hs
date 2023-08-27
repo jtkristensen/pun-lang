@@ -80,6 +80,10 @@ prop_InsertDelete (k, v) k' t =
   ~
   if k == k' then insert k v t else delete k' (insert k v t)
 
+prop_InsertUnion :: (Key, Val) -> Tree -> Tree -> Property
+prop_InsertUnion (k, v) t t' =
+  (insert k v (union t t')) ~ union (insert k v t) t'
+
 bst_tests :: TestTree
 bst_tests =
   testGroup "Properties: "
@@ -113,6 +117,8 @@ bst_tests =
                    "regardless of the insertion order ") $
       prop_InsertInsert,
       testProperty "Insert delete"  $
-      prop_InsertDelete
+      prop_InsertDelete,
+      testProperty "Insert union" $
+      prop_InsertUnion
     ]
   ]
