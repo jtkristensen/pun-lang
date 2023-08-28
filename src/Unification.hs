@@ -11,6 +11,11 @@ unify (Variable x _) (Variable x' _) | x == x' = return []
 unify (Variable x _) p
   | isPattern p && not (p `contains` x) = return $ p `substitutes` x
 unify (Pair t0 t1 _) (Pair t0' t1' _) = unify t0 t0' `mappend` unify t1 t1'
+unify (Leaf       _) (Leaf         _) = return $ []
+unify (Node l1 t0 r1 _) (Node l2 t0' r2 _) =
+  ((unify l1  l2)   `mappend`
+   (unify t0  t0')) `mappend`
+   (unify r1  r2)
 unify _ _ = error $ "expected a canonical term (but not function) and a pattern"
 
 isPattern :: Term a -> Bool
