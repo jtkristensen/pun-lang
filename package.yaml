@@ -47,7 +47,7 @@ tests:
     main:                Harness.hs
     source-dirs:
     - test
-    - benchmark/Haskell
+    - benchmark
     ghc-options:
     - -threaded
     - -rtsopts

@@ -68,7 +68,7 @@ test-suite pun-lang-test
       BSTTests
   hs-source-dirs:
       test
-      benchmark/Haskell
+      benchmark
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
