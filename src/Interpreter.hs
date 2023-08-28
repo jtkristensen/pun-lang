@@ -57,7 +57,7 @@ interpret (Node l t0 r a) =
      t0' <- interpret t0
      r'  <- interpret r
      return $ Node l' t0' r' a
-interpret (Case t0 t1 (t2, t3) a) =
+interpret (Case t0 t1 (t2, t3) _) =
   do v <- interpret t0
      case v of
        (Leaf _) -> interpret t1

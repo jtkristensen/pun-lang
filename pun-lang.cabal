@@ -29,6 +29,7 @@ library
       PropertyChecker
       Syntax
       TypeInference
+      Unification
   other-modules:
       Paths_pun_lang
   hs-source-dirs:
