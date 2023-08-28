@@ -85,7 +85,7 @@ simple =
 term_ :: Parser (Term Info)
 term_ =
   choice $
-    chainl1 simple (return $ \f x -> Application f x $ about f x) :
+    chainl1 simple operator :
    map info
   [ do _ <- keyword "case"
        t <- term_
