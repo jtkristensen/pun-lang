@@ -3,6 +3,7 @@ module PropertyCheckerTests where
 import Syntax
 import PropertyChecker
 import TypeInference
+import Data.List (union)
 -- import Examples
 
 import Test.Tasty (TestTree, testGroup)
@@ -53,6 +54,16 @@ instance Arbitrary AcyclicIndices where
        canonical <- elements [Integer', Boolean']
        return $ AcyclicIndices (indices ++ [(length' + 1, canonical)])
 
+newtype AnalyseGenerator = AnalyseGenerator (Term Type, ([String], [String]))
+  deriving Show
+
+instance Arbitrary AnalyseGenerator where
+  arbitrary =
+    do t    <- aType
+       term <- generateGenerator mempty t
+       let analysis = used term mempty mempty
+       return $ AnalyseGenerator (term, analysis)
+
 generateGenerator_tests :: TestTree
 generateGenerator_tests =
   testGroup "`generateGenerator` tests :"
@@ -83,8 +94,90 @@ generateGenerator_tests =
     \(AcyclicIndices indices) ->
       let solution = resolve 0 indices
       in
-        (solution == Integer' || solution == Boolean')
+        (solution == Integer' || solution == Boolean'),
+    testProperty "Analysing terms that have been generated" $
+    \(AnalyseGenerator (_, (declaredNames, usedNames))) ->
+      label ("Used names: " ++ show (occurrence declaredNames usedNames)) $ True
   ]
+
+occurrence :: [String] -> [String] -> String
+occurrence declaredNames usedNames
+  | (usedNames /= [] && declaredNames /= []) = "No names were declared."
+  | (usedNames /= [])                        = "There were occurrences of declared names."
+  | otherwise                                = "There were declared names but no occurrences."
+
+threeTerms :: Term Type -> Term Type -> Term Type -> [String] -> [String] -> ([String], [String])
+threeTerms t1 t2 t3 declaredNames usedNames = do
+  let (d1, u1) = (used   t1 declaredNames usedNames)
+  let (d2, u2) = (used   t2 declaredNames usedNames)
+  let (d3, u3) = (used   t3 declaredNames usedNames)
+  let declaredNames' = declaredNames `union` d1 `union` d2 `union` d3
+  let usedNames'     = usedNames     `union` u1 `union` u2 `union` u3
+  (declaredNames', usedNames')
+
+twoTerms :: Term Type -> Term Type -> [String] -> [String] -> ([String], [String])
+twoTerms t1 t2 declaredNames usedNames = do
+  let (d1, u1) = (used   t1 declaredNames usedNames)
+  let (d2, u2) = (used   t2 declaredNames usedNames)
+  let declaredNames' = declaredNames `union` d1 `union` d2
+  let usedNames'     = usedNames     `union` u1 `union` u2
+  (declaredNames', usedNames')
+
+oneTerm :: Term Type -> [String] -> [String] -> ([String], [String])
+oneTerm t declaredNames usedNames = do
+  let (d, u) = (used t declaredNames usedNames)
+  let declaredNames' = declaredNames `union` d
+  let usedNames'     = usedNames     `union` u
+  (declaredNames', usedNames')
+
+-- used (Let "x" (Number 5 Integer') (Plus (Variable "x" Integer') (Number 3 Integer') Integer') Integer') [] []
+used :: Term Type -> [String] -> [String] -> ([String], [String])
+used (Number      _ _) declaredNames usedNames = (declaredNames, usedNames)
+used (Boolean     _ _) declaredNames usedNames = (declaredNames, usedNames)
+used (Variable    n _) declaredNames usedNames = 
+  case (n `elem` declaredNames) of
+    True -> do
+      let usedNames' = usedNames ++ [n]
+      (declaredNames, usedNames')
+    False -> (declaredNames, usedNames)
+used (If cond t1 t2 _) declaredNames usedNames =
+  threeTerms cond t1 t2 declaredNames usedNames
+used (Plus t1 t2 _) declaredNames usedNames =
+  twoTerms t1 t2 declaredNames usedNames
+used (Leq t1 t2 _) declaredNames usedNames =
+  twoTerms t1 t2 declaredNames usedNames
+used (Pair t1 t2 _) declaredNames usedNames = 
+  twoTerms t1 t2 declaredNames usedNames
+used (Fst t _) declaredNames usedNames =
+  oneTerm t declaredNames usedNames
+used (Snd t _) declaredNames usedNames =
+  oneTerm t declaredNames usedNames
+used (Lambda n t _) declaredNames usedNames = do
+  case (n `elem` declaredNames) of
+    True -> do
+      let usedNames' = usedNames ++ [n]
+      (declaredNames, usedNames')
+    False -> do
+      let (d, u) = (used   t declaredNames usedNames)
+      let declaredNames' = declaredNames `union` d
+      let usedNames' = usedNames     `union` u
+      (declaredNames', usedNames')
+used (Application t1 t2 _) declaredNames usedNames = 
+  twoTerms t1 t2 declaredNames usedNames
+used (Let n t1 t2 _) declaredNames usedNames = do
+  let declaredNames' = declaredNames `union` [n]
+  let (d1, u1) = (used   t1 declaredNames' usedNames)
+  let (d2, u2) = (used   t2 declaredNames' usedNames)
+  let declaredNames'' = declaredNames' `union` d1 `union` d2
+  let usedNames'     = usedNames     `union` u1 `union` u2
+  (declaredNames'', usedNames')
+used (Rec n t _) declaredNames usedNames = do
+  let declaredNames' = declaredNames `union` [n]
+  let (d, u) = (used   t declaredNames' usedNames)
+  let declaredNames'' = declaredNames' `union` d
+  let usedNames'     = usedNames     `union` u
+  (declaredNames'', usedNames')
+used ()
 
 -- Todo, we want to use more complicated types.
 -- Todo, should this actually live in `PropertyChecker`?
