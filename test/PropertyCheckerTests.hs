@@ -106,13 +106,12 @@ occurrence declaredNames usedNames
   | (usedNames /= [])                        = "There were occurrences of declared names."
   | otherwise                                = "There were declared names but no occurrences."
 
-threeTerms :: Term Type -> Term Type -> Term Type -> [String] -> [String] -> ([String], [String])
-threeTerms t1 t2 t3 declaredNames usedNames = do
-  let (d1, u1) = (used   t1 declaredNames usedNames)
-  let (d2, u2) = (used   t2 declaredNames usedNames)
-  let (d3, u3) = (used   t3 declaredNames usedNames)
-  let declaredNames' = declaredNames `union` d1 `union` d2 `union` d3
-  let usedNames'     = usedNames     `union` u1 `union` u2 `union` u3
+-- TODO: Refactor the code below
+oneTerm :: Term Type -> [String] -> [String] -> ([String], [String])
+oneTerm t declaredNames usedNames = do
+  let (d, u) = (used t declaredNames usedNames)
+  let declaredNames' = declaredNames `union` d
+  let usedNames'     = usedNames     `union` u
   (declaredNames', usedNames')
 
 twoTerms :: Term Type -> Term Type -> [String] -> [String] -> ([String], [String])
@@ -123,11 +122,13 @@ twoTerms t1 t2 declaredNames usedNames = do
   let usedNames'     = usedNames     `union` u1 `union` u2
   (declaredNames', usedNames')
 
-oneTerm :: Term Type -> [String] -> [String] -> ([String], [String])
-oneTerm t declaredNames usedNames = do
-  let (d, u) = (used t declaredNames usedNames)
-  let declaredNames' = declaredNames `union` d
-  let usedNames'     = usedNames     `union` u
+threeTerms :: Term Type -> Term Type -> Term Type -> [String] -> [String] -> ([String], [String])
+threeTerms t1 t2 t3 declaredNames usedNames = do
+  let (d1, u1) = (used   t1 declaredNames usedNames)
+  let (d2, u2) = (used   t2 declaredNames usedNames)
+  let (d3, u3) = (used   t3 declaredNames usedNames)
+  let declaredNames' = declaredNames `union` d1 `union` d2 `union` d3
+  let usedNames'     = usedNames     `union` u1 `union` u2 `union` u3
   (declaredNames', usedNames')
 
 -- used (Let "x" (Number 5 Integer') (Plus (Variable "x" Integer') (Number 3 Integer') Integer') Integer') [] []
@@ -177,7 +178,6 @@ used (Rec n t _) declaredNames usedNames = do
   let declaredNames'' = declaredNames' `union` d
   let usedNames'     = usedNames     `union` u
   (declaredNames'', usedNames')
-used ()
 
 -- Todo, we want to use more complicated types.
 -- Todo, should this actually live in `PropertyChecker`?
