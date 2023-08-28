@@ -60,6 +60,8 @@ canonical (Number  _     _) = True
 canonical (Boolean _     _) = True
 canonical (Pair    t1 t2 _) = canonical t1 && canonical t2
 canonical (Lambda  {}     ) = True
+canonical (Leaf          _) = True
+canonical (Node   l t0 r _) = all canonical [l, t0,r]
 canonical _                 = False
 
 -- Dealing with annotations.
@@ -110,7 +112,7 @@ indicies  Integer'      = []
 indicies  Boolean'      = []
 indicies (t1 :*:   t2)  = indicies t1 <> indicies t2
 indicies (t1 :->:  t2)  = indicies t1 <> indicies t2
-indicies (BST     _ _)  = []
+indicies (BST   t1 t2)  = indicies t1 <> indicies t2
 
 instance Semigroup (Program a) where
   (Declaration x t p1) <> p2 = Declaration x  t (p1 <> p2)
@@ -121,3 +123,4 @@ instance Semigroup (Program a) where
 instance Monoid (Program a) where
   mempty  = EndOfProgram
   mappend = (<>)
+

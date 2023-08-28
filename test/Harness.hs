@@ -2,6 +2,7 @@ import Test.Tasty
 
 import ParserTests
 import PropertyCheckerTests
+import InterpreterTests
 
 main :: IO ()
 main = defaultMain tests
@@ -15,4 +16,6 @@ tests =
         ]
     , testGroup "Parser :"
         parserTests
+    , testGroup "Interpreter :"
+        interpreter_tests
     ]
