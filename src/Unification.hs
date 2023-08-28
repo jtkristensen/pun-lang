@@ -16,7 +16,7 @@ unify (Node l1 t0 r1 _) (Node l2 t0' r2 _) =
   ((unify l1  l2)   `mappend`
    (unify t0  t0')) `mappend`
    (unify r1  r2)
-unify _ _ = error $ "expected a canonical term (but not function) and a pattern"
+unify _ _ = Nothing
 
 isPattern :: Term a -> Bool
 isPattern (Variable  _ _) = True
