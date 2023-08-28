@@ -6,7 +6,6 @@ import Data.List (nub, (\\))
 
 import Text.Parsec
 import Control.Monad  (void, when)
-import Data.Bifunctor (bimap, first, second)
 
 -- Shorthands.
 type Source      = String
@@ -75,11 +74,12 @@ simple =
   , info $ bool >>= return . Boolean
   , info $ symbol "leaf" >> return Leaf
   , info $ name >>= return . Variable
-  , try $ parens $ term_
+  , info $ try $ parens $ Pair <$> term_ <*> (pre "," term_)
+  , parens $ term_
   , info $
     brackets $
       symbol "node" >>
-        Node <$> term_ <*> term_ <*> term_
+        Node <$> simple <*> simple <*> simple
   ]
 
 term_ :: Parser (Term Info)
@@ -97,7 +97,6 @@ term_ =
        r <- term_
        return $ Case t l (p, r)
   , do If <$> (pre "if" term_) <*> (pre "then" term_) <*> (pre "else" term_)
-  , parens $ Pair <$> term_ <*> (pre "," term_)
   , pre "fst" (Fst <$> term_)
   , pre "snd" (Snd <$> term_)
   , pre "\\" $ Lambda <$> name <*> (pre "->" term_)
