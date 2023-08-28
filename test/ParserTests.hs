@@ -105,6 +105,15 @@ termParserTests_positive =
     )
   , ("[node leaf 5 leaf]", Node (Leaf ()) (Number 5 ()) (Leaf ()) ())
   , ("[node [ node leaf 3 leaf] (true, ~4) leaf]", Node (Node (Leaf ()) (Number 3 ()) (Leaf ()) ()) (Pair (Boolean True ()) (Number (-4) ()) ()) (Leaf ()) ())
+  , ("\\x -> \\f -> \\y -> f x y"
+    , (Lambda "x"
+         (Lambda "f"
+            (Lambda "y"
+               (Application
+                  (Application (Variable "f" ()) (Variable "x" ()) ())
+                (Variable "y" ()) ()) ()) ()) ()
+      )
+    )
   ]
 
 termParserTests_negative :: [TestTree]
