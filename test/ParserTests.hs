@@ -114,6 +114,22 @@ termParserTests_positive =
                 (Variable "y" ()) ()) ()) ()) ()
       )
     )
+  , ("case t of"   ++
+     "; leaf -> 5" ++
+     "; [node l1 true [node l2 false r2]] -> f l1 l2 r2"
+    , Case (Variable "t" ())
+      -- leaf -->
+        (Number 5 ())
+      (Node
+         (Variable "l1" ())
+         (Boolean True ())
+         (Node (Variable "l2" ()) (Boolean False ()) (Variable "r2" ()) ()) () ,
+      -- node -->
+       Application
+         (Application
+            (Application (Variable "f" ()) (Variable "l1" ()) ())
+               (Variable "l2" ()) ())
+         (Variable "r2" ()) ()) ())
   ]
 
 termParserTests_negative :: [TestTree]

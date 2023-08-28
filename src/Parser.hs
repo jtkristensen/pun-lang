@@ -91,8 +91,8 @@ term_ =
        t <- term_
        _ <- keyword "of"
        _ <- symbol ";" >> symbol "leaf" >> symbol "->"
-       l <- term_
-       p <- symbol ";" >> term_
+       l <- simple
+       p <- symbol ";" >> simple
        _ <- symbol "->"
        r <- term_
        return $ Case t l (p, r)
