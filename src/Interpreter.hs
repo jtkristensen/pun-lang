@@ -118,3 +118,4 @@ notAtTopLevel (x, _) =
   do program <- ask
      when (x `elem` (fst <$> definitions program)) $
        error $ "the name " ++ x ++ "shadows the top level declaration of " ++ x
+

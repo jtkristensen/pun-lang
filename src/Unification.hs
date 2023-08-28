@@ -2,7 +2,7 @@ module Unification where
 
 import Syntax
 
-type Unifier a = [(Name, Pattern a)]
+type Unifier a = [(Name, Term a)]
 
 unify :: Term a -> Pattern a -> Maybe (Unifier a)
 unify (Number v   _) (Number  v'  _) | v == v' = return []
