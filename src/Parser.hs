@@ -9,9 +9,10 @@ import Text.Parsec
 import Control.Monad  (void, when)
 
 -- Shorthands.
-type Source      = String
-type Parser      = Parsec Source ()
-type Info        = (SourcePos, SourcePos)
+type Source           = String
+type Parser           = Parsec Source ()
+type Info             = (SourcePos, SourcePos)
+type Transformation a = (a -> a)
 
 -- Should this go into the parser?
 data Problem =
@@ -113,19 +114,36 @@ term_ =
         , return $ \f x -> Application f x $ about f x
         ]
 
-declaration_ :: Parser (Program a)
-declaration_ = undefined
+declaration_ :: Parser (Transformation (Program Info))
+declaration_ =
+  do f <- name
+     _ <- symbol ":"
+     t <- type_
+     _ <- symbol "."
+     return $ Declaration f t
 
-definition_ :: Parser (Program a)
-definition_ = undefined
+definition_ :: Parser (Transformation (Program Info))
+definition_ =
+  do f <- name
+     _ <- symbol "="
+     t <- term_
+     _ <- symbol "."
+     return $ Definition f t
 
-property_ :: Parser (Program a)
-property_ = undefined
+property_ :: Parser (X, Info) -> Parser (Transformation (Program Info))
+property_ xa =
+  do _  <- keyword "property"
+     p  <- name
+     xs <- many xa
+     _  <- symbol "."
+     t  <- term_
+     _  <- symbol "."
+     return $ Property p xs t
 
-program_ :: Parser (Program a)
+program_ :: Parser (Program Info)
 program_ =
-  foldl (<>) EndOfProgram <$>
-  many (choice [ declaration_, definition_, property_ ])
+  foldr (\a b -> a b) EndOfProgram <$>
+  many (choice [ try declaration_, definition_, property_ (info ((,) <$> name))])
 
 -- -- * Utility:
 
