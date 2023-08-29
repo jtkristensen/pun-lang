@@ -93,7 +93,7 @@ term_ =
        t <- term_
        _ <- keyword "of"
        _ <- symbol ";" >> symbol "leaf" >> symbol "->"
-       l <- simple
+       l <- term_
        p <- symbol ";" >> simple
        _ <- symbol "->"
        r <- term_
