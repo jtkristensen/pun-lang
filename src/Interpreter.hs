@@ -50,7 +50,6 @@ interpret (Let x t0 t1 a) =
 interpret (Rec x t0 a) =
   do notAtTopLevel (x, a)
      interpret (substitute x t0 (Rec x t0 a))
--- TODO: Should Leaf be canonical?
 interpret (Leaf a) = return $ Leaf a
 interpret (Node l t0 r a) =
   do l'  <- interpret l
