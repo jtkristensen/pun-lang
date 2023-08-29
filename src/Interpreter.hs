@@ -2,10 +2,12 @@
 module Interpreter (normalize, substitute) where
 
 import Syntax
+-- import TypeInference hiding (substitute)
 import Control.Monad.Reader
 import Control.Monad (when)
 
 type Runtime a = Reader (Program a)
+type Unifier a = [(Name, Pattern a)]
 
 normalize :: Program a -> (Term a -> Term a)
 normalize p t = runReader (interpret t) p
@@ -100,3 +102,46 @@ notAtTopLevel (x, _) =
   do program <- ask
      when (x `elem` (fst <$> definitions program)) $
        error $ "the name " ++ x ++ "shadows the top level declaration of " ++ x
+       
+-- Term unification (for case-statements)
+unify :: Term a -> Term a -> Maybe (Unifier a)
+unify (Number v _) (Number v' _)
+  | v == v' = return []
+unify p@(Plus  t0 t1 t) (Number v _) =
+  do let (Number v' _) = simpleEval p
+     if v == v' then return [] else Nothing
+unify (Boolean v _) (Boolean v' _)
+  | v == v' = return $ []
+unify p@(Leq t0 t1 a) (Boolean  v _) =
+  do let (Boolean v' _) = simpleEval p
+     if v == v' then return [] else Nothing
+unify (Variable x t) p
+  | not (p `contains` x) = return $ p `substitutes` x
+-- unify (Leaf        _) (Leaf        _) = return $ []
+-- unify (Variable n1 _) (Variable n2 _) | n1 == n2 = return $ []
+-- unify (Node l1 t0 r1 _) (Node l2 t0' r2 _) =
+--   do unify l1  l2
+--      unify t0  t0'
+--      unify r1  r2
+-- unify (If t0 t1 t2) (If )
+unify _ _ = Nothing
+
+contains :: Pattern a -> X -> Bool
+contains (Variable y _) x = x == y
+contains (Pair t0 t1 _) x = t0 `contains` x || t1 `contains` x
+contains _              _ = False
+
+substitutes :: Pattern a -> X -> Unifier a
+substitutes p x = return $ (x, p)
+
+simpleEval :: Term a -> Term a
+simpleEval (Plus t0 t1 a) =
+  case (simpleEval t0, simpleEval t1) of
+    ((Number v _), (Number v' _)) -> Number (v + v') a
+    _ -> error "expected two integers"
+simpleEval (Leq t0 t1 a) =
+  case (simpleEval t0, simpleEval t1) of
+    ((Number v _), (Number v' _)) -> Boolean (v <= v') a
+    _ -> error "expected two integers"
+simpleEval t = t
+>>>>>>> 1a8c110 (Unification attempt for integers, booleans, and variables)
