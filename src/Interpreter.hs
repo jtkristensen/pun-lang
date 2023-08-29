@@ -4,14 +4,13 @@ module Interpreter (normalize, substitute) where
 import Syntax
 import Unification
 import Control.Monad.Reader
-import Control.Monad (when)
 
 type Runtime a = Reader (Program a)
 
-normalize :: Program a -> (Term a -> Term a)
+normalize :: Show a => Program a -> (Term a -> Term a)
 normalize p t = runReader (interpret t) p
 
-interpret :: Term a -> Runtime a (Term a)
+interpret :: Show a => Term a -> Runtime a (Term a)
 interpret  t | canonical t = return t
 interpret (Variable x _) =
   do program <- ask
@@ -56,13 +55,13 @@ interpret (Node l t0 r a) =
      t0' <- interpret t0
      r'  <- interpret r
      return $ Node l' t0' r' a
-interpret (Case t0 t1 (t2, t3) _) =
+interpret (Case t0 l (p, n) _) =
   do v <- interpret t0
      case v of
-       (Leaf _) -> interpret t1
+       (Leaf _) -> interpret l
        _        ->
-         case unify v t2 of
-           Just u  -> return $ substituteWithUnifier u t3
+         case unify v p of
+           Just  u -> return $ substituteWithUnifier u n
            Nothing -> error $ "non-exhaustive or illegal pattern " ++
                               "in case-statement"
 interpret _ = error "expected a non-canonical term!"
@@ -106,9 +105,8 @@ substitute x t v = -- computes t[v/x].
     f = flip (substitute x) v
 
 substituteWithUnifier :: Unifier a -> Term a -> Term a
-substituteWithUnifier ((x, v):rest) t =
-  substituteWithUnifier rest (substitute x t v)
-substituteWithUnifier [] t = t
+substituteWithUnifier xs t =
+  foldr (\(x, v) t' -> substitute x t' v) t xs
 
 -- Todo : can be avoided by renaming toplevel stuff, or by extending the
 -- runtime monad to deal with variable bindings.

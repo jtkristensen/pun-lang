@@ -4,27 +4,31 @@ import Syntax
 
 type Unifier a = [(Name, Term a)]
 
-unify :: Term a -> Pattern a -> Maybe (Unifier a)
-unify (Number v   _) (Number  v'  _) | v == v' = return []
-unify (Boolean v  _) (Boolean v'  _) | v == v' = return []
-unify (Variable x _) (Variable x' _) | x == x' = return []
-unify (Variable x _) p
-  | isPattern p && not (p `contains` x) = return $ p `substitutes` x
-unify (Pair t0 t1 _) (Pair t0' t1' _) = unify t0 t0' `mappend` unify t1 t1'
-unify (Leaf       _) (Leaf         _) = return $ []
-unify (Node l1 t0 r1 _) (Node l2 t0' r2 _) =
-  ((unify l1  l2)   `mappend`
-   (unify t0  t0')) `mappend`
-   (unify r1  r2)
-unify _ _ = Nothing
+unify :: Show a => Canonical a -> Pattern a -> Maybe (Unifier a)
+unify v p = if isPattern p
+  -- todo! Check for conflicting bindings in unifier
+  -- (map fst $ unify' v p) == (nub $ map fst $ unify' v p)
+  -- Conflicting definitions for 'x'
+  then unify' v p
+  else error $ show p ++ " is not a legal pattern for case statements"
+
+unify' :: Canonical a -> Pattern a -> Maybe (Unifier a)
+unify' (Number v   _) (Number  v'   _) | v == v' = return []
+unify' (Boolean v  _) (Boolean v'   _) | v == v' = return []
+unify' v              (Variable x   _) = return $ v `substitutes` x
+unify' (Pair t0 t1 _) (Pair t0' t1' _) = unify' t0 t0' `mappend` unify' t1 t1'
+unify' (Leaf       _) (Leaf         _) = return $ []
+unify' (Node l1 t0 r1 _) (Node l2 t0' r2 _) =
+  ((unify' l1  l2)   `mappend`
+   (unify' t0  t0')) `mappend`
+   (unify' r1  r2)
+unify' _ _ = Nothing
 
 isPattern :: Term a -> Bool
-isPattern (Variable  _ _) = True
-isPattern (Node  _ _ _ _) = True
-isPattern t               =
-  if canonical t
-    then True
-    else False
+isPattern (Variable    _ _) = True
+isPattern (Node  l  t0 r _) = all isPattern [l,  t0, r]
+isPattern (Pair  t1 t2   _) = all isPattern [t1, t2]
+isPattern t                 = canonical t
 
 contains :: Pattern a -> X -> Bool
 contains (Variable y  _) x = x == y

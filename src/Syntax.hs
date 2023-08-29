@@ -19,6 +19,7 @@ type Value       = Type
 type Leaf      a = Term a
 type Node      a = (Pattern a, Term a)
 type Pattern   a = Term a
+type Canonical a = Term a
 
 data Program a
   = Declaration X           Type    (Program a)

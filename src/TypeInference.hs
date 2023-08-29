@@ -89,13 +89,15 @@ annotate (Rec f t0 _) =
      t0' <- local (bind f tau) $ annotate t0
      return $ Rec f t0' $ annotation t0'
 annotate (Leaf _) =
-     return $ Leaf (BST Integer' Integer')
+  do tau1 <- hole
+     tau2 <- hole
+     return $ Leaf (BST tau1 tau2)
 annotate (Node l t0 r _) =
-  do tau <- hole
-     l'  <- annotate l
+  do l'  <- annotate l
      t0' <- annotate t0
      r'  <- annotate r
-     return $ Node l' t0' r' tau
+     l' `hasSameTypeAs` r'
+     return $ Node l' t0' r' (annotation l')
 annotate (Case t0 l (p, t) _) =
   do tau <- hole
      t0' <- annotate t0
@@ -112,6 +114,7 @@ solve (constraint : rest) =
     Boolean'      :=: Boolean'      -> solve rest
     (t0 :*:  t1)  :=: (t2 :*:  t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (t0 :->: t1)  :=: (t2 :->: t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
+    (BST    k v)  :=: (BST  k' v')  -> solve $ (k  :=: k') : (v  :=: v') : rest
     (Variable' i) :=: t1            ->
       if   i `elem` indexes t1
       then (if Variable' i /= t1 then Nothing else solve rest)
@@ -130,6 +133,7 @@ instance HasSubstitution Type where
   substitute t i (Variable' j) | i == j = t
   substitute t i (t0 :*: t1)            = substitute t i t0 :*: substitute t i t1
   substitute t i (t0 :->: t1)           = substitute t i t0 :->: substitute t i t1
+  substitute t i (BST    k v)           = BST (substitute t i k) (substitute t i v)
   substitute _ _ t0                     = t0
 
 instance HasSubstitution Constraint where
@@ -140,6 +144,7 @@ indexes :: Type -> [Index]
 indexes (Variable' i) = return i
 indexes (t0 :*:  t1)  = indexes t0 ++ indexes t1
 indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
+indexes (BST    k v)  = indexes k  ++ indexes v
 indexes _             = mempty
 
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
@@ -159,7 +164,7 @@ refine s o = refine' s o
     refine' _            Boolean'               = Boolean'
     refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
-    refine' _            (BST    k v)           = BST k v
+    refine' s'           (BST    k v)           = BST (refine s' k) (refine s' v)
 
 -- Just here for documentation
 usage :: Term a -> Index -> (Term Type, Index)
