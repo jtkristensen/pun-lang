@@ -3,6 +3,7 @@ module Interpreter (normalize, substitute) where
 
 import Syntax
 import Control.Monad.Reader
+import Control.Monad (when)
 
 type Runtime a = Reader (Program a)
 
@@ -52,19 +53,19 @@ interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).
 
-bool :: (Term a) -> Runtime a Bool
+bool :: Term a -> Runtime a Bool
 bool (Boolean b _) = return b
 bool _             = error "expected a boolean value"
 
-number :: (Term a) -> Runtime a Integer
+number :: Term a -> Runtime a Integer
 number (Number n _) = return n
 number _            = error "expected an integer"
 
-pair :: (Term a) -> Runtime a (Term a, Term a)
+pair :: Term a -> Runtime a (Term a, Term a)
 pair (Pair t1 t2 _) = return (t1, t2)
 pair _              = error "expected a pair"
 
-function :: (Term a) -> Runtime a (Term a -> Term a)
+function :: Term a -> Runtime a (Term a -> Term a)
 function (Lambda x t a) =
   do notAtTopLevel (x, a)
      return $ substitute x t
@@ -93,6 +94,5 @@ substitute x t v = -- computes t[v/x].
 notAtTopLevel :: (X, a) -> Runtime a ()
 notAtTopLevel (x, _) =
   do program <- ask
-     if x `elem` (fst <$> definitions program)
-       then error $ "the name " ++ x ++ "shadows the top level declaration of " ++ x
-       else return ()
+     when (x `elem` (fst <$> definitions program)) $
+       error $ "the name " ++ x ++ "shadows the top level declaration of " ++ x

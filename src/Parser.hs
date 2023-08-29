@@ -3,6 +3,7 @@ module Parser where
 
 import Syntax
 import Data.List (nub, (\\))
+import Data.Functor ((<&>))
 
 import Text.Parsec
 import Control.Monad  (void, when)
@@ -70,12 +71,12 @@ type_ =
 simple :: Parser (Term Info)
 simple =
   choice
-  [ info $ int  >>= return . Number
-  , info $ bool >>= return . Boolean
+  [ info $ int  <&> Number
+  , info $ bool <&> Boolean
   , info $ symbol "leaf" >> return Leaf
-  , info $ name >>= return . Variable
-  , info $ try $ parens $ Pair <$> term_ <*> (pre "," term_)
-  , parens $ term_
+  , info $ name <&> Variable
+  , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
+  , parens term_
   , info $
     brackets $
       symbol "node" >>
@@ -96,21 +97,21 @@ term_ =
        _ <- symbol "->"
        r <- term_
        return $ Case t l (p, r)
-  , do If <$> (pre "if" term_) <*> (pre "then" term_) <*> (pre "else" term_)
+  , do If <$> pre "if" term_ <*> pre "then" term_ <*> pre "else" term_
   , pre "fst" (Fst <$> term_)
   , pre "snd" (Snd <$> term_)
-  , pre "\\" $ Lambda <$> name <*> (pre "->" term_)
+  , pre "\\" $ Lambda <$> name <*> pre "->" term_
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
   ]
   where
     about t1 t2   = (fst $ annotation t1, snd $ annotation t2)
     operator      =
-      choice $
-      [ pre  "+" $ return $ \t1 t2 -> Plus t1 t2 $ about t1 t2
-      , pre "<=" $ return $ \t1 t2 -> Leq t1 t2 $ about t1 t2
-      , return $ \f x -> Application f x $ about f x
-      ]
+      choice
+        [ pre  "+" $ return $ \t1 t2 -> Plus t1 t2 $ about t1 t2
+        , pre "<=" $ return $ \t1 t2 -> Leq t1 t2 $ about t1 t2
+        , return $ \f x -> Application f x $ about f x
+        ]
 
 declaration_ :: Parser (Program a)
 declaration_ = undefined

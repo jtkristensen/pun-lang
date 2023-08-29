@@ -55,11 +55,11 @@ data Term a =
   | Rec Name    (T0 a)                a
   deriving (Functor, Eq, Show)
 
-canonical :: (Term a) -> Bool
+canonical :: Term a -> Bool
 canonical (Number  _     _) = True
 canonical (Boolean _     _) = True
 canonical (Pair    t1 t2 _) = canonical t1 && canonical t2
-canonical (Lambda  _  _  _) = True
+canonical (Lambda  {}     ) = True
 canonical _                 = False
 
 -- Dealing with annotations.
