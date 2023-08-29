@@ -146,7 +146,6 @@ termParserTests_negative =
   , " false"
   ]
 
-
 -- * Dealing with lore in unit-tests.
 
 strip :: Functor f => f a -> f ()

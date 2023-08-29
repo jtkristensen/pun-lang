@@ -111,3 +111,13 @@ indicies  Boolean'      = []
 indicies (t1 :*:   t2)  = indicies t1 <> indicies t2
 indicies (t1 :->:  t2)  = indicies t1 <> indicies t2
 indicies (BST     _ _)  = []
+
+instance Semigroup (Program a) where
+  (Declaration x t p1) <> p2 = Declaration x  t (p1 <> p2)
+  (Definition  x t p1) <> p2 = Definition  x  t (p1 <> p2)
+  (Property p xs t p1) <> p2 = Property  p xs t (p1 <> p2)
+  EndOfProgram         <> p2 = p2
+
+instance Monoid (Program a) where
+  mempty  = EndOfProgram
+  mappend = (<>)

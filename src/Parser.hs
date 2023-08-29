@@ -112,6 +112,18 @@ term_ =
       , return $ \f x -> Application f x $ about f x
       ]
 
+declaration_ :: Parser (Program a)
+declaration_ = undefined
+
+definition_ :: Parser (Program a)
+definition_ = undefined
+
+property_ :: Parser (Program a)
+property_ = undefined
+
+program_ :: Parser (Program a)
+program_ = undefined
+
 -- -- * Utility:
 
 pre, post :: String -> Parser a -> Parser a
