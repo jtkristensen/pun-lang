@@ -63,9 +63,9 @@ interpret (Case t0 t1 (t2, t3) _) =
        (Leaf _) -> interpret t1
        _        ->
          case unify v t2 of
-           Just u  -> substituteWithUnifier u t3
+           Just u  -> return $ substituteWithUnifier u t3
            Nothing -> error $ "non-exhaustive or illegal pattern " ++
-                              show t2 ++ " in case-statement"
+                              "in case-statement"
 interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).
@@ -106,7 +106,7 @@ substitute x t v = -- computes t[v/x].
   where
     f = flip (substitute x) v
 
-substituteWithUnifier :: [(Name, Term a)] -> Term a -> Term a
+substituteWithUnifier :: Unifier a -> Term a -> Term a
 substituteWithUnifier ((x, v):rest) t =
   substituteWithUnifier rest (substitute x t v)
 substituteWithUnifier [] t = t

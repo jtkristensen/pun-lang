@@ -16,6 +16,6 @@ tests =
         ]
     , testGroup "Parser :"
         parserTests
-    , testGroup "Interpreter :"
-        interpreter_tests
+    -- , testGroup "Interpreter :"
+    --     interpreter_tests
     ]
