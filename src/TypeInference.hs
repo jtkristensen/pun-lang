@@ -92,16 +92,14 @@ annotate (Leaf _) =
   do tau1 <- hole
      tau2 <- hole
      return $ Leaf (BST tau1 tau2)
-annotate (Node l t0 r _) =
-  -- TODO annotation l' is not good enough
-  -- l' should have the same type as BST (annotation k) (annotation v)
-  -- r' should also have the same type
-  -- Then, l' is the actual type
-  do l'  <- annotate l
-     t0' <- annotate t0
-     r'  <- annotate r
+annotate (Node l k v r _) =
+  do l' <- annotate l
+     k' <- annotate k
+     v' <- annotate v
+     r' <- annotate r
+     l' `hasType` (BST (annotation k') (annotation v'))
      l' `hasSameTypeAs` r'
-     return $ Node l' t0' r' (annotation l')
+     return $ Node l' k' v' r' (annotation l')
 annotate (Case t0 l (p, n) _) =
   do tau1 <- hole
      tau2 <- hole

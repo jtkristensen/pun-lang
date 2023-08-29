@@ -18,15 +18,16 @@ unify' (Boolean v  _) (Boolean v'   _) | v == v' = return []
 unify' v              (Variable x   _) = return $ v `substitutes` x
 unify' (Pair t0 t1 _) (Pair t0' t1' _) = unify' t0 t0' `mappend` unify' t1 t1'
 unify' (Leaf       _) (Leaf         _) = return $ []
-unify' (Node l1 t0 r1 _) (Node l2 t0' r2 _) =
-  ((unify' l1  l2)   `mappend`
-   (unify' t0  t0')) `mappend`
-   (unify' r1  r2)
+unify' (Node l1 k1 v1 r1 _) (Node l2 k2 v2 r2 _) =
+  ((unify' l1 l2)  `mappend`
+   (unify' k1 k2)) `mappend`
+  ((unify' v1 v2)  `mappend`
+   (unify' r1 r2))
 unify' _ _ = Nothing
 
 isPattern :: Term a -> Bool
 isPattern (Variable    _ _) = True
-isPattern (Node  l  t0 r _) = all isPattern [l,  t0, r]
+isPattern (Node  l k v r _) = all isPattern [l, k, v, r]
 isPattern (Pair  t1 t2   _) = all isPattern [t1, t2]
 isPattern t                 = canonical t
 

@@ -50,11 +50,12 @@ interpret (Rec x t0 a) =
   do notAtTopLevel (x, a)
      interpret (substitute x t0 (Rec x t0 a))
 interpret (Leaf a) = return $ Leaf a
-interpret (Node l t0 r a) =
-  do l'  <- interpret l
-     t0' <- interpret t0
-     r'  <- interpret r
-     return $ Node l' t0' r' a
+interpret (Node l k v r a) =
+  do l' <- interpret l
+     k' <- interpret k
+     v' <- interpret v
+     r' <- interpret r
+     return $ Node l' k' v' r' a
 interpret (Case t0 l (p, n) _) =
   do v <- interpret t0
      case v of

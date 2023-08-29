@@ -40,22 +40,22 @@ data Type
   deriving (Eq, Show)
 
 data Term a =
-    Number    Integer                  a
-  | Boolean   Bool                     a
-  | Leaf                               a
-  | Node (Left a) (K a, V a) (Right a) a
-  | Case (T0 a) (Leaf a) (Node a)      a
-  | Variable  Name                     a
-  | If          (T0 a) (T1 a) (T2 a)   a
-  | Plus        (T0 a) (T1 a)          a
-  | Leq         (T0 a) (T1 a)          a
-  | Pair        (T0 a) (T1 a)          a
-  | Fst         (T0 a)                 a
-  | Snd         (T0 a)                 a
-  | Lambda Name (T0 a)                 a
-  | Application        (T1 a) (T2 a)   a
-  | Let Name           (T1 a) (T2 a)   a
-  | Rec Name    (T0 a)                 a
+    Number    Integer                   a
+  | Boolean   Bool                      a
+  | Leaf                                a
+  | Node (Left a) (K a) (V a) (Right a) a
+  | Case (T0 a) (Leaf a) (Node a)       a
+  | Variable  Name                      a
+  | If          (T0 a) (T1 a) (T2 a)    a
+  | Plus        (T0 a) (T1 a)           a
+  | Leq         (T0 a) (T1 a)           a
+  | Pair        (T0 a) (T1 a)           a
+  | Fst         (T0 a)                  a
+  | Snd         (T0 a)                  a
+  | Lambda Name (T0 a)                  a
+  | Application        (T1 a) (T2 a)    a
+  | Let Name           (T1 a) (T2 a)    a
+  | Rec Name    (T0 a)                  a
   deriving (Functor, Eq, Show)
 
 canonical :: Term a -> Bool
@@ -64,7 +64,7 @@ canonical (Boolean _     _) = True
 canonical (Pair    t1 t2 _) = canonical t1 && canonical t2
 canonical (Lambda  {}     ) = True
 canonical (Leaf          _) = True
-canonical (Node   l t0 r _) = all canonical [l, t0,r]
+canonical (Node   l k v r _) = all canonical [l, k, v, r]
 canonical _                 = False
 
 -- Dealing with annotations.
@@ -87,7 +87,7 @@ instance Annotated Term where
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
   annotations (Leaf              a) = return a
-  annotations (Node      l t0  r a) = a : ([l, t0, r]    >>= annotations)
+  annotations (Node      l k v r a) = a : ([l, k, v, r]    >>= annotations)
   annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
   annotation  term                  = head $ annotations term
 

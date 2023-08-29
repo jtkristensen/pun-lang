@@ -81,7 +81,7 @@ simple =
   , info $
     brackets $
       symbol "node" >>
-        Node <$> simple <*> simple <*> simple
+        Node <$> simple <*> simple <*> simple <*> simple
   ]
 
 term_ :: Parser (Term Info)
