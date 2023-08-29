@@ -123,7 +123,9 @@ property_ :: Parser (Program a)
 property_ = undefined
 
 program_ :: Parser (Program a)
-program_ = undefined
+program_ =
+  foldl (<>) EndOfProgram <$>
+  many (choice [ declaration_, definition_, property_ ])
 
 -- -- * Utility:
 
