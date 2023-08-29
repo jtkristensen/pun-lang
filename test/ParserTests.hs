@@ -103,11 +103,12 @@ termParserTests_positive =
   , ("if 5 <= 7 then 0 else true",
      If (Leq (Number 5 ()) (Number 7 ()) ()) (Number 0 ()) (Boolean True ()) ()
     )
-  , ("[node leaf 5 leaf]",
-       Node (Leaf ()) (Number 5 ()) (Leaf ()) ())
-  , ("[node [ node leaf 3 leaf] (true, ~4) leaf]",
+  , ("[node leaf 3 5 leaf]",
+       Node (Leaf ()) (Number 3 ()) (Number 5 ()) (Leaf ()) ())
+  , ("[node [ node leaf 3 5 leaf] 4 (true, ~4) leaf]",
       Node
-        (Node (Leaf ()) (Number 3 ()) (Leaf ()) ())
+        (Node (Leaf ()) (Number 3 ()) (Number 5 ()) (Leaf ()) ())
+        (Number 4 ())
         (Pair (Boolean True ()) (Number (-4) ()) ())
         (Leaf ()) ())
   , ("\\x -> \\f -> \\y -> f x y"
@@ -121,14 +122,15 @@ termParserTests_positive =
     )
   , ("case t of"   ++
      "; leaf -> 5" ++
-     "; [node l1 true [node l2 false r2]] -> f l1 l2 r2"
+     "; [node l1 true true [node l2 false false r2]] -> f l1 l2 r2"
     , Case (Variable "t" ())
       -- leaf -->
         (Number 5 ())
       (Node
          (Variable "l1" ())
          (Boolean True ())
-         (Node (Variable "l2" ()) (Boolean False ()) (Variable "r2" ()) ()) () ,
+         (Boolean True ())
+         (Node (Variable "l2" ()) (Boolean False ()) (Boolean False ()) (Variable "r2" ()) ()) () ,
       -- node -->
        Application
          (Application
