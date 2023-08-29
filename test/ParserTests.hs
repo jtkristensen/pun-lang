@@ -103,8 +103,13 @@ termParserTests_positive =
   , ("if 5 <= 7 then 0 else true",
      If (Leq (Number 5 ()) (Number 7 ()) ()) (Number 0 ()) (Boolean True ()) ()
     )
-  , ("[node leaf 5 leaf]", Node (Leaf ()) (Number 5 ()) (Leaf ()) ())
-  , ("[node [ node leaf 3 leaf] (true, ~4) leaf]", Node (Node (Leaf ()) (Number 3 ()) (Leaf ()) ()) (Pair (Boolean True ()) (Number (-4) ()) ()) (Leaf ()) ())
+  , ("[node leaf 5 leaf]",
+       Node (Leaf ()) (Number 5 ()) (Leaf ()) ())
+  , ("[node [ node leaf 3 leaf] (true, ~4) leaf]",
+      Node
+        (Node (Leaf ()) (Number 3 ()) (Leaf ()) ())
+        (Pair (Boolean True ()) (Number (-4) ()) ())
+        (Leaf ()) ())
   , ("\\x -> \\f -> \\y -> f x y"
     , (Lambda "x"
          (Lambda "f"
