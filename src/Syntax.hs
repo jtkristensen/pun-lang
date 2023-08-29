@@ -14,6 +14,8 @@ type T1        a = Term a
 type T2        a = Term a
 type Left      a = Term a
 type Right     a = Term a
+type K         a = Term a
+type V         a = Term a
 type Key         = Type
 type Value       = Type
 type Leaf      a = Term a
@@ -38,22 +40,22 @@ data Type
   deriving (Eq, Show)
 
 data Term a =
-    Number    Integer                 a
-  | Boolean   Bool                    a
-  | Leaf                              a
-  | Node (Left a) (T0 a) (Right a)    a
-  | Case (T0 a) (Leaf a) (Node a)     a
-  | Variable  Name                    a
-  | If          (T0 a) (T1 a) (T2 a)  a
-  | Plus        (T0 a) (T1 a)         a
-  | Leq         (T0 a) (T1 a)         a
-  | Pair        (T0 a) (T1 a)         a
-  | Fst         (T0 a)                a
-  | Snd         (T0 a)                a
-  | Lambda Name (T0 a)                a
-  | Application        (T1 a) (T2 a)  a
-  | Let Name           (T1 a) (T2 a)  a
-  | Rec Name    (T0 a)                a
+    Number    Integer                  a
+  | Boolean   Bool                     a
+  | Leaf                               a
+  | Node (Left a) (K a, V a) (Right a) a
+  | Case (T0 a) (Leaf a) (Node a)      a
+  | Variable  Name                     a
+  | If          (T0 a) (T1 a) (T2 a)   a
+  | Plus        (T0 a) (T1 a)          a
+  | Leq         (T0 a) (T1 a)          a
+  | Pair        (T0 a) (T1 a)          a
+  | Fst         (T0 a)                 a
+  | Snd         (T0 a)                 a
+  | Lambda Name (T0 a)                 a
+  | Application        (T1 a) (T2 a)   a
+  | Let Name           (T1 a) (T2 a)   a
+  | Rec Name    (T0 a)                 a
   deriving (Functor, Eq, Show)
 
 canonical :: Term a -> Bool

@@ -93,18 +93,25 @@ annotate (Leaf _) =
      tau2 <- hole
      return $ Leaf (BST tau1 tau2)
 annotate (Node l t0 r _) =
+  -- TODO annotation l' is not good enough
+  -- l' should have the same type as BST (annotation k) (annotation v)
+  -- r' should also have the same type
+  -- Then, l' is the actual type
   do l'  <- annotate l
      t0' <- annotate t0
      r'  <- annotate r
      l' `hasSameTypeAs` r'
      return $ Node l' t0' r' (annotation l')
-annotate (Case t0 l (p, t) _) =
-  do tau <- hole
-     t0' <- annotate t0
-     l'  <- annotate l
-     p'  <- annotate p
-     t'  <- annotate t
-     return $ Case t0' l' (p', t') tau
+annotate (Case t0 l (p, n) _) =
+  do tau1 <- hole
+     tau2 <- hole
+     t0'  <- annotate t0
+     t0' `hasType` (BST tau1 tau2)
+     l'   <- annotate l
+     p'   <- annotate p
+     n'   <- annotate n
+     l'  `hasSameTypeAs` n'
+     return $ Case t0' l' (p', n') (annotation l')
 
 solve :: [Constraint] -> Maybe Substitution
 solve [                 ] = return mempty
