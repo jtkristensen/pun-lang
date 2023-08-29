@@ -20,7 +20,7 @@ generateGeneratorSized :: (CurrentIndices, CurrentBindings) -> (Type -> Int -> G
 generateGeneratorSized s          Integer' 0 = generateGeneratorSized s Integer' 1
 generateGeneratorSized _          Integer' 1 = flip Number  Integer' <$> arbitrary
 generateGeneratorSized s@(is, bs) Integer' size =
-  oneof $
+  frequency $ zip [1..]
     [ flip Number  Integer' <$> arbitrary
     , do cond <- generateGeneratorSized s Boolean'  (frac size)
          t1   <- generateGeneratorSized s Integer'  (frac size)
@@ -56,11 +56,11 @@ generateGeneratorSized s@(is, bs) Integer' size =
          t1    <- generateGeneratorSized (is, (x, Integer') : filter ((/=x) . fst) bs) Integer' (frac size)
          return $ Rec x t1 Integer'
          ]
-    ++ (return . flip Variable Integer' <$> [ n | (n, t) <- bs , t == Integer' ])
+    ++ ((\a -> (15, return a)) . flip Variable Integer' <$> [ n | (n, t) <- bs , t == Integer' ])
 generateGeneratorSized s          Boolean' 0 = generateGeneratorSized s Boolean' 1
 generateGeneratorSized _          Boolean' 1 = flip Boolean Boolean' <$> arbitrary
 generateGeneratorSized s@(is, bs) Boolean' size           =
-  oneof $
+  frequency $ zip [1..]
     [ flip Boolean  Boolean' <$> arbitrary
     , do cond <- generateGeneratorSized s Boolean'  (frac size)
          t1   <- generateGeneratorSized s Boolean'  (frac size)
@@ -90,7 +90,7 @@ generateGeneratorSized s@(is, bs) Boolean' size           =
          t1    <- generateGeneratorSized (is, (x, Boolean') : filter ((/=x) . fst) bs) Boolean' (frac size)
          return $ Rec x t1 Boolean'
          ]
-    ++ (return . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
+    ++ ((\a -> (15, return a)) . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
 -- TODO! Make sure generated Variable's index resolves to canonical type
 generateGeneratorSized s (Variable' index) size   =
   generateGeneratorSized s (resolve index $ fst s) (frac size)
