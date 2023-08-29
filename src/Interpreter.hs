@@ -61,10 +61,8 @@ interpret (Case t0 l (p, n) _) =
      case v of
        (Leaf _) -> interpret l
        _        ->
-         case unify v p of
-           Just  u -> return $ substituteWithUnifier u n
-           Nothing -> error $ "non-exhaustive or illegal pattern " ++
-                              "in case-statement"
+         let u = unify v p
+         in  return $ substituteWithUnifier u n
 interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).

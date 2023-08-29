@@ -1,16 +1,23 @@
 module Unification where
 
 import Syntax
+import Data.List (nub, intercalate)
 
 type Unifier a = [(Name, Term a)]
 
-unify :: Show a => Canonical a -> Pattern a -> Maybe (Unifier a)
-unify v p = if isPattern p
-  -- todo! Check for conflicting bindings in unifier
-  -- (map fst $ unify' v p) == (nub $ map fst $ unify' v p)
-  -- Conflicting definitions for 'x'
-  then unify' v p
-  else error $ show p ++ " is not a legal pattern for case statements"
+
+unify :: Show a => Canonical a -> Pattern a -> Unifier a
+unify v p = case isPattern p of
+  False -> error $ show p ++ " is not a legal pattern for case statements"
+  True  ->
+    case unify' v p of
+      Nothing -> error $ "non-exhaustive patterns in case statement"
+      Just  u -> if (names == nub names)
+        then u
+        else error $ "conflicting bindings for " ++
+                     (intercalate ", " $ repeated names)
+        where
+          names = map fst u
 
 unify' :: Canonical a -> Pattern a -> Maybe (Unifier a)
 unify' (Number v   _) (Number  v'   _) | v == v' = return []
@@ -50,3 +57,7 @@ contains _              _ = False
 
 substitutes :: Pattern a -> X -> Unifier a
 substitutes p x = return $ (x, p)
+
+repeated :: Eq a => [a] -> [a]
+repeated []     = []
+repeated (x:xs) = (if x `elem` xs then [x] else []) ++ repeated xs
