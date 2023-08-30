@@ -13,6 +13,7 @@ import Data.Function
 import Control.Applicative
 import BST
 
+-- TODO: make a newtype
 instance (Ord k, Arbitrary k, Arbitrary v) => Arbitrary (BST k v) where
   arbitrary = do
     kvs <- arbitrary
@@ -69,24 +70,24 @@ prop_UnionPost :: Tree -> Tree -> Key -> Property
 prop_UnionPost t t' k = find k (union t t') === (find k t <|> find k t')
 
 -- ------------------ Metamorphic properties  ------------------
-(~) :: Tree -> Tree -> Property
-t1 ~ t2 = toList t1 === toList t2
+(~=) :: Tree -> Tree -> Property
+t1 ~= t2 = toList t1 === toList t2
 
 prop_InsertInsert :: (Key, Val) -> (Key, Val) -> Tree -> Property
 prop_InsertInsert (k, v) (k', v') t =
   (insert k v (insert k' v' t))
-  ~
+  ~=
   (if k == k' then insert k v t else insert k' v' (insert k v t))
 
 prop_InsertDelete :: (Key, Val) -> Key -> Tree -> Property
 prop_InsertDelete (k, v) k' t = 
   (insert k v (delete k' t))
-  ~
+  ~=
   if k == k' then insert k v t else delete k' (insert k v t)
 
 prop_InsertUnion :: (Key, Val) -> Tree -> Tree -> Property
 prop_InsertUnion (k, v) t t' =
-  (insert k v (union t t')) ~ union (insert k v t) t'
+  (insert k v (union t t')) ~= union (insert k v t) t'
 
 -- ------------------ Preservation of equivalence  ------------------
 data Equivs k v = (BST k v) :~: (BST k v) deriving Show
@@ -97,29 +98,27 @@ instance (Arbitrary k, Arbitrary v, Ord k) => Arbitrary (Equivs k v) where
     kvs' <- shuffle kvs
     return (tree kvs :~: tree kvs')
     where tree = foldr (uncurry insert) nil
-  -- TODO: write shrinker
-  -- shrink (t1 :~: t2) =
 
 prop_InsertPreservesEquiv :: Key -> Val -> Equivs Key Val -> Property
-prop_InsertPreservesEquiv k v (t :~: t') = (insert k v t) ~ (insert k v t')
+prop_InsertPreservesEquiv k v (t :~: t') = (insert k v t) ~= (insert k v t')
 
 prop_DeletePreservesEquiv :: Key -> Equivs Key Val -> Property
-prop_DeletePreservesEquiv k (t :~: t') = (delete k t) ~ (delete k t')
+prop_DeletePreservesEquiv k (t :~: t') = (delete k t) ~= (delete k t')
 
 prop_UnionPreservesEquiv :: Equivs Key Val -> Equivs Key Val -> Property
-prop_UnionPreservesEquiv (t1 :~: t1') (t2 :~: t2') = (union t1 t2) ~ (union t1' t2')
+prop_UnionPreservesEquiv (t1 :~: t1') (t2 :~: t2') = (union t1 t2) ~= (union t1' t2')
 
 prop_FindPreservesEquiv :: Key -> Equivs Key Val -> Property
 prop_FindPreservesEquiv k (t :~: t') = find k t === find k t'
 
 prop_Equivs :: Equivs Key Val -> Property
-prop_Equivs (t :~: t') = t ~ t'
+prop_Equivs (t :~: t') = t ~= t'
 
 -- TODO: check warning where t and t' shadow previous bindings
 prop_ShrinkEquivs :: Equivs Key Val -> Property
 prop_ShrinkEquivs (t :~: t') =
-  t ~ t' ==> all (\(t :~: t') -> t ~ t') (shrink (t :~: t'))
-  where t ~ t' = toList t == toList t'
+  t ~= t' ==> all (\(t :~: t') -> t ~= t') (shrink (t :~: t'))
+  where t ~= t' = toList t == toList t'
 
 -- ------------------ Inductive testing  ------------------
 insertions :: Tree -> [(Key, Val)]
