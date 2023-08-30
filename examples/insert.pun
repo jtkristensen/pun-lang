@@ -1,0 +1,12 @@
+insert : (integer, integer) -> bst integer integer -> bst integer integer .
+insert kv t =
+  case t of
+  ; leaf           -> [node leaf kv leaf]
+  ; [node l kv' r] ->
+    let key  = fst kv  in
+    let key' = fst kv' in
+      if   key == key'
+      then [node l kv r]
+      else  if   fst kv <= fst kv'
+            then [node (inserv kv l) kv' r]
+            else [node l kv' (insert kv r)] .

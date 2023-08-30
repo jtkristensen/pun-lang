@@ -29,6 +29,7 @@ library
       PropertyChecker
       Syntax
       TypeInference
+      Unification
   other-modules:
       Paths_pun_lang
   hs-source-dirs:
@@ -62,6 +63,7 @@ test-suite pun-lang-test
   other-modules:
       Examples
       ParserTests
+      InterpreterTests
       PropertyCheckerTests
       Paths_pun_lang
   hs-source-dirs:
