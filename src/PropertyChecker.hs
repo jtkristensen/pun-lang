@@ -44,6 +44,13 @@ generateGeneratorSized s@(is, bs) Integer' size =
     --     Gamma |- t1 : T1         Gamma[x -> T1] |- t2 : T
     -- Let --------------------------------------------------
     --             Gamma |- let x = t1 in t2 : T
+    {-         
+          TODO:
+               generateType should also take bs as an argument
+               and with some probability generate something that needs
+               the type of something in the bindings
+               Could just do is map snd bs
+     -}
     , do x     <- generateName
          type1 <- generateType is
          t1    <- generateGeneratorSized s type1 (frac size)
