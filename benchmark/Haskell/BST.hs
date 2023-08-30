@@ -50,7 +50,7 @@ delete k tree@(Branch left k' v' right)
 delete' :: Ord k => BST k v -> BST k v
 delete' (Branch Leaf _  _  right) = right
 delete' (Branch left _  _  Leaf ) = left
-delete' (Branch left _ _ right) = do
+delete' (Branch left _  _  right) = do
     case findMin right of
         (Just k) -> 
             case find k right of
@@ -74,6 +74,3 @@ toList (Branch left k' v' right) = (toList left) ++ [(k', v')] ++ (toList right)
 keys :: BST k v -> [k]
 keys Leaf = []
 keys (Branch left k' _ right) = (keys left) ++ [k'] ++ (keys right)
-
--- insertionExample = insert 7 "7" (insert 4 "4" (insert 5 "5" (insert 3 "3" (Branch (Leaf) 1 "1" (Leaf)))))
--- treeExample = Branch Leaf 1 "1" (Branch Leaf 3 "3" (Branch Leaf 5 "5" Leaf))
