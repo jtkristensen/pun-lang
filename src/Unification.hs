@@ -7,18 +7,19 @@ type Unifier a = [(Name, Term a)]
 
 
 unify :: Show a => Canonical a -> Pattern a -> Unifier a
-unify v p = case isPattern p of
-  False -> error $ show p ++ " is not a legal pattern for case statements"
-  True  ->
-    case unify' v p of
+unify v p = if isPattern p
+  then 
+    (case unify' v p of
       Nothing -> error "non-exhaustive patterns in case statement"
-      Just  u -> if (names == nub names)
+      Just  u -> if names == nub names
         then u
         else error $ "conflicting bindings for " ++
                      intercalate ", " (repeated names)
         where
-          names = map fst u
-
+          names = map fst u)
+  else
+    error $ show p ++ " is not a legal pattern for case statements"
+  
 unify' :: Canonical a -> Pattern a -> Maybe (Unifier a)
 unify' (Number v   _) (Number  v'   _) | v == v' = return []
 unify' (Boolean v  _) (Boolean v'   _) | v == v' = return []
