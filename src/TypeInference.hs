@@ -90,21 +90,21 @@ annotate (Rec f t0 _) =
      return $ Rec f t0' $ annotation t0'
 annotate (Leaf _) =
   do tau1 <- hole
-     tau2 <- hole
-     return $ Leaf (BST tau1 tau2)
+  --    tau2 <- hole
+     Leaf . BST tau1 <$> hole
 annotate (Node l k v r _) =
   do l' <- annotate l
      k' <- annotate k
      v' <- annotate v
      r' <- annotate r
-     l' `hasType` (BST (annotation k') (annotation v'))
+     l' `hasType` BST (annotation k') (annotation v')
      l' `hasSameTypeAs` r'
      return $ Node l' k' v' r' (annotation l')
 annotate (Case t0 l (p, n) _) =
   do tau1 <- hole
      tau2 <- hole
      t0'  <- annotate t0
-     t0' `hasType` (BST tau1 tau2)
+     t0' `hasType` BST tau1 tau2
      l'   <- annotate l
      p'   <- annotate p
      n'   <- annotate n

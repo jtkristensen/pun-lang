@@ -11,11 +11,11 @@ unify v p = case isPattern p of
   False -> error $ show p ++ " is not a legal pattern for case statements"
   True  ->
     case unify' v p of
-      Nothing -> error $ "non-exhaustive patterns in case statement"
+      Nothing -> error "non-exhaustive patterns in case statement"
       Just  u -> if (names == nub names)
         then u
         else error $ "conflicting bindings for " ++
-                     (intercalate ", " $ repeated names)
+                     intercalate ", " (repeated names)
         where
           names = map fst u
 
@@ -24,12 +24,12 @@ unify' (Number v   _) (Number  v'   _) | v == v' = return []
 unify' (Boolean v  _) (Boolean v'   _) | v == v' = return []
 unify' v              (Variable x   _) = return $ v `substitutes` x
 unify' (Pair t0 t1 _) (Pair t0' t1' _) = unify' t0 t0' `mappend` unify' t1 t1'
-unify' (Leaf       _) (Leaf         _) = return $ []
+unify' (Leaf       _) (Leaf         _) = return []
 unify' (Node l1 k1 v1 r1 _) (Node l2 k2 v2 r2 _) =
-  ((unify' l1 l2)  `mappend`
-   (unify' k1 k2)) `mappend`
-  ((unify' v1 v2)  `mappend`
-   (unify' r1 r2))
+  (unify' l1 l2  `mappend`
+   unify' k1 k2) `mappend`
+  (unify' v1 v2  `mappend`
+   unify' r1 r2)
 unify' _ _ = Nothing
 
 isPattern :: Term a -> Bool
@@ -56,8 +56,8 @@ contains (Application t1 t2 _) x = t1 `contains` x || t2 `contains` x
 contains _              _ = False
 
 substitutes :: Pattern a -> X -> Unifier a
-substitutes p x = return $ (x, p)
+substitutes p x = return (x, p)
 
 repeated :: Eq a => [a] -> [a]
 repeated []     = []
-repeated (x:xs) = (if x `elem` xs then [x] else []) ++ repeated xs
+repeated (x:xs) = [ x | x `elem` xs ] ++ repeated xs
