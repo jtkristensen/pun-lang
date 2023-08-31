@@ -34,3 +34,23 @@ findMin t =
         ; leaf      -> [node leaf kv leaf]
         ; [node l' kv' r'] -> findMin l'.
     ; leaf -> leaf
+
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
+not : boolean -> boolean .
+not b =
+  if b then false else true .
+
+and : boolean -> boolean -> boolean .
+and b1 b2 =
+  if b1 then b2 else false .
+
+less : integer -> integer -> boolean .
+less m n = and (m <= n) (not (equal m n)) .
+
+larger : integer -> integer -> boolean .
+larger m n = and (not (m <= n)) (not (equal m n)) .
