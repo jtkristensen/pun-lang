@@ -38,7 +38,7 @@ newtype SubstType = SubstType (Substitution, Type, Term Type, Type)
 instance Arbitrary SubstType where
   arbitrary =
     do subs  <- generateSubstitution
-       t     <- generateType subs
+       t     <- generateType subs []
        let canonT = refine subs t
        term  <- generateGenerator (subs, []) canonT
        return $ SubstType (subs, t, term, canonT)

@@ -30,29 +30,22 @@ generateGeneratorSized s@(is, bs) Integer' size =
          t2   <- generateGeneratorSized s Integer'  (frac size)
          return $ Plus t1 t2 Integer'
     , do t1    <- generateGeneratorSized s Integer' (frac size)
-         type2 <- generateType is
+         type2 <- generateType is []
          t2    <- generateGeneratorSized s type2    (frac size)
          return $ Fst (Pair t1 t2 $ Integer' :*: type2) Integer'
-    , do type1 <- generateType is
+    , do type1 <- generateType is []
          t1    <- generateGeneratorSized s type1    (frac size)
          t2    <- generateGeneratorSized s Integer' (frac size)
          return $ Snd (Pair t1 t2 $ type1 :*: Integer') Integer'
-    , do argType <- generateType is
+    , do argType <- generateType is []
          f       <- generateGeneratorSized s (argType :->: Integer') (frac size)
          arg     <- generateGeneratorSized s argType (frac size)
          return $ Application f arg Integer'
     --     Gamma |- t1 : T1         Gamma[x -> T1] |- t2 : T
     -- Let --------------------------------------------------
     --             Gamma |- let x = t1 in t2 : T
-    {-         
-          TODO:
-               generateType should also take bs as an argument
-               and with some probability generate something that needs
-               the type of something in the bindings
-               Could just do is map snd bs
-     -}
     , do x     <- generateName
-         type1 <- generateType is
+         type1 <- generateType is (map snd bs)
          t1    <- generateGeneratorSized s type1 (frac size)
          t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) Integer' (frac size)
          return $ Let x t1 t2 Integer'
@@ -77,19 +70,19 @@ generateGeneratorSized s@(is, bs) Boolean' size           =
          t2   <- generateGeneratorSized s Integer'  (frac size)
          return $ Leq t1 t2 Boolean'
     , do t1    <- generateGeneratorSized s Boolean' (frac size)
-         type2 <- generateType is
+         type2 <- generateType is []
          t2    <- generateGeneratorSized s type2    (frac size)
          return $ Fst (Pair t1 t2 $ Boolean' :*: type2) Boolean'
-    , do type1 <- generateType is
+    , do type1 <- generateType is []
          t1    <- generateGeneratorSized s type1    (frac size)
          t2    <- generateGeneratorSized s Boolean' (frac size)
          return $ Snd (Pair t1 t2 $ type1 :*: Boolean') Boolean'
-    , do argType <- generateType is
+    , do argType <- generateType is []
          f       <- generateGeneratorSized s (argType :->: Boolean') (frac size)
          arg     <- generateGeneratorSized s argType (frac size)
          return $ Application f arg Boolean'
     , do x     <- generateName
-         type1 <- generateType is
+         type1 <- generateType is (map snd bs)
          t1    <- generateGeneratorSized s type1 (frac size)
          t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) Boolean' (frac size)
          return $ Let x t1 t2 Boolean'
@@ -125,19 +118,19 @@ resolve i is =
 generateName :: Gen Name
 generateName = elements $ pure <$> ['a'..'z']
 
-generateType :: CurrentIndices -> Gen Type
-generateType is =
+generateType :: CurrentIndices -> [Type] -> Gen Type
+generateType is bindingTypes =
   oneof $
     [ return Integer'
     , return Boolean'
-    , do type1 <- generateType is
-         type2 <- generateType is
+    , do type1 <- generateType is []
+         type2 <- generateType is []
          return $ type1 :*: type2
-    , do type1 <- generateType is
-         type2 <- generateType is
+    , do type1 <- generateType is []
+         type2 <- generateType is []
          return $ type1 :->: type2
     ] ++ (return . Variable' . fst <$> is)
-
+      ++ map return bindingTypes
 
 -- should Thing = Gen Bool ?
 -- should Thing be Testable ?
@@ -146,4 +139,3 @@ type Thing = Property
 
 check :: [(Name, Type)] -> Term Type -> Thing
 check _ _ = undefined
-
