@@ -160,7 +160,7 @@ shallNotParse :: Show a => Parser a -> String -> Assertion
 shallNotParse p s = assertBool "shall not parse" $ isLeft $ parseString p s
 
 positive :: (Functor f, Eq (f ()), Show (f ())) => Parser (f a) -> String -> f () -> Assertion
-positive p s a = strip <$> parseString p s @?= return (strip a)
+positive p s a = strip <$> parseString p s @?= return a
 
 negative :: Functor f => Parser (f a) -> String -> Assertion
 negative p s = assertBool "should not parse" $ isLeft $ strip <$> parseString p s
