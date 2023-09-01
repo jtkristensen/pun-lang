@@ -62,8 +62,8 @@ test-suite pun-lang-test
   main-is: Harness.hs
   other-modules:
       Examples
-      ParserTests
       InterpreterTests
+      ParserTests
       PropertyCheckerTests
       Paths_pun_lang
   hs-source-dirs:
