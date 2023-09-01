@@ -20,26 +20,24 @@ data Problem =
   | SeveralDefinitionsOf           X
   | PropertyIsDeclaredMoreThanOnes P
 
-problems :: Program a -> Maybe Problem
-problems p = definitions' \+ declarations' \+ properties'
+problems :: Program a -> [Problem]
+problems p = definitions' <> declarations' <> properties'
   where
-    Nothing \+ t = t
-    t       \+ _ = t
     ts           = fst <$> definitions  p
     ds           = fst <$> declarations p
     ps           = fst <$> properties   p
     definitions' =
       case ts \\ nub ts of
         (x : _) -> return $ SeveralDefinitionsOf x
-        _       -> Nothing
+        _       -> mempty
     declarations' =
       case ds \\ nub ds of
         (x : _) -> return $ SeveralDeclarationsOf x
-        _       -> Nothing
+        _       -> mempty
     properties' =
       case ps \\ nub ps of
         (x : _) -> return $ PropertyIsDeclaredMoreThanOnes x
-        _       -> Nothing
+        _       -> mempty
 
 -- * Usage:
 
