@@ -20,7 +20,7 @@ newtype Primitive
 
 instance Arbitrary Primitive where
   arbitrary =
-    Primitive <$> oneof (generateGenerator ([], []) <$> [Integer', Boolean'])
+    Primitive <$> oneof (generateGenerator ([], [], []) <$> [Integer', Boolean'])
 
 newtype TerminatingTerm
     = TerminatingTerm (Term Type, Type)
@@ -40,7 +40,7 @@ instance Arbitrary SubstType where
     do subs  <- generateSubstitution
        t     <- generateType subs []
        let canonT = refine subs t
-       term  <- generateGenerator (subs, []) canonT
+       term  <- generateGenerator (subs, [], []) canonT
        return $ SubstType (subs, t, term, canonT)
 
 newtype AcyclicIndices = AcyclicIndices CurrentIndices

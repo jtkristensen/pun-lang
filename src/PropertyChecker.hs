@@ -6,20 +6,22 @@ import TypeInference
 
 import Test.Tasty.QuickCheck
 
-type Generator       = Gen (Term Type)
-type CurrentIndices  = Substitution
-type CurrentBindings = [(Name, Type)]
+type Generator        = Gen (Term Type)
+type CurrentIndices   = Substitution
+type CurrentBindings  = [(Name, Type)]
+type TopLevelBindings = [(Name, Type)]
+type ProgramState     = (CurrentIndices, CurrentBindings, TopLevelBindings)
 
 frac :: Int -> Int
 frac size = size `div` 2
 
-generateGenerator :: (CurrentIndices, CurrentBindings) -> (Type -> Generator)
+generateGenerator :: ProgramState -> (Type -> Generator)
 generateGenerator s t = sized (generateGeneratorSized s t)
 
-generateGeneratorSized :: (CurrentIndices, CurrentBindings) -> (Type -> Int -> Generator)
+generateGeneratorSized :: ProgramState -> (Type -> Int -> Generator)
 generateGeneratorSized s          Integer' 0 = generateGeneratorSized s Integer' 1
 generateGeneratorSized _          Integer' 1 = flip Number  Integer' <$> arbitrary
-generateGeneratorSized s@(is, bs) Integer' size =
+generateGeneratorSized s@(is, bs, ts) Integer' size =
   frequency $ zip [1..]
     [ flip Number  Integer' <$> arbitrary
     , do cond <- generateGeneratorSized s Boolean'  (frac size)
@@ -44,22 +46,22 @@ generateGeneratorSized s@(is, bs) Integer' size =
     --     Gamma |- t1 : T1         Gamma[x -> T1] |- t2 : T
     -- Let --------------------------------------------------
     --             Gamma |- let x = t1 in t2 : T
-    , do x     <- generateName
+    , do x     <- generateName ts
          type1 <- generateType is (map snd bs)
          t1    <- generateGeneratorSized s type1 (frac size)
-         t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) Integer' (frac size)
+         t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs, ts) Integer' (frac size)
          return $ Let x t1 t2 Integer'
     --            Gamma[x -> T] |- rec x t : T
     -- Let --------------------------------------------------
     --               Gamma |- rec x t : T
-    , do x     <- generateName
-         t1    <- generateGeneratorSized (is, (x, Integer') : filter ((/=x) . fst) bs) Integer' (frac size)
+    , do x     <- generateName ts
+         t1    <- generateGeneratorSized (is, (x, Integer') : filter ((/=x) . fst) bs, ts) Integer' (frac size)
          return $ Rec x t1 Integer'
          ]
     ++ ((\a -> (15, return a)) . flip Variable Integer' <$> [ n | (n, t) <- bs , t == Integer' ])
 generateGeneratorSized s          Boolean' 0 = generateGeneratorSized s Boolean' 1
 generateGeneratorSized _          Boolean' 1 = flip Boolean Boolean' <$> arbitrary
-generateGeneratorSized s@(is, bs) Boolean' size           =
+generateGeneratorSized s@(is, bs, ts) Boolean' size           =
   frequency $ zip [1..]
     [ flip Boolean  Boolean' <$> arbitrary
     , do cond <- generateGeneratorSized s Boolean'  (frac size)
@@ -81,28 +83,27 @@ generateGeneratorSized s@(is, bs) Boolean' size           =
          f       <- generateGeneratorSized s (argType :->: Boolean') (frac size)
          arg     <- generateGeneratorSized s argType (frac size)
          return $ Application f arg Boolean'
-    , do x     <- generateName
+    , do x     <- generateName ts
          type1 <- generateType is (map snd bs)
          t1    <- generateGeneratorSized s type1 (frac size)
-         t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) Boolean' (frac size)
+         t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs, ts) Boolean' (frac size)
          return $ Let x t1 t2 Boolean'
-    , do x     <- generateName
-         t1    <- generateGeneratorSized (is, (x, Boolean') : filter ((/=x) . fst) bs) Boolean' (frac size)
+    , do x     <- generateName ts
+         t1    <- generateGeneratorSized (is, (x, Boolean') : filter ((/=x) . fst) bs, ts) Boolean' (frac size)
          return $ Rec x t1 Boolean'
          ]
     ++ ((\a -> (15, return a)) . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
--- TODO! Make sure generated Variable's index resolves to canonical type
-generateGeneratorSized s (Variable' index) size   =
-  generateGeneratorSized s (resolve index $ fst s) (frac size)
+generateGeneratorSized s@(is, _, _) (Variable' index) size   =
+  generateGeneratorSized s (resolve index is) (frac size)
 -- Todo, generate more interesting things here!
 generateGeneratorSized s t@(type1 :*: type2) size =
   do t1 <- generateGeneratorSized s type1 (frac size)
      t2 <- generateGeneratorSized s type2 (frac size)
      return $ Pair t1 t2 t
 -- Todo, generate more interesting things here!
-generateGeneratorSized (is, bs) (type1 :->: type2) size =
-  do x  <- generateName
-     t0 <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs) type2 (frac size)
+generateGeneratorSized (is, bs, ts) (type1 :->: type2) size =
+  do x  <- generateName ts
+     t0 <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs, ts) type2 (frac size)
      return $ Lambda x t0 type2
 
 resolve :: Index -> CurrentIndices -> Type
@@ -115,8 +116,9 @@ resolve i is =
     Nothing -> error $ "Unable to resolve index " ++ show i ++
       " to type, was not among current indices."
 
-generateName :: Gen Name
-generateName = elements $ pure <$> ['a'..'z']
+generateName :: TopLevelBindings -> Gen Name
+generateName ts = (elements $ pure <$> ['a'..'z'])
+                  `suchThat` (\a -> notElem a $ map fst ts)
 
 generateType :: CurrentIndices -> [Type] -> Gen Type
 generateType is bindingTypes =
