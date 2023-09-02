@@ -1,0 +1,56 @@
+delete : integer -> bst integer integer -> bst integer integer .
+delete kv t =
+    case t of
+    ; leaf           -> leaf
+    ; [node l kv' r] -> 
+        let key  = fst kv in
+        let key' = fst kv' in
+            if   less key key'
+            then [node (delete kv l) kv' r]
+            else larger key key'
+                 then [node l kv' (delete kv r)]
+                 else delete' kv t .
+
+delete' : integer -> bst integer integer -> bst integer integer .
+delete' kv t =
+    case t of
+    ; [node l kv' r] ->
+          case l of
+          ; leaf              -> r
+          ; [node l' kv'' r'] ->
+            case r of
+            ; leaf                 -> l
+            ; [node l'' kv''' r''] ->
+              case (findMin r) of
+              ; leaf -> leaf
+              ; [node leaf min leaf] -> [node l min (delete kv''' r)]
+    ; leaf -> leaf .
+
+findMin : bst integer integer -> bst integer integer .
+findMin t =
+    case t of
+    ; [node l kv r] ->
+        case l of
+        ; leaf      -> [node leaf kv leaf]
+        ; [node l' kv' r'] -> findMin l'.
+    ; leaf -> leaf
+
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
+not : boolean -> boolean .
+not b =
+  if b then false else true .
+
+and : boolean -> boolean -> boolean .
+and b1 b2 =
+  if b1 then b2 else false .
+
+less : integer -> integer -> boolean .
+less m n = and (m <= n) (not (equal m n)) .
+
+larger : integer -> integer -> boolean .
+larger m n = and (not (m <= n)) (not (equal m n)) .
