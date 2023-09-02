@@ -117,7 +117,7 @@ resolve i is =
       " to type, was not among current indices."
 
 generateName :: TopLevelBindings -> Gen Name
-generateName ts = (elements $ pure <$> ['a'..'z'])
+generateName ts = elements (pure <$> ['a'..'z'])
                   `suchThat` (\a -> notElem a $ map fst ts)
 
 generateType :: CurrentIndices -> [Type] -> Gen Type
