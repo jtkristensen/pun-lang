@@ -14,11 +14,14 @@ type T1        a = Term a
 type T2        a = Term a
 type Left      a = Term a
 type Right     a = Term a
+type K         a = Term a
+type V         a = Term a
 type Key         = Type
 type Value       = Type
 type Leaf      a = Term a
 type Node      a = (Pattern a, Term a)
 type Pattern   a = Term a
+type Canonical a = Term a
 
 data Program a
   = Declaration X           Type    (Program a)
@@ -33,27 +36,36 @@ data Type
   | Boolean'
   | Type :*: Type
   | Type :->: Type
-  -- | BST Key Value
+  | BST Key Value
   deriving (Eq, Show)
 
 data Term a =
-  --   Leaf                           a
-  -- | Node (Left a) (T0 a) (Right a) a
-  -- | Case (T0 a) (Leaf a) (Node a)  a
-    Number    Integer                 a
-  | Boolean   Bool                    a
-  | Variable  Name                    a
-  | If          (T0 a) (T1 a) (T2 a)  a
-  | Plus        (T0 a) (T1 a)         a
-  | Leq         (T0 a) (T1 a)         a
-  | Pair        (T0 a) (T1 a)         a
-  | Fst         (T0 a)                a
-  | Snd         (T0 a)                a
-  | Lambda Name (T0 a)                a
-  | Application        (T1 a) (T2 a)  a
-  | Let Name           (T1 a) (T2 a)  a
-  | Rec Name    (T0 a)                a
+    Number    Integer                   a
+  | Boolean   Bool                      a
+  | Leaf                                a
+  | Node (Left a) (K a) (V a) (Right a) a
+  | Case (T0 a) (Leaf a) (Node a)       a
+  | Variable  Name                      a
+  | If          (T0 a) (T1 a) (T2 a)    a
+  | Plus        (T0 a) (T1 a)           a
+  | Leq         (T0 a) (T1 a)           a
+  | Pair        (T0 a) (T1 a)           a
+  | Fst         (T0 a)                  a
+  | Snd         (T0 a)                  a
+  | Lambda Name (T0 a)                  a
+  | Application        (T1 a) (T2 a)    a
+  | Let Name           (T1 a) (T2 a)    a
+  | Rec Name    (T0 a)                  a
   deriving (Functor, Eq, Show)
+
+canonical :: Term a -> Bool
+canonical (Number  _     _) = True
+canonical (Boolean _     _) = True
+canonical (Pair    t1 t2 _) = canonical t1 && canonical t2
+canonical (Lambda  {}     ) = True
+canonical (Leaf          _) = True
+canonical (Node   l k v r _) = all canonical [l, k, v, r]
+canonical _                 = False
 
 -- Dealing with annotations.
 class Annotated thing where
@@ -74,6 +86,9 @@ instance Annotated Term where
   annotations (Snd      t0       a) = a : annotations t0
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
+  annotations (Leaf              a) = return a
+  annotations (Node      l k v r a) = a : ([l, k, v, r]    >>= annotations)
+  annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
   annotation  term                  = head $ annotations term
 
 definitions :: Program a -> [(F, Term a)]
@@ -95,8 +110,19 @@ properties (Property  p x t rest) = (p, (x, t)) : properties rest
 properties _                      = mempty
 
 indicies :: Type -> [Index]
-indicies (Variable' a) = [a]
-indicies  Integer'     = []
-indicies  Boolean'     = []
-indicies (t1 :*:   t2) = indicies t1 <> indicies t2
-indicies (t1 :->:  t2) = indicies t1 <> indicies t2
+indicies (Variable' a)  = [a]
+indicies  Integer'      = []
+indicies  Boolean'      = []
+indicies (t1 :*:   t2)  = indicies t1 <> indicies t2
+indicies (t1 :->:  t2)  = indicies t1 <> indicies t2
+indicies (BST   t1 t2)  = indicies t1 <> indicies t2
+
+instance Semigroup (Program a) where
+  (Declaration x t p1) <> p2 = Declaration x  t (p1 <> p2)
+  (Definition  x t p1) <> p2 = Definition  x  t (p1 <> p2)
+  (Property p xs t p1) <> p2 = Property  p xs t (p1 <> p2)
+  EndOfProgram         <> p2 = p2
+
+instance Monoid (Program a) where
+  mempty  = EndOfProgram
+  mappend = (<>)
