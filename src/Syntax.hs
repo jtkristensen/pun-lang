@@ -126,4 +126,3 @@ instance Semigroup (Program a) where
 instance Monoid (Program a) where
   mempty  = EndOfProgram
   mappend = (<>)
-
