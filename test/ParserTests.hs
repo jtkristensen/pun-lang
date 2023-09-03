@@ -155,16 +155,27 @@ parseProgramsFromFiles =
          testCase s $
          do src <- readFile s
             let ast = strip <$> runParser program_ () s src
-            assertEqual "" ast (return p)
+            assertEqual "" (return p) ast
       )
   [ ("examples/nil.pun",
      Declaration "nil" (BST Integer' Integer') $
      Definition  "nil" (Leaf ())               $
      EndOfProgram)
   , ("examples/addition-is-commutative.pun",
+     Declaration "equal" (Integer' :->: (Integer' :->: Boolean')) $
+     Definition "equal" (Lambda "m" (Lambda "n"
+      (If (Leq (Variable "m" ()) (Variable "n" ()) ())
+          (Leq (Variable "n" ()) (Variable "m" ()) ())
+          (Boolean False ()) ()) ()) ()) $
+     Declaration "add" (Integer' :->: (Integer' :->: Integer')) $
+     Definition  "add" (Lambda "m" (Lambda "n"
+      (Plus (Variable "m" ()) (Variable "n" ()) ()) ()) ()) $
+     Property "add-is-commutative" [("m",()),("n",())]
+       (Application (Application (Variable "equal" ())
+            (Application (Application (Variable "add" ()) (Variable "m" ()) ()) (Variable "n" ()) ()) ())
+            (Application (Application (Variable "add" ()) (Variable "m" ()) ()) (Variable "n" ()) ()) ())
      EndOfProgram)
   ]
-
 
 -- * Dealing with lore in unit-tests.
 

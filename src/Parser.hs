@@ -123,11 +123,11 @@ declaration_ =
 definition_ :: Parser (Transformation (Program Info))
 definition_ =
   do f    <- name
-     args <- many name
+     args <- many $ info $ (,) <$> name
      _    <- symbol "="
      t    <- term_
      _    <- symbol "."
-     return $ Definition f t
+     return $ Definition f $ foldr (\(x, a) t' -> Lambda x t' a) t args
 
 property_ :: Parser (X, Info) -> Parser (Transformation (Program Info))
 property_ xa =

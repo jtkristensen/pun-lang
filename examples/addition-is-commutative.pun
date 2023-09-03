@@ -1,6 +1,10 @@
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
 add : integer -> integer -> integer .
 add m n = m + n .
-property add-is-commutative m n .
-  if   add m n <= add n m
-  then add n m <= add m n
-  else false .
+
+property add-is-commutative m n . equal (add m n) (add m n) .
