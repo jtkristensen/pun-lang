@@ -8,7 +8,7 @@ import Control.Monad (void)
 
 import Syntax
 import Parser
-import Text.Parsec (eof)
+import Text.Parsec (eof, runParser)
 import Data.Either
 
 parserTests :: [TestTree]
@@ -21,6 +21,7 @@ parserTests =
   , testGroup "negative tests for parsing types" typeParserTests_negative
   , testGroup "positive tests for parsing terms" termParserTests_positive
   , testGroup "negative tests for parsing terms" termParserTests_negative
+  , testGroup "example files from repository   " parseProgramsFromFiles
   ]
 
 natParserTests_positive :: [TestTree]
@@ -147,6 +148,23 @@ termParserTests_negative =
   , "[node leaf]"
   , " false"
   ]
+
+parseProgramsFromFiles :: [TestTree]
+parseProgramsFromFiles =
+  map (\(s, p) ->
+         testCase s $
+         do src <- readFile s
+            let ast = strip <$> runParser program_ () s src
+            assertEqual "" ast (return p)
+      )
+  [ ("examples/nil.pun",
+     Declaration "nil" (BST Integer' Integer') $
+     Definition  "nil" (Leaf ())               $
+     EndOfProgram)
+  , ("examples/addition-is-commutative.pun",
+     EndOfProgram)
+  ]
+
 
 -- * Dealing with lore in unit-tests.
 

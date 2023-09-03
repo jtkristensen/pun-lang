@@ -1,3 +1,6 @@
 add : integer -> integer -> integer .
 add m n = m + n .
-property add-is-commutative m n . m + n == n + m .
+property add-is-commutative m n .
+  if   add m n <= add n m
+  then add n m <= add m n
+  else false .

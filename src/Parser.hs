@@ -122,10 +122,11 @@ declaration_ =
 
 definition_ :: Parser (Transformation (Program Info))
 definition_ =
-  do f <- name
-     _ <- symbol "="
-     t <- term_
-     _ <- symbol "."
+  do f    <- name
+     args <- many name
+     _    <- symbol "="
+     t    <- term_
+     _    <- symbol "."
      return $ Definition f t
 
 property_ :: Parser (X, Info) -> Parser (Transformation (Program Info))
@@ -140,8 +141,10 @@ property_ xa =
 
 program_ :: Parser (Program Info)
 program_ =
-  foldr (\a b -> a b) EndOfProgram <$>
-  many (choice [ try declaration_, definition_, property_ (info ((,) <$> name))])
+  fmap (foldr (\a b -> a b) EndOfProgram) $
+  do p <- many (choice [ try declaration_, definition_, property_ (info ((,) <$> name))])
+     _ <- eof
+     return p
 
 -- -- * Utility:
 
