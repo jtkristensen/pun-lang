@@ -5,7 +5,7 @@ import PropertyCheckerTests
 import InterpreterTests
 
 main :: IO ()
-main = defaultMain tests
+main = defaultMain $ localOption (mkTimeout 5000000) tests
 
 tests :: TestTree
 tests =
