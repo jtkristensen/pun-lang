@@ -48,10 +48,10 @@ newtype AcyclicIndices = AcyclicIndices CurrentIndices
 
 instance Arbitrary AcyclicIndices where
   arbitrary = 
-    do length'   <- choose (0, 100)
-       indices   <- shuffle ([(index, Variable' index') | index <- [0..length'], index' <- [index + 1]])
-       canonical <- elements [Integer', Boolean']
-       return $ AcyclicIndices (indices ++ [(length' + 1, canonical)])
+    do length'       <- choose (0, 100)
+       indices       <- shuffle ([(index, Variable' index') | index <- [0..length'], index' <- [index + 1]])
+       canonicalType <- elements [Integer', Boolean']
+       return $ AcyclicIndices (indices ++ [(length' + 1, canonicalType)])
 
 newtype AnalyseGenerator = AnalyseGenerator (Term Type, ([String], [String]))
   deriving Show
@@ -95,7 +95,7 @@ generateGenerator_tests =
         (solution == Integer' || solution == Boolean'),
     testProperty "Analysing terms that have been generated" $
     \(AnalyseGenerator (_, (declaredNames, usedNames))) ->
-      label ("analyse names: " ++ occurrence declaredNames usedNames) $ True
+      label ("analyse names: " ++ occurrence declaredNames usedNames) True
   ]
 
 occurrence :: [String] -> [String] -> String
@@ -108,19 +108,24 @@ combine :: ([String], [String]) -> ([String], [String]) -> ([String], [String])
 combine (d1, u1) (d2, u2) = (d1 ++ d2, u1 ++ u2) 
 
 analyse :: Term Type -> ([String], [String])
-analyse (Number      _ _) = (mempty, mempty)
-analyse (Boolean     _ _) = (mempty, mempty)
-analyse (Variable    n _) = (mempty, return n)
-analyse (If cond t1 t2 _) = combine (combine (analyse cond) (analyse t1)) (analyse t2)
-analyse (Plus t1 t2 _) = combine (analyse t1) (analyse t2)
-analyse (Leq  t1 t2 _) = combine (analyse t1) (analyse t2)
-analyse (Pair t1 t2 _) = combine (analyse t1) (analyse t2)
-analyse (Fst t _) = analyse t
-analyse (Snd t _) = analyse t
-analyse (Lambda n t _) = combine (return n, mempty) (analyse t)
-analyse (Application t1 t2 _) = combine (analyse t1) (analyse t2)
-analyse (Let n t1 t2 _) = combine (return n, mempty) (combine (analyse t1) (analyse t2))
-analyse (Rec n t _) = combine (return n, mempty) (analyse t)
+analyse (Number        _ _)     = (mempty, mempty)
+analyse (Boolean       _ _)     = (mempty, mempty)
+analyse (Variable      n _)     = (mempty, return n)
+analyse (If   cond t1 t2 _)     = combine (combine (analyse cond) (analyse t1)) (analyse t2)
+analyse (Plus      t1 t2 _)     = combine (analyse t1) (analyse t2)
+analyse (Leq       t1 t2 _)     = combine (analyse t1) (analyse t2)
+analyse (Pair      t1 t2 _)     = combine (analyse t1) (analyse t2)
+analyse (Fst       t     _)     = analyse t
+analyse (Snd       t     _)     = analyse t
+analyse (Lambda    n  t  _)     = combine (return n, mempty) (analyse t)
+analyse (Application t1 t2 _)   = combine (analyse t1) (analyse t2)
+analyse (Let     n t1 t2 _)     = combine (return n, mempty) (combine (analyse t1) (analyse t2))
+analyse (Rec       n  t  _)     = combine (return n, mempty) (analyse t)
+analyse (Leaf            _)     = (mempty, mempty)
+analyse (Node    l k v r _)     = (analyse k `combine` analyse v) `combine`
+                                  (analyse l `combine` analyse r)
+analyse (Case t l (p, n) _)     = (analyse t `combine` analyse l) `combine`
+                                  (analyse p `combine` analyse n)
 
 -- Todo, we want to use more complicated types.
 -- Todo, should this actually live in `PropertyChecker`?
@@ -191,6 +196,7 @@ subst s (Variable' a) =
     _   -> error "internal error about unification"
 subst s (t1 :*:  t2) = subst s t1 :*:  subst s t2
 subst s (t1 :->: t2) = subst s t1 :->: subst s t2
+subst s (BST  t1 t2) = BST (subst s t1) (subst s t2)
 
 equivalent :: Type -> Type -> Bool
 equivalent t1 t2 =
