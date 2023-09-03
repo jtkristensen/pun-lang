@@ -62,8 +62,8 @@ instance Arbitrary AnalyseGenerator where
        term <- generateGenerator mempty t
        return $ AnalyseGenerator (term, analyse term)
 
-generateGenerator_tests :: TestTree
-generateGenerator_tests =
+generateGeneratorTests :: TestTree
+generateGeneratorTests =
   testGroup "`generateGenerator` tests :"
   [ testProperty "Pairs and Functions are not primitives" $
     \(Primitive value) ->
@@ -100,9 +100,9 @@ generateGenerator_tests =
 
 occurrence :: [String] -> [String] -> String
 occurrence declaredNames usedNames
-  | (declaredNames == []) = "No names were declared."
-  | (usedNames     == []) = "There were declared names but no occurrences"
-  | otherwise             = "There were occurrences of declared names."
+  | null declaredNames = "No names were declared."
+  | null usedNames     = "There were declared names but no occurrences"
+  | otherwise          = "There were occurrences of declared names."
 
 combine :: ([String], [String]) -> ([String], [String]) -> ([String], [String])
 combine (d1, u1) (d2, u2) = (d1 ++ d2, u1 ++ u2) 
