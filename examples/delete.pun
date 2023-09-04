@@ -1,13 +1,3 @@
-not : boolean -> boolean .
-not b =
-  if b then false else true .
-
-less : integer -> integer -> boolean .
-less m n = and (m <= n) (not (equal m n)) .
-
-larger : integer -> integer -> boolean .
-larger m n = not (less m n) .
-
 findMin : bst integer integer -> bst integer integer .
 findMin t =
     case t of
