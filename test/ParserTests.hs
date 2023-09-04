@@ -202,6 +202,13 @@ parseProgramsFromFiles =
           (Application
             (Application (Variable "equal" ()) (Variable "m" ()) ())
             (Variable "n" ()) ()) ()) ()) ()) ()) $
+      Declaration "larger" (Integer' :->: (Integer' :->: Boolean')) $
+        Definition  "larger" (Lambda "m" (Lambda "n"
+          (Application
+            (Variable "not" ())
+            (Application
+              (Application (Variable "less" ()) (Variable "m" ()) ())
+              (Variable "n" ()) ()) ()) ()) ()) $
        EndOfProgram)
     , ("examples/insert.pun",
         Declaration "equal" (Integer' :->: (Integer' :->: Boolean')) $
