@@ -6,11 +6,11 @@ import TypeInference
 
 import Test.Tasty.QuickCheck
 
-type Generator        = Gen (Term Type)
-type CurrentIndices   = Substitution
-type CurrentBindings  = [(Name, Type)]
-type TopLevelBindings = [(Name, Type)]
-type ProgramConfiguration     = (CurrentIndices, CurrentBindings, TopLevelBindings)
+type Generator            = Gen (Term Type)
+type CurrentIndices       = Substitution
+type CurrentBindings      = [(Name, Type)]
+type TopLevelBindings     = [(Name, Type)]
+type ProgramConfiguration = (CurrentIndices, CurrentBindings, TopLevelBindings)
 
 decrease :: Int -> Int
 decrease size = size `div` 2
