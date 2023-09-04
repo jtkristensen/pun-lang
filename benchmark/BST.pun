@@ -1,0 +1,80 @@
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
+not : boolean -> boolean .
+not b =
+  if b then false else true .
+
+and : boolean -> boolean -> boolean .
+and b1 b2 =
+  if b1 then b2 else false .
+
+less : integer -> integer -> boolean .
+less m n = and (m <= n) (not (equal m n)) .
+
+larger : integer -> integer -> boolean .
+larger m n = not (less m n) .
+
+nil : bst integer integer .
+nil = leaf .
+
+insert : integer -> integer -> bst integer integer -> bst integer integer .
+insert k1 v1 t =
+  case t of
+  ; leaf             -> [node leaf k1 v1 leaf]
+  ; [node l k2 v2 r] ->
+    if equal k1 k2
+    then [node l k2 v1 r]
+    else if   k1 <= k2
+         then [node (insert k1 v1 l) k2 v2 r]
+         else if   larger k1 k2
+              then [node l k2 v2 (insert k1 v1 r)]
+              else [node (leaf) k1 v1 (leaf)] .
+
+findMin : bst integer integer -> bst integer integer .
+findMin t =
+    case t of
+    ; leaf           -> leaf
+    ; [node l k v r] ->
+        case l of
+        ; leaf               -> [node leaf k v leaf]
+        ; [node l1 k1 v1 r1] -> findMin l1 .
+
+delete : integer -> integer -> bst integer integer -> bst integer integer .
+delete k v t =
+    case t of
+    ; leaf             -> leaf
+    ; [node l k1 v1 r] -> 
+        if   less k k1
+        then [node (delete k v l) k1 v1 r]
+        else if larger k k1
+            then [node l k1 v1 (delete k v r)]
+            else (delete1 k1 v1 t) .
+
+delete1 : integer -> integer -> bst integer integer -> bst integer integer.
+delete1 k v t =
+    case t of
+    ; leaf             -> leaf
+    ; [node l k1 v1 r] ->
+          case l of
+          ; leaf               -> r
+          ; [node l1 k2 v2 r1] ->
+            case r of
+            ; leaf               -> l
+            ; [node l2 k3 v3 r2] ->
+                case (findMin r) of
+                ; leaf                           -> leaf
+                ; [node leaf minKey minVal leaf] -> [node l minKey minVal (delete minKey minVal r)] .
+
+union : bst integer integer -> bst integer integer -> bst integer integer .
+union t1 t2 =
+    case t2 of
+    ; leaf           -> t1
+    ; [node l k v r] ->
+      case t1 of
+      ; leaf               -> t2
+      ; [node l1 k1 v1 r1] ->
+        union (delete k1 v1 t1) (insert k1 v1 t2) .
