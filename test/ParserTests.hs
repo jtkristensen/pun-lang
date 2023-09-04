@@ -438,6 +438,111 @@ parseProgramsFromFiles =
               (Node (Variable "l1" ()) (Variable "k1" ()) (Variable "v1" ()) (Variable "r1" ()) (),
               Application (Variable "findMin" ()) (Variable "l1" ()) ()) ()) ()) ()) $
         EndOfProgram)
+      , ("examples/bst-properties.pun",
+         Property "find-post-present"
+                  [("k", ()), ("v", ()), ("t", ())]
+                  (Application
+                    (Application
+                      (Variable "equal" ())
+                      (Application
+                        (Application (Variable "find" ()) (Variable "k" ()) ())
+                        (Application
+                          (Application
+                            (Application (Variable "insert" ()) (Variable "k" ()) ())
+                            (Variable "v" ()) ())
+                          (Variable "t" ()) ()) ()) ())
+                      (Node (Leaf ())
+                            (Variable "k" ())
+                            (Variable "v" ())
+                            (Leaf ()) ()) ()) $
+         Property "find-post-absent"
+                   [("k", ()), ("t", ())]
+                   (Application
+                    (Application
+                      (Variable "equal" ())
+                      (Application
+                        (Application
+                          (Variable "find" ())
+                          (Variable "k" ()) ())
+                        (Application
+                          (Application
+                            (Variable "delete" ())
+                            (Variable "k" ()) ())
+                          (Variable "t" ()) ()) ()) ())
+                      (Leaf ()) ()) $
+         Property "insert-delete-complete"
+                  [("k", ()), ("t", ())]
+                  (Case
+                    (Application
+                      (Application
+                        (Variable "find" ())
+                        (Variable "k" ()) ())
+                      (Variable "t" ()) ())
+                    (Application
+                      (Application
+                        (Variable "equal" ())
+                        (Variable "t" ()) ())
+                      (Application
+                        (Application
+                          (Variable "delete" ())
+                          (Variable "k"      ()) ())
+                        (Variable "t" ()) ()) ())
+                      (Node (Variable "l"  ())
+                            (Variable "k1" ())
+                            (Variable "v"  ())
+                            (Variable "r" ()) (),
+                       Application
+                        (Application
+                          (Variable "equal" ())
+                          (Variable "t" ()) ())
+                        (Application
+                          (Application
+                            (Application
+                              (Variable "insert" ())
+                              (Variable "k" ()) ())
+                            (Variable "v" ()) ())
+                          (Variable "t" ()) ()) ()) ()) $
+         Property "insert-post"
+                  [("k", ()), ("v", ()), ("t", ()), ("k1", ())]
+                  (Application
+                    (Application
+                      (Variable "equal" ())
+                      (Application
+                        (Application
+                          (Variable "find" ())
+                          (Variable "k1" ()) ())
+                        (Application
+                          (Application
+                            (Application
+                              (Variable "insert" ())
+                              (Variable "k" ()) ())
+                            (Variable "v" ()) ())
+                          (Variable "t" ()) ()) ()) ())
+                      (If
+                        (Application
+                          (Application
+                            (Variable "equal" ())
+                            (Variable "k" ()) ())
+                          (Variable "k1" ()) ())
+                        (Node (Leaf ())
+                              (Variable "k" ())
+                              (Variable "v" ())
+                              (Leaf ()) ())
+                        (Application
+                          (Application
+                            (Variable "find" ())
+                            (Variable "k1" ()) ())
+                          (Variable "t" ()) ()) ()) ()) $
+         Property "insert-post-same-key"
+                  [("k", ()), ("v", ()), ("t", ())]
+                  (Application
+                    (Application
+                      (Application
+                        (Application (Variable "insert-post" ()) (Variable "k" ()) ())
+                        (Variable "v" ()) ())
+                      (Variable "t" ()) ())
+                    (Variable "k" ()) ()) $
+         EndOfProgram)
     ]
 
 -- * Dealing with lore in unit-tests.
