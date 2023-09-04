@@ -1,0 +1,16 @@
+property find-post-present k v t . equal (find k (insert k v t)) ([node leaf k v leaf]) .
+
+property find-post-absent k t . equal (find k (delete k t)) (leaf) .
+
+property insert-delete-complete k t .
+  case (find k t) of
+  ; leaf            -> equal t (delete k t)
+  ; [node l k1 v r] -> equal t (insert k v t) .
+
+property insert-post k v t k1 .
+  equal (find k1 (insert k v t))
+        (if   (equal k k1)
+         then [node leaf k v leaf]
+         else (find k1 t)) .
+
+property insert-post-same-key k v t . insert-post k v t k .
