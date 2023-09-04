@@ -399,6 +399,45 @@ parseProgramsFromFiles =
                               (Variable "v1" ()) ())
                             (Variable "t2" ()) ()) ()) ()) ()) ()) ()) $
         EndOfProgram)
+      , ("examples/find.pun",
+        Declaration "find" (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer')) $
+        Definition  "find" (Lambda "k" (Lambda "t"
+          (Case
+            (Variable "t" ())
+            (Leaf ())
+            (Node (Variable "l"  ())
+                  (Variable "k1" ())
+                  (Variable "v"  ())
+                  (Variable "r" ()) (),
+             If (Application
+                  (Application (Variable "equal" ()) (Variable "k" ()) ())
+                  (Variable "k1" ()) ())
+                (Node (Leaf ()) (Variable "k1" ()) (Variable "v" ()) (Leaf ()) ())
+                (If (Application
+                      (Application (Variable "larger" ()) (Variable "k" ()) ())
+                      (Variable "k1" ()) ())
+                    (Application
+                      (Application (Variable "find" ()) (Variable "k" ()) ())
+                      (Variable "r" ()) ())
+                    (If (Application
+                          (Application (Variable "less" ()) (Variable "k" ()) ())
+                          (Variable "l" ()) ())
+                        (Application
+                          (Application (Variable "find" ()) (Variable "k" ()) ())
+                          (Variable "l" ()) ())
+                        (Leaf ()) ()) ()) ()) ()) ()) ()) $
+        Declaration "findMin" (BST Integer' Integer' :->: BST Integer' Integer') $
+        Definition  "findMin" (Lambda "t"
+          (Case
+            (Variable "t" ())
+            (Leaf ())
+            (Node (Variable "l" ()) (Variable "k" ()) (Variable "v" ()) (Variable "r" ()) (),
+            Case
+              (Variable "l" ())
+              (Node (Leaf ()) (Variable "k" ()) (Variable "v" ()) (Leaf ()) ())
+              (Node (Variable "l1" ()) (Variable "k1" ()) (Variable "v1" ()) (Variable "r1" ()) (),
+              Application (Variable "findMin" ()) (Variable "l1" ()) ()) ()) ()) ()) $
+        EndOfProgram)
     ]
 
 -- * Dealing with lore in unit-tests.
