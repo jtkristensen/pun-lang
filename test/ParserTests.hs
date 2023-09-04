@@ -267,29 +267,6 @@ parseProgramsFromFiles =
                     (Node (Leaf ()) (Variable "k1" ()) (Variable "v1" ()) (Leaf ()) ()) ()) ()) ()) ()) ()) ()) ()) $
         EndOfProgram)
       , ("examples/delete.pun",
-        Declaration "not" (Boolean' :->: Boolean') $
-        Definition  "not" (Lambda "b" 
-          (If (Variable "b"  ())
-              (Boolean False ())
-              (Boolean True  ()) ()) ()) $
-        Declaration "less" (Integer' :->: (Integer' :->: Boolean')) $
-        Definition  "less" (Lambda "m" (Lambda "n"
-        (Application
-        (Application
-          (Variable "and" ())
-          (Leq (Variable "m" ()) (Variable "n" ()) ()) ())
-        (Application 
-          (Variable "not" ())
-          (Application
-            (Application (Variable "equal" ()) (Variable "m" ()) ())
-            (Variable "n" ()) ()) ()) ()) ()) ()) $
-        Declaration "larger" (Integer' :->: (Integer' :->: Boolean')) $
-        Definition  "larger" (Lambda "m" (Lambda "n"
-          (Application
-            (Variable "not" ())
-            (Application
-              (Application (Variable "less" ()) (Variable "m" ()) ())
-              (Variable "n" ()) ()) ()) ()) ()) $
         Declaration "findMin" (BST Integer' Integer' :->: BST Integer' Integer') $
         Definition  "findMin" (Lambda "t"
           (Case
