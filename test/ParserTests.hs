@@ -358,6 +358,40 @@ parseProgramsFromFiles =
                                                   (Variable "minVal" ()) ())
                                                 (Variable "r" ()) ()) ()) ()) ()) ()) ()) ()) ()) ()) $
         EndOfProgram)
+      , ("examples/union.pun",
+        Declaration "union" (BST Integer' Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer')) $
+        Definition  "union" (Lambda "t1" (Lambda "t2"
+          (Case (Variable "t2" ())
+                (Variable "t1" ())
+                (Node (Variable "l" ())
+                      (Variable "k" ())
+                      (Variable "v" ())
+                      (Variable "r" ())
+                      (),
+                 Case (Variable "t1" ())
+                      (Variable "t2" ())
+                      (Node (Variable "l1" ())
+                            (Variable "k1" ())
+                            (Variable "v1" ())
+                            (Variable "r1" ()) (),
+                       Application
+                        (Application
+                          (Variable "union" ())
+                          (Application
+                            (Application
+                              (Application
+                                (Variable "delete" ())
+                                (Variable "k1"     ()) ())
+                              (Variable "v1" ()) ())
+                            (Variable "t1" ()) ()) ())
+                          (Application
+                            (Application
+                              (Application
+                                (Variable "insert" ())
+                                (Variable "k1"     ()) ())
+                              (Variable "v1" ()) ())
+                            (Variable "t2" ()) ()) ()) ()) ()) ()) ()) $
+        EndOfProgram)
     ]
 
 -- * Dealing with lore in unit-tests.
