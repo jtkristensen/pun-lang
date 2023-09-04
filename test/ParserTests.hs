@@ -8,7 +8,7 @@ import Control.Monad (void)
 
 import Syntax
 import Parser
-import Text.Parsec (eof, runParser)
+import Text.Parsec (eof)
 import Data.Either
 
 parserTests :: [TestTree]
@@ -26,7 +26,7 @@ parserTests =
 
 natParserTests_positive :: [TestTree]
 natParserTests_positive =
-  map (\(s, v) -> testCase s $ (nat, s) `parsesTo` v)
+  map (\(s, v) -> testCase s $ (nat_, s) `parsesTo` v)
   [ ( "0",  0)
   , ("00",  0)
   , ("10", 10)
@@ -34,14 +34,14 @@ natParserTests_positive =
 
 natParserTests_negative :: [TestTree]
 natParserTests_negative =
-  map (\s -> testCase ("'" ++ s ++ "' is not a nat") $ nat `shallNotParse` s)
+  map (\s -> testCase ("'" ++ s ++ "' is not a nat") $ nat_ `shallNotParse` s)
   [ ""
   , " 00"
   ]
 
 intParserTests_positive :: [TestTree]
 intParserTests_positive =
-  map (\(s, v) -> testCase s $ (int, s) `parsesTo` v)
+  map (\(s, v) -> testCase s $ (int_, s) `parsesTo` v)
   [ (   "0",   0)
   , (  "00",   0)
   , (  "10",  10)
@@ -53,7 +53,7 @@ intParserTests_positive =
 
 intParserTests_negative :: [TestTree]
 intParserTests_negative =
-  map (\s -> testCase ("'" ++ s ++ "' is not an int") $ int `shallNotParse` s)
+  map (\s -> testCase ("'" ++ s ++ "' is not an int") $ int_ `shallNotParse` s)
   [ ""
   , "-0"
   , " ~0"

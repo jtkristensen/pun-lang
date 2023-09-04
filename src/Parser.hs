@@ -1,5 +1,9 @@
 
-module Parser where
+module Parser
+  ( Parser, Info, term_, type_, program_, nat_, int_
+  , runParser, parseString, problems
+  )
+where
 
 import Syntax
 import Data.List (nub, (\\))
@@ -14,7 +18,7 @@ type Parser           = Parsec Source ()
 type Info             = (SourcePos, SourcePos)
 type Transformation a = (a -> a)
 
--- Should this go into the parser?
+-- Should this go int_o the parser?
 data Problem =
     SeveralDeclarationsOf          X
   | SeveralDefinitionsOf           X
@@ -63,15 +67,15 @@ type_ =
       [ symbol "integer" >> return Integer'
       , symbol "boolean" >> return Boolean'
       , symbol "bst" >> BST <$> type' <*> type'
-      , Variable' <$> nat
+      , Variable' <$> nat_
       , parens type_
       ]
 
 simple :: Parser (Term Info)
 simple =
   choice
-  [ info $ int  <&> Number
-  , info $ bool <&> Boolean
+  [ info $ int_  <&> Number
+  , info $ bool_ <&> Boolean
   , info $ symbol "leaf" >> return Leaf
   , info $ name <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
@@ -148,18 +152,20 @@ program_ =
 
 -- -- * Utility:
 
-pre, post :: String -> Parser a -> Parser a
+pre :: String -> Parser a -> Parser a
 pre  s p = symbol s >> p
-post s p = p >>= \x -> symbol s >> return x
 
-nat :: Parser Integer
-nat = lexeme $ read <$> many1 digit
+-- post :: String -> Parser a -> Parser a
+-- post s p = p >>= \x -> symbol s >> return x
 
-int :: Parser Integer
-int = option id (symbol "~" >> return negate) <*> nat
+nat_ :: Parser Integer
+nat_ = lexeme $ read <$> many1 digit
 
-bool :: Parser Bool
-bool =
+int_ :: Parser Integer
+int_ = option id (symbol "~" >> return negate) <*> nat_
+
+bool_ :: Parser Bool
+bool_ =
   choice
   [ symbol "true"  >> return True
   , symbol "false" >> return False
