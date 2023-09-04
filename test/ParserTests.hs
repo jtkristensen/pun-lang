@@ -241,19 +241,27 @@ parseProgramsFromFiles =
              (If (Leq (Variable "k1" ()) (Variable "k2" ()) ())
                  (Node (Application
                           (Application
-                            (Application (Variable "insert" ()) (Variable "k1" ()) ())
+                            (Application
+                              (Variable "insert" ())
+                              (Variable "k1" ()) ())
                             (Variable "v1" ()) ())
                           (Variable "l" ()) ())
                       (Variable "k2" ())
                       (Variable "v2" ())
                       (Variable "r" ()) ())
                   (If (Application
-                      (Application (Variable "larger" ()) (Variable "k1" ()) ())
+                      (Application
+                        (Variable "larger" ())
+                        (Variable "k1" ()) ())
                       (Variable "k2" ()) ())
-                    (Node (Variable "l" ()) (Variable "k2" ()) (Variable "v2" ())
+                    (Node (Variable "l" ())
+                          (Variable "k2" ())
+                          (Variable "v2" ())
                           (Application
                             (Application
-                              (Application (Variable "insert" ()) (Variable "k1" ()) ())
+                              (Application
+                                (Variable "insert" ())
+                                (Variable "k1" ()) ())
                               (Variable "v1" ()) ())
                             (Variable "r" ()) ()) ())
                     (Node (Leaf ()) (Variable "k1" ()) (Variable "v1" ()) (Leaf ()) ()) ()) ()) ()) ()) ()) ()) ()) $
@@ -293,6 +301,47 @@ parseProgramsFromFiles =
               (Node (Leaf ()) (Variable "k" ()) (Variable "v" ()) (Leaf ()) ())
               (Node (Variable "l1" ()) (Variable "k1" ()) (Variable "v1" ()) (Variable "r1" ()) (),
               Application (Variable "findMin" ()) (Variable "l1" ()) ()) ()) ()) ()) $
+        Declaration "delete" (Integer' :->: (Integer' :->: BST Integer' Integer')) $
+        Definition  "delete" (Lambda "k" (Lambda "v" (Lambda "t"
+          (Case
+            (Variable "t" ())
+            (Leaf ())
+            (Node (Variable "l" ()) (Variable "k1" ()) (Variable "v1" ()) (Variable "r" ()) (),
+             If (Application
+                  (Application (Variable "less" ()) (Variable "k" ()) ())
+                  (Variable "k1" ()) ())
+                (Node (Application
+                        (Application
+                          (Application
+                            (Variable "delete" ())
+                            (Variable "k" ()) ())
+                          (Variable "v" ()) ())
+                        (Variable "l" ()) ())
+                      (Variable "k1" ())
+                      (Variable "v1" ())
+                      (Variable "r" ()) ())
+                (If (Application
+                      (Application
+                        (Variable "larger" ())
+                        (Variable "k" ()) ())
+                      (Variable "k1" ()) ())
+                    (Node (Variable "l"  ())
+                          (Variable "k1" ())
+                          (Variable "v1" ())
+                          (Application
+                            (Application
+                              (Application
+                                (Variable "delete" ())
+                                (Variable "k" ()) ())
+                              (Variable "v" ()) ())
+                            (Variable "r" ()) ()) ())
+                    (Application
+                      (Application
+                        (Application
+                          (Variable "delete1" ())
+                          (Variable "k1" ()) ())
+                        (Variable "v1" ()) ())
+                      (Variable "t" ()) ()) ()) ()) ()) ()) ()) ()) $
         EndOfProgram)
     ]
 
