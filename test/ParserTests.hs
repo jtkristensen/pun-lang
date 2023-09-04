@@ -301,7 +301,7 @@ parseProgramsFromFiles =
               (Node (Leaf ()) (Variable "k" ()) (Variable "v" ()) (Leaf ()) ())
               (Node (Variable "l1" ()) (Variable "k1" ()) (Variable "v1" ()) (Variable "r1" ()) (),
               Application (Variable "findMin" ()) (Variable "l1" ()) ()) ()) ()) ()) $
-        Declaration "delete" (Integer' :->: (Integer' :->: BST Integer' Integer')) $
+        Declaration "delete" (Integer' :->: (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer'))) $
         Definition  "delete" (Lambda "k" (Lambda "v" (Lambda "t"
           (Case
             (Variable "t" ())
