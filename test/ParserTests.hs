@@ -342,6 +342,44 @@ parseProgramsFromFiles =
                           (Variable "k1" ()) ())
                         (Variable "v1" ()) ())
                       (Variable "t" ()) ()) ()) ()) ()) ()) ()) ()) $
+        Declaration "delete1" (Integer' :->: (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer'))) $
+        Definition  "delete1" (Lambda "k" (Lambda "v" (Lambda "t"
+          (Case (Variable "t" ())
+                (Leaf ())
+                (Node (Variable "l"  ())
+                      (Variable "k1" ())
+                      (Variable "v1" ())
+                      (Variable "r"  ()) (),
+                 Case (Variable "l"  ())
+                      (Variable "r"  ())
+                      (Node (Variable "l1" ())
+                            (Variable "k2" ())
+                            (Variable "v2" ())
+                            (Variable "r1" ()) (),
+                       Case (Variable "r" ())
+                            (Variable "l" ())
+                            (Node (Variable "l2" ())
+                                  (Variable "k3" ())
+                                  (Variable "v3" ())
+                                  (Variable "r2" ()) (),
+                             Case (Application
+                                    (Variable "findMin" ())
+                                    (Variable "r" ()) ())
+                                  (Leaf ())
+                                  (Node (Leaf ())
+                                        (Variable "minKey" ())
+                                        (Variable "minVal" ())
+                                        (Leaf ()) (),
+                                         Node (Variable "l" ())
+                                              (Variable "minKey" ())
+                                              (Variable "minVal" ())
+                                              (Application
+                                                (Application
+                                                  (Application
+                                                    (Variable "delete" ())
+                                                    (Variable "minKey" ()) ())
+                                                  (Variable "minVal" ()) ())
+                                                (Variable "r" ()) ()) ()) ()) ()) ()) ()) ()) ()) ()) $
         EndOfProgram)
     ]
 
