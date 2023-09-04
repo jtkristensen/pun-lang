@@ -16,3 +16,14 @@ findMin t =
         case l of
         ; leaf               -> [node leaf k v leaf]
         ; [node l1 k1 v1 r1] -> findMin l1 .
+
+delete : integer -> integer -> bst integer integer .
+delete k v t =
+    case t of
+    ; leaf             -> leaf
+    ; [node l k1 v1 r] -> 
+        if   less k k1
+        then [node (delete k v l) k1 v1 r]
+        else if larger k k1
+            then [node l k1 v1 (delete k v r)]
+            else (delete1 k1 v1 t) .
