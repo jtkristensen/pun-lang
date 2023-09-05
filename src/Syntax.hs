@@ -34,6 +34,7 @@ data Type
   = Variable' Index
   | Integer'
   | Boolean'
+  | Unit'
   | Type :*: Type
   | Type :->: Type
   | BST Key Value
@@ -42,6 +43,7 @@ data Type
 data Term a =
     Number    Integer                   a
   | Boolean   Bool                      a
+  | Unit                                a
   | Leaf                                a
   | Node (Left a) (K a) (V a) (Right a) a
   | Case (T0 a) (Leaf a) (Node a)       a

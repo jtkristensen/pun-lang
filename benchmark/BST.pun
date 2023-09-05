@@ -79,6 +79,46 @@ union t1 t2 =
       ; [node l1 k1 v1 r1] ->
         union (delete k1 v1 t1) (insert k1 v1 t2) .
 
+model : bst integer integer -> bst (integer, integer) unit .
+model t =
+  case t of
+  ; leaf           -> empty
+  ; [node l k v r] -> model_insert (k, v) (model_union (model l) (model r)) .
+
+model_insert : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
+model_insert p xs =
+  case xs of
+  ; leaf                    -> cons p empty
+  ; [node leaf q unit rest] ->
+      if   less (fst p) (fst q)
+      then cons q (model_insert p rest)]
+      else cons p (without p rest) .
+
+model_union : bst (integer, integer) unit -> bst (integer, integer) unit -> bst (integer, integer) unit .
+model_union t1 t2 =
+  case t1 of
+  ; leaf                    -> t2
+  ; [node leaf p unit rest] -> model_insert p (model_union rest t2) .
+
+without : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
+without key list = filter (\p -> not (equal (fst p) key)) list
+
+empty : bst (integer, integer) unit.
+empty = nil .
+
+cons : 0 -> bst 0 unit -> bst 0 unit.
+cons x xs = [node leaf x unit xs] .
+
+filter : (0 -> boolean) -> (bst 0 unit -> bst 0 unit).
+filter p list =
+  case list of
+  ; leaf                    -> leaf
+  ; [node leaf x unit xs] ->
+    let rest = filter p xs in
+    if   p x
+    then [node leaf x unit rest]
+    else rest .
+
 property find-post-present k v t . equal (find k (insert k v t)) ([node leaf k v leaf]) .
 
 property find-post-absent k t . equal (find k (delete k t)) (leaf) .
