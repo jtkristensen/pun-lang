@@ -110,6 +110,7 @@ combine (d1, u1) (d2, u2) = (d1 ++ d2, u1 ++ u2)
 analyse :: Term Type -> ([String], [String])
 analyse (Number        _ _)     = (mempty, mempty)
 analyse (Boolean       _ _)     = (mempty, mempty)
+analyse (Unit            _)     = (mempty, mempty)
 analyse (Variable      n _)     = (mempty, return n)
 analyse (If   cond t1 t2 _)     = combine (combine (analyse cond) (analyse t1)) (analyse t2)
 analyse (Plus      t1 t2 _)     = combine (analyse t1) (analyse t2)
@@ -171,6 +172,7 @@ newVariable i = return $ Variable' (i + 1)
 unifiesWith :: Type -> Type -> Maybe Substitution
 unifiesWith Integer' Integer' = return []
 unifiesWith Boolean' Boolean' = return []
+unifiesWith Unit'    Unit'    = return []
 unifiesWith (Variable' a) (Variable' b) = return [(a, Variable' b)]
 unifiesWith (Variable' a) t             =
   if a `elem` indicies t then Nothing else return [(a, t)]
@@ -189,6 +191,7 @@ unifiesWith _ _ = Nothing
 subst :: Substitution -> Type -> Type
 subst _ Integer'      = Integer'
 subst _ Boolean'      = Boolean'
+subst _ Unit'         = Unit'
 subst s (Variable' a) =
   case [ t | (b, t) <- s , a == b ] of
     [ ] -> Variable' a

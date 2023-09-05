@@ -143,17 +143,9 @@ generateType is bindingTypes =
     ] ++ (return . Variable' . fst <$> is)
       ++ map return bindingTypes
 
--- should Thing = Gen Bool ?
--- should Thing be Testable ?
--- what does a counterexample of Thing look like?
-type Thing = Maybe (Term Type)
-
-check :: Program Type -> [(Name, Type)] -> Term Type -> Thing
-check p bs t =
-  case t'' of
-    (Boolean True _) -> fail ""
-    _                -> return t'
-  where
-    t'    = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
-    t''   = Interpreter.normalize p t'
-    terms = undefined :: [(Name, Term Type)]
+propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen (Term Type)
+propertyToCheck p bs t = return t
+  -- where
+  --   t'    = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
+  --   t''   = Interpreter.normalize p t'
+  --   terms = undefined :: [(Name, Term Type)]
