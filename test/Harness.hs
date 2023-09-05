@@ -1,21 +1,21 @@
 import Test.Tasty
 
--- import ParserTests
+import ParserTests
 import PropertyCheckerTests
 import BSTTests
 
 main :: IO ()
-main = defaultMain tests
+main = defaultMain $ localOption (mkTimeout 5000000) tests
 
 tests :: TestTree
 tests =
   testGroup "Pun-lang - Main Test Suite."
-    [
-      testGroup "Property checker : "
-        [ generateGenerator_tests
+    [ testGroup "Property checker :"
+        [ generateGeneratorTests
         ]
-      ,
-      testGroup "Binary search tree : "
+    , testGroup "Binary search tree : "
         [ bst_tests
         ]
+    , testGroup "Parser :"
+        parserTests
     ]
