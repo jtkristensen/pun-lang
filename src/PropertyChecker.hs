@@ -3,7 +3,7 @@ module PropertyChecker where
 
 import Syntax
 import TypeInference
-import qualified Interpreter
+import Interpreter()
 
 import Test.Tasty.QuickCheck
 
@@ -20,6 +20,7 @@ generateGenerator :: ProgramConfiguration -> (Type -> Generator)
 generateGenerator s t = sized (generateGeneratorSized s t)
 
 generateGeneratorSized :: ProgramConfiguration -> (Type -> Int -> Generator)
+generateGeneratorSized _          Unit'    _ = return $ Unit Unit'
 generateGeneratorSized s          Integer' 0 = generateGeneratorSized s Integer' 1
 generateGeneratorSized _          Integer' 1 = flip Number  Integer' <$> arbitrary
 generateGeneratorSized s@(is, bs, ts) Integer' size =
@@ -134,6 +135,7 @@ generateType is bindingTypes =
   oneof $
     [ return Integer'
     , return Boolean'
+    , return Unit'
     , do type1 <- generateType is bindingTypes
          type2 <- generateType is bindingTypes
          return $ type1 :*: type2
