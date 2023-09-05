@@ -13,21 +13,7 @@ import Data.Function
 import Control.Applicative
 import BST
 
--- TODO: make a newtype
-instance (Ord k, Arbitrary k, Arbitrary v) => Arbitrary (BST k v) where
-  arbitrary = do
-    kvs <- arbitrary
-    return $ foldr (uncurry insert) nil (kvs :: [(k, v)])
-  shrink = filter valid . genericShrink
-
 -- ------------------ Validity properties  ------------------
-valid :: Ord k => BST k v -> Bool
-valid Leaf = True
-valid (Branch l k _v r) =
-  valid l && valid r
-  && all (< k) (keys l)
-  && all (> k) (keys r)
-
 prop_NilValid :: Bool
 prop_NilValid = valid (nil :: Tree)
 

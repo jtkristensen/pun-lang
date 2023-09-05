@@ -1,8 +1,9 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, ScopedTypeVariables #-}
 
 module BST where
 
 import GHC.Generics
+import Test.Tasty.QuickCheck
 
 -- ---------------------------------------------------
 -- From 'How to Specify It! ...' by John Hughes
@@ -16,6 +17,19 @@ data BST k v = Leaf | Branch (BST k v) k v (BST k v)
 type Key = Int
 type Val = Int
 type Tree = BST Int Int
+
+instance (Ord k, Arbitrary k, Arbitrary v) => Arbitrary (BST k v) where
+  arbitrary = do
+    kvs <- arbitrary
+    return $ foldr (uncurry insert) nil (kvs :: [(k, v)])
+  shrink = filter valid . genericShrink
+
+valid :: Ord k => BST k v -> Bool
+valid Leaf = True
+valid (Branch l k _v r) =
+  valid l && valid r
+  && all (< k) (keys l)
+  && all (> k) (keys r)
 
 find :: Ord k => k -> BST k v -> Maybe v
 find k (Branch left k' v' right)
