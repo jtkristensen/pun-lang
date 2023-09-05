@@ -32,6 +32,7 @@ t0 `hasType` tau = tell [annotation t0 :=: tau]
 annotate :: Term a -> Annotation (Term Type)
 annotate (Number   n _)  = return $ Number n Integer'
 annotate (Boolean  b _)  = return $ Boolean b Boolean'
+annotate (Unit       _)  = return $ Unit Unit'
 annotate (Variable x _)  =
   do env <- ask
      return $ Variable x $ env x
@@ -117,6 +118,7 @@ solve (constraint : rest) =
   case constraint of
     Integer'      :=: Integer'      -> solve rest
     Boolean'      :=: Boolean'      -> solve rest
+    Unit'         :=: Unit'         -> solve rest
     (t0 :*:  t1)  :=: (t2 :*:  t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (t0 :->: t1)  :=: (t2 :->: t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (BST    k v)  :=: (BST  k' v')  -> solve $ (k  :=: k') : (v  :=: v') : rest
@@ -167,6 +169,7 @@ refine s o = refine' s o
     refine' (_   : rest) (Variable' j)          = refine' rest (Variable' j)
     refine' _            Integer'               = Integer'
     refine' _            Boolean'               = Boolean'
+    refine' _            Unit'                  = Unit'
     refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
     refine' s'           (BST    k v)           = BST (refine s' k) (refine s' v)
