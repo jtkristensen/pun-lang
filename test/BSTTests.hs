@@ -100,11 +100,10 @@ prop_FindPreservesEquiv k (t :~: t') = find k t === find k t'
 prop_Equivs :: Equivs Key Val -> Property
 prop_Equivs (t :~: t') = t ~= t'
 
--- TODO: check warning where t and t' shadow previous bindings
 prop_ShrinkEquivs :: Equivs Key Val -> Property
 prop_ShrinkEquivs (t :~: t') =
-  t ~= t' ==> all (\(t :~: t') -> t ~= t') (shrink (t :~: t'))
-  where t ~= t' = toList t == toList t'
+  t ~~= t' ==> all (\(t'' :~: t''') -> t'' ~~= t''') (shrink (t :~: t'))
+  where x ~~= x' = toList x == toList x'
 
 -- ------------------ Inductive testing  ------------------
 insertions :: Tree -> [(Key, Val)]
@@ -141,6 +140,7 @@ prop_UnionModel t t' =
 prop_FindModel :: Key -> Tree -> Property
 prop_FindModel k t = find k t === L.lookup k (toList t)
 
+-- ------------------ Property tests  ------------------
 bst_tests :: TestTree
 bst_tests =
   testGroup "Properties: "
