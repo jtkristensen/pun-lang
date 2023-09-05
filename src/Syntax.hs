@@ -63,6 +63,7 @@ data Term a =
 canonical :: Term a -> Bool
 canonical (Number  _     _) = True
 canonical (Boolean _     _) = True
+canonical (Unit          _) = True
 canonical (Pair    t1 t2 _) = canonical t1 && canonical t2
 canonical (Lambda  {}     ) = True
 canonical (Leaf          _) = True
@@ -78,6 +79,7 @@ instance Annotated Term where
   annotations (Number          _ a) = return a
   annotations (Boolean         _ a) = return a
   annotations (Variable        _ a) = return a
+  annotations (Unit              a) = return a
   annotations (If       t0 t1 t2 a) = a : ([t0, t1, t2] >>= annotations)
   annotations (Plus     t0 t1    a) = a : ([t0, t1]     >>= annotations)
   annotations (Leq      t0 t1    a) = a : ([t0, t1]     >>= annotations)
@@ -115,6 +117,7 @@ indicies :: Type -> [Index]
 indicies (Variable' a)  = [a]
 indicies  Integer'      = []
 indicies  Boolean'      = []
+indicies  Unit'         = []
 indicies (t1 :*:   t2)  = indicies t1 <> indicies t2
 indicies (t1 :->:  t2)  = indicies t1 <> indicies t2
 indicies (BST   t1 t2)  = indicies t1 <> indicies t2
