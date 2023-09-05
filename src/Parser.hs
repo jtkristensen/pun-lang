@@ -60,7 +60,8 @@ type_ =
       ]
     type'' =
       choice
-      [ symbol "integer" >> return Integer'
+      [ symbol "unit"    >> return Unit'
+      , symbol "integer" >> return Integer'
       , symbol "boolean" >> return Boolean'
       , symbol "bst" >> BST <$> type' <*> type'
       , Variable' <$> nat
@@ -73,6 +74,7 @@ simple =
   [ info $ int  <&> Number
   , info $ bool <&> Boolean
   , info $ symbol "leaf" >> return Leaf
+  , info $ symbol "unit" >> return Unit
   , info $ name <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
   , parens term_
@@ -164,6 +166,9 @@ bool =
   [ symbol "true"  >> return True
   , symbol "false" >> return False
   ]
+
+unit :: Parser ()
+unit = void $ symbol "unit"
 
 name :: Parser Name
 name = try $
