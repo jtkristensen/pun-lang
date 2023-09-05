@@ -91,7 +91,7 @@ model_insert p xs =
   ; leaf                    -> cons p empty
   ; [node leaf q unit rest] ->
       if   less (fst p) (fst q)
-      then cons q (model_insert p rest)]
+      then cons q (model_insert p rest)
       else cons p (without p rest) .
 
 model_union : bst (integer, integer) unit -> bst (integer, integer) unit -> bst (integer, integer) unit .
@@ -119,13 +119,47 @@ filter p list =
     then [node leaf x unit rest]
     else rest .
 
+valid : bst integer integer -> boolean .
+valid t = 
+  case t of
+  ; leaf           -> true
+  ; [node l k v r] -> and (and (valid l) (valid r)) (and (lessKeys l) (largerKeys l)) .
+
+lessKeys : bst integer integer -> boolean .
+lessKeys t =
+  ; leaf           -> true
+  ; [node l k v r] -> 
+    case l of 
+      ; leaf               -> true
+      ; [node l' k' v' r'] -> 
+          if   (less k' k)
+          then (lessKeys l)
+          else false .
+
+largerKeys : bst integer integer -> boolean .
+lessKeys t =
+  ; leaf           -> true
+  ; [node l k v r] ->
+      case r of
+        ; leaf               -> true
+        ; [node l' k' v' r'] ->
+          if   (larger k' k)
+          then (largerKeys r)
+          else false .
+
+property nil-valid . valid .
+
+property insert-valid k v t . valid (insert k v t) .
+
+property delete-valid k v t . valid (delete k v t) .
+
 property find-post-present k v t . equal (find k (insert k v t)) ([node leaf k v leaf]) .
 
 property find-post-absent k t . equal (find k (delete k t)) (leaf) .
 
 property insert-delete-complete k t .
   case (find k t) of
-  ; leaf            -> equal t (delete k t)
+  ; leaf            -> equal t (delete k   t)
   ; [node l k1 v r] -> equal t (insert k v t) .
 
 property insert-post k v t k1 .
