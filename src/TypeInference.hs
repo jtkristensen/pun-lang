@@ -157,6 +157,16 @@ indexes _             = mempty
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
 infer term = runRWS (annotate term) $ error . (++ " is unbound!")
 
+-- alpha renaming.
+alpha :: Index -> (Type -> (Index, Type))
+alpha i t = (i + maximum (indicies t) + 1, increment t)
+  where increment Integer'      = Integer'
+        increment Boolean'      = Boolean'
+        increment Unit'         = Unit'
+        increment (Variable' j) = Variable' (i + j)
+        increment (t1  :*: t2 ) = increment t1 :*: increment t2
+        increment (t1 :->: t2 ) = increment t1 :->: increment t2
+
 -- TODO: Better error handling {^o^}!
 bindings :: [Constraint] -> Substitution
 bindings = fromMaybe (error "type error") . solve
@@ -173,6 +183,12 @@ refine s o = refine' s o
     refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
     refine' s'           (BST    k v)           = BST (refine s' k) (refine s' v)
+
+-- annotateProgram :: Program a -> Annotation (Program Type)
+-- annotateProgram p = iterate p
+--   where
+--     iterate
+
 
 -- Just here for documentation
 usage :: Term a -> Index -> (Term Type, Index)

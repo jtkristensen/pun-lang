@@ -3,6 +3,7 @@ module PropertyChecker where
 
 import Syntax
 import TypeInference
+import qualified Interpreter
 
 import Test.Tasty.QuickCheck
 
@@ -145,7 +146,14 @@ generateType is bindingTypes =
 -- should Thing = Gen Bool ?
 -- should Thing be Testable ?
 -- what does a counterexample of Thing look like?
-type Thing = Property
+type Thing = Maybe (Term Type)
 
-check :: [(Name, Type)] -> Term Type -> Thing
-check _ _ = undefined
+check :: Program Type -> [(Name, Type)] -> Term Type -> Thing
+check p bs t =
+  case t'' of
+    (Boolean True _) -> fail ""
+    _                -> return t'
+  where
+    t'    = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
+    t''   = Interpreter.normalize p t'
+    terms = undefined :: [(Name, Term Type)]
