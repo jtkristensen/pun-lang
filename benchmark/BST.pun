@@ -34,6 +34,19 @@ insert k1 v1 t =
               then [node l k2 v2 (insert k1 v1 r)]
               else [node (leaf) k1 v1 (leaf)] .
 
+find : integer -> bst integer integer -> bst integer integer .
+find k t =
+    case t of
+    ; leaf            -> leaf
+    ; [node l k1 v r] ->
+        if   (equal k k1)
+        then ([node leaf k1 v leaf])
+        else if   (larger k k1)
+             then (find k r)
+             else if   (less k l)
+                  then (find k l)
+                  else leaf .
+
 findMin : bst integer integer -> bst integer integer .
 findMin t =
     case t of
@@ -147,11 +160,21 @@ lessKeys t =
           then (largerKeys r)
           else false .
 
+
+
+
 property nil-valid . valid .
 
 property insert-valid k v t . valid (insert k v t) .
 
 property delete-valid k v t . valid (delete k v t) .
+
+property union-valid t1 t2 . valid (union t1 t2) .
+
+property arbitrary-valid t . valid t .
+
+
+
 
 property find-post-present k v t . equal (find k (insert k v t)) ([node leaf k v leaf]) .
 
@@ -169,3 +192,36 @@ property insert-post k v t k1 .
          else (find k1 t)) .
 
 property insert-post-same-key k v t . insert-post k v t k .
+
+property union-post t1 t2 k . equal (find k (union t1 t2))
+                                    (case (find k t1) of
+                                      ; leaf                  -> leaf
+                                        (case (find k t2)
+                                          ; leaf                   -> leaf
+                                          ; [node leaf k1 v1 leaf] -> [node leaf k1 v1 leaf]
+                                        )
+                                      ; [node leaf k2 v leaf] -> [node leaf k2 v leaf]
+                                    ) .
+
+
+
+
+
+equalModels : bst integer integer -> bst integer integer -> true .
+equalModels t1 t2 = ().
+
+property insert-insert (k1, v1) (k2, v2) t .
+  equalModels (insert k1 v1 (insert k2 v2 t))
+              (if (equal k1 k2)
+              then (insert k1 v1 t)
+              else (insert k2 v2 (insert k1 v1 t))) .
+
+property insert-delete (k1, v1) k2 t .
+  equalModels (insert k1 v1 (delete k2 t))
+              (if (equal k1 k2)
+              then (insert k1 v1 t)
+              else (delete k2 (insert k1 v1 t))) .
+
+property insert-union (k1, v1) t1 t2 .
+  equalModels (insert k1 v1 (union t1 t2))
+              (union (insert k1 v1 t1) t2)
