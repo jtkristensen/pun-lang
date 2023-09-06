@@ -235,8 +235,8 @@ setEqual t1 t2 =
 subset : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
 subset t1 t2 =
   case t1 of
-  ; leaf              -> true
-  ; [node l p unit r] ->
+  ; leaf                    -> true
+  ; [node leaf p unit rest] ->
     case find p t1 of
     ; leaf -> false
-    ; x    -> and (subset l t2) (subset r t2) .
+    ; x    -> subset rest t2 .
