@@ -145,9 +145,26 @@ generateType is bindingTypes =
     ] ++ (return . Variable' . fst <$> is)
       ++ map return bindingTypes
 
-propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen (Term Type)
-propertyToCheck p bs t = return t
+
+newtype Thing = Thing (Term Type)
+
+instance Arbitrary Thing where
+  arbitrary = undefined
+
+propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen Thing
+propertyToCheck p bs t = undefined
   -- where
   --   t'    = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
   --   t''   = Interpreter.normalize p t'
   --   terms = undefined :: [(Name, Term Type)]
+
+-- property +-is-commutative m n . m + n = n + m .
+-- m := * | 9 || fst (7, 9)
+-- n := 7 | 5 || if true then 7 else 5
+
+-- (fst (7, 9)) + (if true then 7 else 5) = (if true then 7 else 5) + (fst (7, 9))
+-- 7 - 7 = 7 - 7
+
+
+-- the property +-is-commutative does not hold, for instance :
+-- 9 - 7 = 7 - 9.
