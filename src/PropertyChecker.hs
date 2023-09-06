@@ -3,7 +3,7 @@ module PropertyChecker where
 
 import Syntax
 import TypeInference
-import Interpreter()
+import Interpreter
 
 import Test.Tasty.QuickCheck
 
@@ -145,18 +145,22 @@ generateType is bindingTypes =
     ] ++ (return . Variable' . fst <$> is)
       ++ map return bindingTypes
 
-
 newtype Thing = Thing (Term Type)
-
-instance Arbitrary Thing where
-  arbitrary = undefined
+     deriving (Show)
 
 propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen Thing
-propertyToCheck p bs t = arbitrary
-  -- where
-  --   t'    = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
-  --   t''   = Interpreter.normalize p t'
-  --   terms = undefined :: [(Name, Term Type)]
+propertyToCheck p bs t = do
+     termGenerators      <- mapM (generateGenerator programConfig) types
+     let terms            = zip names termGenerators 
+     let t'               = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
+     let t''              = Interpreter.normalize p t'
+     return $ Thing (t'')
+     where currentIndices   = [] -- getIndices p     Tried implementing getIndices with no luck
+           currentBindings  = []
+           topLevelBindings = declarations p
+           programConfig    = (currentIndices, currentBindings, topLevelBindings)
+           names            = map fst bs
+           types            = map snd bs
 
 -- property +-is-commutative m n . m + n = n + m .
 -- m := * | 9 || fst (7, 9)
@@ -164,7 +168,3 @@ propertyToCheck p bs t = arbitrary
 
 -- (fst (7, 9)) + (if true then 7 else 5) = (if true then 7 else 5) + (fst (7, 9))
 -- 7 - 7 = 7 - 7
-
-
--- the property +-is-commutative does not hold, for instance :
--- 9 - 7 = 7 - 9.
