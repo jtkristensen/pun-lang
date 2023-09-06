@@ -237,6 +237,6 @@ subset t1 t2 =
   case t1 of
   ; leaf                    -> true
   ; [node leaf p unit rest] ->
-    case find p t1 of
+    case find p t2 of
     ; leaf -> false
     ; x    -> subset rest t2 .
