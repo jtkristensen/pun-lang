@@ -225,3 +225,18 @@ property insert-delete (k1, v1) k2 t .
 property insert-union (k1, v1) t1 t2 .
   equalModels (insert k1 v1 (union t1 t2))
               (union (insert k1 v1 t1) t2) .
+
+setEqual : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
+setEqual t1 t2 =
+  if   subset t1 t2
+  then subset t2 t1
+  else false .
+
+subset : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
+subset t1 t2 =
+  case t1 of
+  ; leaf              -> true
+  ; [node l p unit r] ->
+    case find p t1 of
+    ; leaf -> false
+    ; x    -> and (subset l t2) (subset r t2) .
