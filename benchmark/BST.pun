@@ -133,7 +133,7 @@ filter p list =
     else rest .
 
 valid : bst integer integer -> boolean .
-valid t = 
+valid t =
   case t of
   ; leaf           -> true
   ; [node l k v r] -> and (and (valid l) (valid r)) (and (lessKeys l) (largerKeys l)) .
@@ -141,16 +141,16 @@ valid t =
 lessKeys : bst integer integer -> boolean .
 lessKeys t =
   ; leaf           -> true
-  ; [node l k v r] -> 
-    case l of 
+  ; [node l k v r] ->
+    case l of
       ; leaf               -> true
-      ; [node l' k' v' r'] -> 
+      ; [node l' k' v' r'] ->
           if   (less k' k)
           then (lessKeys l)
           else false .
 
 largerKeys : bst integer integer -> boolean .
-lessKeys t =
+largerKeys t =
   ; leaf           -> true
   ; [node l k v r] ->
       case r of
