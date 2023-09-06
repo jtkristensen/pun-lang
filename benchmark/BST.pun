@@ -208,7 +208,7 @@ property union-post t1 t2 k . equal (find k (union t1 t2))
 
 
 equalModels : bst integer integer -> bst integer integer -> true .
-equalModels t1 t2 = ().
+equalModels t1 t2 = unit.
 
 property insert-insert (k1, v1) (k2, v2) t .
   equalModels (insert k1 v1 (insert k2 v2 t))
@@ -224,4 +224,4 @@ property insert-delete (k1, v1) k2 t .
 
 property insert-union (k1, v1) t1 t2 .
   equalModels (insert k1 v1 (union t1 t2))
-              (union (insert k1 v1 t1) t2)
+              (union (insert k1 v1 t1) t2) .
