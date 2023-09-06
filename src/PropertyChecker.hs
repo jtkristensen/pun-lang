@@ -152,7 +152,7 @@ instance Arbitrary Thing where
   arbitrary = undefined
 
 propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen Thing
-propertyToCheck p bs t = undefined
+propertyToCheck p bs t = arbitrary
   -- where
   --   t'    = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
   --   t''   = Interpreter.normalize p t'
