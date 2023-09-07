@@ -37,3 +37,21 @@ You should be able to install `pun` by running
 ```
 
 from within the repository.
+
+# Getting started.
+
+To interpret a program, run:
+
+```bash
+> pun <program-name>.pun
+```
+
+and start typing in terms to evaluate.
+
+To run the properties specified in a program, pass the flag `--check` like so:
+
+```bash
+> pun --check <program-name>.pun
+```
+
+the folder `./examples` contains a number of example programs to get you started.
