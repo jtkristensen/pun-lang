@@ -3,6 +3,7 @@ module PropertyChecker where
 
 import Syntax
 import TypeInference
+import Interpreter
 
 import Test.Tasty.QuickCheck
 
@@ -19,6 +20,7 @@ generateGenerator :: ProgramConfiguration -> (Type -> Generator)
 generateGenerator s t = sized (generateGeneratorSized s t)
 
 generateGeneratorSized :: ProgramConfiguration -> (Type -> Int -> Generator)
+generateGeneratorSized _          Unit'    _ = return $ Unit Unit'
 generateGeneratorSized s          Integer' 0 = generateGeneratorSized s Integer' 1
 generateGeneratorSized _          Integer' 1 = flip Number  Integer' <$> arbitrary
 generateGeneratorSized s@(is, bs, ts) Integer' size =
@@ -133,6 +135,7 @@ generateType is bindingTypes =
   oneof $
     [ return Integer'
     , return Boolean'
+    , return Unit'
     , do type1 <- generateType is bindingTypes
          type2 <- generateType is bindingTypes
          return $ type1 :*: type2
@@ -142,10 +145,26 @@ generateType is bindingTypes =
     ] ++ (return . Variable' . fst <$> is)
       ++ map return bindingTypes
 
--- should Thing = Gen Bool ?
--- should Thing be Testable ?
--- what does a counterexample of Thing look like?
-type Thing = Property
+newtype Thing = Thing (Term Type)
+     deriving (Show)
 
-check :: [(Name, Type)] -> Term Type -> Thing
-check _ _ = undefined
+propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen Thing
+propertyToCheck p bs t = do
+     termGenerators      <- mapM (generateGenerator programConfig) types
+     let terms            = zip names termGenerators 
+     let t'               = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
+     let t''              = Interpreter.normalize p t'
+     return $ Thing (t'')
+     where currentIndices   = [] -- getIndices p     Tried implementing getIndices with no luck
+           currentBindings  = []
+           topLevelBindings = declarations p
+           programConfig    = (currentIndices, currentBindings, topLevelBindings)
+           names            = map fst bs
+           types            = map snd bs
+
+-- property +-is-commutative m n . m + n = n + m .
+-- m := * | 9 || fst (7, 9)
+-- n := 7 | 5 || if true then 7 else 5
+
+-- (fst (7, 9)) + (if true then 7 else 5) = (if true then 7 else 5) + (fst (7, 9))
+-- 7 - 7 = 7 - 7
