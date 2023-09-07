@@ -1,11 +1,9 @@
-union : bst integer integer -> bst integer integer ; bst integer integer .
+union : bst integer integer -> bst integer integer -> bst integer integer .
 union t1 t2 =
     case t2 of
-    ; leaf          -> t1
-    ; [node l kv r] ->
+    ; leaf           -> t1
+    ; [node l k v r] ->
       case t1 of
-      ; leaf             -> t2
-      ; [node l' kv' r'] ->
-        let t1' = delete kv' t1 in
-        let t2' = insert kv' t2 in
-            union t1' t2'
+      ; leaf               -> t2
+      ; [node l1 k1 v1 r1] ->
+        union (delete k1 v1 t1) (insert k1 v1 t2) .

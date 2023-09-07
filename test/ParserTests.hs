@@ -175,7 +175,375 @@ parseProgramsFromFiles =
             (Application (Application (Variable "add" ()) (Variable "m" ()) ()) (Variable "n" ()) ()) ())
             (Application (Application (Variable "add" ()) (Variable "m" ()) ()) (Variable "n" ()) ()) ())
      EndOfProgram)
-  ]
+    , ("examples/comparison-and-logical-operators.pun",
+       Declaration "equal" (Integer' :->: (Integer' :->: Boolean')) $
+       Definition "equal" (Lambda "m" (Lambda "n"
+        (If (Leq (Variable "m" ()) (Variable "n" ()) ())
+            (Leq (Variable "n" ()) (Variable "m" ()) ())
+            (Boolean False ()) ()) ()) ()) $
+       Declaration "not" (Boolean' :->: Boolean') $
+       Definition  "not" (Lambda "b" 
+         (If (Variable "b"  ())
+             (Boolean False ())
+             (Boolean True  ()) ()) ()) $
+       Declaration "and" (Boolean' :->: (Boolean' :->: Boolean')) $
+       Definition  "and" (Lambda "b1" (Lambda "b2" 
+        (If (Variable "b1" ())
+            (Variable "b2" ())
+            (Boolean False ()) ()) ()) ()) $
+       Declaration "less" (Integer' :->: (Integer' :->: Boolean')) $
+       Definition  "less" (Lambda "m" (Lambda "n"
+       (Application
+        (Application
+          (Variable "and" ())
+          (Leq (Variable "m" ()) (Variable "n" ()) ()) ())
+        (Application 
+          (Variable "not" ())
+          (Application
+            (Application (Variable "equal" ()) (Variable "m" ()) ())
+            (Variable "n" ()) ()) ()) ()) ()) ()) $
+      Declaration "larger" (Integer' :->: (Integer' :->: Boolean')) $
+        Definition  "larger" (Lambda "m" (Lambda "n"
+          (Application
+            (Variable "not" ())
+            (Application
+              (Application (Variable "less" ()) (Variable "m" ()) ())
+              (Variable "n" ()) ()) ()) ()) ()) $
+       EndOfProgram)
+    , ("examples/insert.pun",
+        Declaration "equal" (Integer' :->: (Integer' :->: Boolean')) $
+        Definition "equal" (Lambda "m" (Lambda "n"
+        (If (Leq (Variable "m" ()) (Variable "n" ()) ())
+            (Leq (Variable "n" ()) (Variable "m" ()) ())
+            (Boolean False ()) ()) ()) ()) $
+        Declaration "not" (Boolean' :->: Boolean') $
+        Definition  "not" (Lambda "b" 
+          (If (Variable "b"  ())
+              (Boolean False ())
+              (Boolean True  ()) ()) ()) $
+        Declaration "and" (Boolean' :->: (Boolean' :->: Boolean')) $
+        Definition  "and" (Lambda "b1" (Lambda "b2" 
+        (If (Variable "b1" ())
+            (Variable "b2" ())
+            (Boolean False ()) ()) ()) ()) $
+        Declaration "less" (Integer' :->: (Integer' :->: Boolean')) $
+        Definition  "less" (Lambda "m" (Lambda "n"
+        (Application
+        (Application
+          (Variable "and" ())
+          (Leq (Variable "m" ()) (Variable "n" ()) ()) ())
+        (Application 
+          (Variable "not" ())
+          (Application
+            (Application (Variable "equal" ()) (Variable "m" ()) ())
+            (Variable "n" ()) ()) ()) ()) ()) ()) $
+        Declaration "insert" (Integer' :->: (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer'))) $
+        Definition  "insert" (Lambda "k1" (Lambda "v1" (Lambda "t"
+        (Case
+          (Variable "t" ())
+          (Node (Leaf ()) (Variable "k1" ()) (Variable "v1" ()) (Leaf ()) ())
+          (Node (Variable "l" ()) (Variable "k2" ()) (Variable "v2" ()) (Variable "r" ()) (),
+          If (Application (Application (Variable "equal" ()) (Variable "k1" ()) ()) (Variable "k2" ()) ())
+             (Node (Variable "l" ()) (Variable "k2" ()) (Variable "v1" ()) (Variable "r" ()) ())
+             (If (Leq (Variable "k1" ()) (Variable "k2" ()) ())
+                 (Node (Application
+                          (Application
+                            (Application
+                              (Variable "insert" ())
+                              (Variable "k1" ()) ())
+                            (Variable "v1" ()) ())
+                          (Variable "l" ()) ())
+                      (Variable "k2" ())
+                      (Variable "v2" ())
+                      (Variable "r" ()) ())
+                  (If (Application
+                      (Application
+                        (Variable "larger" ())
+                        (Variable "k1" ()) ())
+                      (Variable "k2" ()) ())
+                    (Node (Variable "l" ())
+                          (Variable "k2" ())
+                          (Variable "v2" ())
+                          (Application
+                            (Application
+                              (Application
+                                (Variable "insert" ())
+                                (Variable "k1" ()) ())
+                              (Variable "v1" ()) ())
+                            (Variable "r" ()) ()) ())
+                    (Node (Leaf ()) (Variable "k1" ()) (Variable "v1" ()) (Leaf ()) ()) ()) ()) ()) ()) ()) ()) ()) $
+        EndOfProgram)
+      , ("examples/delete.pun",
+        Declaration "findMin" (BST Integer' Integer' :->: BST Integer' Integer') $
+        Definition  "findMin" (Lambda "t"
+          (Case
+            (Variable "t" ())
+            (Leaf ())
+            (Node (Variable "l" ()) (Variable "k" ()) (Variable "v" ()) (Variable "r" ()) (),
+            Case
+              (Variable "l" ())
+              (Node (Leaf ()) (Variable "k" ()) (Variable "v" ()) (Leaf ()) ())
+              (Node (Variable "l1" ()) (Variable "k1" ()) (Variable "v1" ()) (Variable "r1" ()) (),
+              Application (Variable "findMin" ()) (Variable "l1" ()) ()) ()) ()) ()) $
+        Declaration "delete" (Integer' :->: (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer'))) $
+        Definition  "delete" (Lambda "k" (Lambda "v" (Lambda "t"
+          (Case
+            (Variable "t" ())
+            (Leaf ())
+            (Node (Variable "l" ()) (Variable "k1" ()) (Variable "v1" ()) (Variable "r" ()) (),
+             If (Application
+                  (Application (Variable "less" ()) (Variable "k" ()) ())
+                  (Variable "k1" ()) ())
+                (Node (Application
+                        (Application
+                          (Application
+                            (Variable "delete" ())
+                            (Variable "k" ()) ())
+                          (Variable "v" ()) ())
+                        (Variable "l" ()) ())
+                      (Variable "k1" ())
+                      (Variable "v1" ())
+                      (Variable "r" ()) ())
+                (If (Application
+                      (Application
+                        (Variable "larger" ())
+                        (Variable "k" ()) ())
+                      (Variable "k1" ()) ())
+                    (Node (Variable "l"  ())
+                          (Variable "k1" ())
+                          (Variable "v1" ())
+                          (Application
+                            (Application
+                              (Application
+                                (Variable "delete" ())
+                                (Variable "k" ()) ())
+                              (Variable "v" ()) ())
+                            (Variable "r" ()) ()) ())
+                    (Application
+                      (Application
+                        (Application
+                          (Variable "delete1" ())
+                          (Variable "k1" ()) ())
+                        (Variable "v1" ()) ())
+                      (Variable "t" ()) ()) ()) ()) ()) ()) ()) ()) $
+        Declaration "delete1" (Integer' :->: (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer'))) $
+        Definition  "delete1" (Lambda "k" (Lambda "v" (Lambda "t"
+          (Case (Variable "t" ())
+                (Leaf ())
+                (Node (Variable "l"  ())
+                      (Variable "k1" ())
+                      (Variable "v1" ())
+                      (Variable "r"  ()) (),
+                 Case (Variable "l"  ())
+                      (Variable "r"  ())
+                      (Node (Variable "l1" ())
+                            (Variable "k2" ())
+                            (Variable "v2" ())
+                            (Variable "r1" ()) (),
+                       Case (Variable "r" ())
+                            (Variable "l" ())
+                            (Node (Variable "l2" ())
+                                  (Variable "k3" ())
+                                  (Variable "v3" ())
+                                  (Variable "r2" ()) (),
+                             Case (Application
+                                    (Variable "findMin" ())
+                                    (Variable "r" ()) ())
+                                  (Leaf ())
+                                  (Node (Leaf ())
+                                        (Variable "minKey" ())
+                                        (Variable "minVal" ())
+                                        (Leaf ()) (),
+                                         Node (Variable "l" ())
+                                              (Variable "minKey" ())
+                                              (Variable "minVal" ())
+                                              (Application
+                                                (Application
+                                                  (Application
+                                                    (Variable "delete" ())
+                                                    (Variable "minKey" ()) ())
+                                                  (Variable "minVal" ()) ())
+                                                (Variable "r" ()) ()) ()) ()) ()) ()) ()) ()) ()) ()) $
+        EndOfProgram)
+      , ("examples/union.pun",
+        Declaration "union" (BST Integer' Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer')) $
+        Definition  "union" (Lambda "t1" (Lambda "t2"
+          (Case (Variable "t2" ())
+                (Variable "t1" ())
+                (Node (Variable "l" ())
+                      (Variable "k" ())
+                      (Variable "v" ())
+                      (Variable "r" ())
+                      (),
+                 Case (Variable "t1" ())
+                      (Variable "t2" ())
+                      (Node (Variable "l1" ())
+                            (Variable "k1" ())
+                            (Variable "v1" ())
+                            (Variable "r1" ()) (),
+                       Application
+                        (Application
+                          (Variable "union" ())
+                          (Application
+                            (Application
+                              (Application
+                                (Variable "delete" ())
+                                (Variable "k1"     ()) ())
+                              (Variable "v1" ()) ())
+                            (Variable "t1" ()) ()) ())
+                          (Application
+                            (Application
+                              (Application
+                                (Variable "insert" ())
+                                (Variable "k1"     ()) ())
+                              (Variable "v1" ()) ())
+                            (Variable "t2" ()) ()) ()) ()) ()) ()) ()) $
+        EndOfProgram)
+      , ("examples/find.pun",
+        Declaration "find" (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer')) $
+        Definition  "find" (Lambda "k" (Lambda "t"
+          (Case
+            (Variable "t" ())
+            (Leaf ())
+            (Node (Variable "l"  ())
+                  (Variable "k1" ())
+                  (Variable "v"  ())
+                  (Variable "r" ()) (),
+             If (Application
+                  (Application (Variable "equal" ()) (Variable "k" ()) ())
+                  (Variable "k1" ()) ())
+                (Node (Leaf ()) (Variable "k1" ()) (Variable "v" ()) (Leaf ()) ())
+                (If (Application
+                      (Application (Variable "larger" ()) (Variable "k" ()) ())
+                      (Variable "k1" ()) ())
+                    (Application
+                      (Application (Variable "find" ()) (Variable "k" ()) ())
+                      (Variable "r" ()) ())
+                    (If (Application
+                          (Application (Variable "less" ()) (Variable "k" ()) ())
+                          (Variable "l" ()) ())
+                        (Application
+                          (Application (Variable "find" ()) (Variable "k" ()) ())
+                          (Variable "l" ()) ())
+                        (Leaf ()) ()) ()) ()) ()) ()) ()) $
+        Declaration "findMin" (BST Integer' Integer' :->: BST Integer' Integer') $
+        Definition  "findMin" (Lambda "t"
+          (Case
+            (Variable "t" ())
+            (Leaf ())
+            (Node (Variable "l" ()) (Variable "k" ()) (Variable "v" ()) (Variable "r" ()) (),
+            Case
+              (Variable "l" ())
+              (Node (Leaf ()) (Variable "k" ()) (Variable "v" ()) (Leaf ()) ())
+              (Node (Variable "l1" ()) (Variable "k1" ()) (Variable "v1" ()) (Variable "r1" ()) (),
+              Application (Variable "findMin" ()) (Variable "l1" ()) ()) ()) ()) ()) $
+        EndOfProgram)
+      , ("examples/bst-properties.pun",
+         Property "find-post-present"
+                  [("k", ()), ("v", ()), ("t", ())]
+                  (Application
+                    (Application
+                      (Variable "equal" ())
+                      (Application
+                        (Application (Variable "find" ()) (Variable "k" ()) ())
+                        (Application
+                          (Application
+                            (Application (Variable "insert" ()) (Variable "k" ()) ())
+                            (Variable "v" ()) ())
+                          (Variable "t" ()) ()) ()) ())
+                      (Node (Leaf ())
+                            (Variable "k" ())
+                            (Variable "v" ())
+                            (Leaf ()) ()) ()) $
+         Property "find-post-absent"
+                   [("k", ()), ("t", ())]
+                   (Application
+                    (Application
+                      (Variable "equal" ())
+                      (Application
+                        (Application
+                          (Variable "find" ())
+                          (Variable "k" ()) ())
+                        (Application
+                          (Application
+                            (Variable "delete" ())
+                            (Variable "k" ()) ())
+                          (Variable "t" ()) ()) ()) ())
+                      (Leaf ()) ()) $
+         Property "insert-delete-complete"
+                  [("k", ()), ("t", ())]
+                  (Case
+                    (Application
+                      (Application
+                        (Variable "find" ())
+                        (Variable "k" ()) ())
+                      (Variable "t" ()) ())
+                    (Application
+                      (Application
+                        (Variable "equal" ())
+                        (Variable "t" ()) ())
+                      (Application
+                        (Application
+                          (Variable "delete" ())
+                          (Variable "k"      ()) ())
+                        (Variable "t" ()) ()) ())
+                      (Node (Variable "l"  ())
+                            (Variable "k1" ())
+                            (Variable "v"  ())
+                            (Variable "r" ()) (),
+                       Application
+                        (Application
+                          (Variable "equal" ())
+                          (Variable "t" ()) ())
+                        (Application
+                          (Application
+                            (Application
+                              (Variable "insert" ())
+                              (Variable "k" ()) ())
+                            (Variable "v" ()) ())
+                          (Variable "t" ()) ()) ()) ()) $
+         Property "insert-post"
+                  [("k", ()), ("v", ()), ("t", ()), ("k1", ())]
+                  (Application
+                    (Application
+                      (Variable "equal" ())
+                      (Application
+                        (Application
+                          (Variable "find" ())
+                          (Variable "k1" ()) ())
+                        (Application
+                          (Application
+                            (Application
+                              (Variable "insert" ())
+                              (Variable "k" ()) ())
+                            (Variable "v" ()) ())
+                          (Variable "t" ()) ()) ()) ())
+                      (If
+                        (Application
+                          (Application
+                            (Variable "equal" ())
+                            (Variable "k" ()) ())
+                          (Variable "k1" ()) ())
+                        (Node (Leaf ())
+                              (Variable "k" ())
+                              (Variable "v" ())
+                              (Leaf ()) ())
+                        (Application
+                          (Application
+                            (Variable "find" ())
+                            (Variable "k1" ()) ())
+                          (Variable "t" ()) ()) ()) ()) $
+         Property "insert-post-same-key"
+                  [("k", ()), ("v", ()), ("t", ())]
+                  (Application
+                    (Application
+                      (Application
+                        (Application (Variable "insert-post" ()) (Variable "k" ()) ())
+                        (Variable "v" ()) ())
+                      (Variable "t" ()) ())
+                    (Variable "k" ()) ()) $
+         EndOfProgram)
+    ]
 
 -- * Dealing with lore in unit-tests.
 
