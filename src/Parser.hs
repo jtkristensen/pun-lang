@@ -64,9 +64,9 @@ type_ =
       ]
     type'' =
       choice
-      [ const Unit'    <$> unit
-      , const Integer' <$> symbol "integer"
-      , const Boolean' <$> symbol "boolean"
+      [ Unit'    <$ unit
+      , Integer' <$ symbol "integer"
+      , Boolean' <$ symbol "boolean"
       , symbol "bst" >> BST <$> type' <*> type'
       , Variable' <$> nat_
       , parens type_
@@ -78,7 +78,7 @@ simple =
   [ info $ int_  <&> Number
   , info $ bool_ <&> Boolean
   , info $ symbol "leaf" >> return Leaf
-  , info $ const Unit <$> unit
+  , info $ Unit <$ unit
   , info $ name <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
   , parens term_
