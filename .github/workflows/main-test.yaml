@@ -18,18 +18,18 @@ jobs:
         resolver: [lts-21.1]
         exclude:
           # GHC 8.8+ only works with cabal v3+
-          - ghc: 8.8.3
+          - ghc:   8.8.3
             cabal: 2.4.1.0
     name: Using resolver ${{ matrix.resolver }} with ghc version ${{ matrix.ghc }} and cabal ${{ matrix.cabal }}
     steps:
 
       - name: Check out
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Haskell
         uses: haskell/actions/setup@v1
         with:
-          ghc-version: ${{ matrix.ghc }}
+          ghc-version:   ${{ matrix.ghc }}
           cabal-version: ${{ matrix.cabal }}
           enable-stack: true
 
