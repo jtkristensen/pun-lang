@@ -20,7 +20,7 @@ jobs:
           # GHC 8.8+ only works with cabal v3+
           - ghc: 8.8.3
             cabal: 2.4.1.0
-    name: test using ${{ matrix.resolver }} (${{ matrix.ghc }}/${{ matrix.cabal }})
+    name: Using resolver ${{ matrix.resolver }} with ghc version ${{ matrix.ghc }} and cabal ${{ matrix.cabal }}
     steps:
 
       - name: Check out
