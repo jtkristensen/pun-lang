@@ -42,7 +42,7 @@ library
     , tasty-quickcheck ==0.10.*
   default-language: Haskell2010
 
-executable pun-lang-exe
+executable pun
   main-is: Main.hs
   other-modules:
       Paths_pun_lang
