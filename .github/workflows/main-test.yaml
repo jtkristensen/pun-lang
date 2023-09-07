@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         ghc:      ['9.4.5']
-        cabal:    ['2.4.1.0', '3.0.0.0']
+        cabal:    ['3.0.0.0']
         os:       [ubuntu-latest]
         resolver: [lts-21.1]
         exclude:
