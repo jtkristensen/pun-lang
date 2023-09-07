@@ -26,3 +26,14 @@ property plus-is-commutative m n . m + n = n + m .
 
 Which will check that the term `m + n = n + m` normalizes to `true` for a
 suitable handful of choices of `m` and `n` that make the term well-typed.
+
+# Installation
+
+Assuming that you have the haskell build-tool `stack` installed.
+You should be able to install `pun` by running
+
+```bash
+> stack install
+```
+
+from within the repository.
