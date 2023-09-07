@@ -160,12 +160,13 @@ infer term = runRWS (annotate term) $ error . (++ " is unbound!")
 -- alpha renaming.
 alpha :: Index -> (Type -> (Index, Type))
 alpha i t = (i + maximum (indicies t) + 1, increment t)
-  where increment Integer'      = Integer'
-        increment Boolean'      = Boolean'
-        increment Unit'         = Unit'
-        increment (Variable' j) = Variable' (i + j)
-        increment (t1  :*: t2 ) = increment t1 :*: increment t2
-        increment (t1 :->: t2 ) = increment t1 :->: increment t2
+  where increment Integer'        = Integer'
+        increment Boolean'        = Boolean'
+        increment Unit'           = Unit'
+        increment (Variable' j)   = Variable' (i + j)
+        increment (t1  :*: t2 )   = increment t1 :*: increment t2
+        increment (t1 :->: t2 )   = increment t1 :->: increment t2
+        increment (BST key value) = BST (increment key) (increment value)
 
 -- TODO: Better error handling {^o^}!
 bindings :: [Constraint] -> Substitution
