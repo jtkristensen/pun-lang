@@ -1,0 +1,280 @@
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
+not : boolean -> boolean .
+not b =
+  if b then false else true .
+
+and : boolean -> boolean -> boolean .
+and b1 b2 =
+  if b1 then b2 else false .
+
+less : integer -> integer -> boolean .
+less m n = and (m <= n) (not (equal m n)) .
+
+greater : integer -> integer -> boolean .
+greater m n = not (less m n) .
+
+nil : bst integer integer .
+nil = leaf .
+
+insert : integer -> integer -> bst integer integer -> bst integer integer .
+insert k1 v1 t =
+  case t of
+  ; leaf             -> [node leaf k1 v1 leaf]
+  ; [node l k2 v2 r] ->
+    if equal k1 k2
+    then [node l k2 v1 r]
+    else if   k1 <= k2
+         then [node (insert k1 v1 l) k2 v2 r]
+         else if   greater k1 k2
+              then [node l k2 v2 (insert k1 v1 r)]
+              else [node (leaf) k1 v1 (leaf)] .
+
+find : integer -> bst integer integer -> bst integer integer .
+find k t =
+    case t of
+    ; leaf            -> leaf
+    ; [node l k1 v r] ->
+        if   (equal k k1)
+        then ([node leaf k1 v leaf])
+        else if   (greater k k1)
+             then (find k r)
+             else if   (less k l)
+                  then (find k l)
+                  else leaf .
+
+findMin : bst integer integer -> bst integer integer .
+findMin t =
+    case t of
+    ; leaf           -> leaf
+    ; [node l k v r] ->
+        case l of
+        ; leaf               -> [node leaf k v leaf]
+        ; [node l1 k1 v1 r1] -> findMin l1 .
+
+delete : integer -> integer -> bst integer integer -> bst integer integer .
+delete k v t =
+    case t of
+    ; leaf             -> leaf
+    ; [node l k1 v1 r] ->
+        if   less k k1
+        then [node (delete k v l) k1 v1 r]
+        else if greater k k1
+            then [node l k1 v1 (delete k v r)]
+            else (delete1 k1 v1 t) .
+
+delete1 : integer -> integer -> bst integer integer -> bst integer integer.
+delete1 k v t =
+    case t of
+    ; leaf             -> leaf
+    ; [node l k1 v1 r] ->
+          case l of
+          ; leaf               -> r
+          ; [node l1 k2 v2 r1] ->
+            case r of
+            ; leaf               -> l
+            ; [node l2 k3 v3 r2] ->
+                case (findMin r) of
+                ; leaf                           -> leaf
+                ; [node leaf minKey minVal leaf] -> [node l minKey minVal (delete minKey minVal r)] .
+
+union : bst integer integer -> bst integer integer -> bst integer integer .
+union t1 t2 =
+    case t2 of
+    ; leaf           -> t1
+    ; [node l k v r] ->
+      case t1 of
+      ; leaf               -> t2
+      ; [node l1 k1 v1 r1] ->
+        union (delete k1 v1 t1) (insert k1 v1 t2) .
+
+model : bst integer integer -> bst (integer, integer) unit .
+model t =
+  case t of
+  ; leaf           -> empty
+  ; [node l k v r] -> model_insert (k, v) (model_union (model l) (model r)) .
+
+model_insert : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
+model_insert p xs =
+  case xs of
+  ; leaf                    -> cons p empty
+  ; [node leaf q unit rest] ->
+      if   less (fst p) (fst q)
+      then cons q (model_insert p rest)
+      else cons p (without p rest) .
+
+model_union : bst (integer, integer) unit -> bst (integer, integer) unit -> bst (integer, integer) unit .
+model_union t1 t2 =
+  case t1 of
+  ; leaf                    -> t2
+  ; [node leaf p unit rest] -> model_insert p (model_union rest t2) .
+
+without : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
+without key list = filter (\p -> not (equal (fst p) key)) list
+
+empty : bst (integer, integer) unit.
+empty = nil .
+
+cons : 0 -> bst 0 unit -> bst 0 unit.
+cons x xs = [node leaf x unit xs] .
+
+filter : (0 -> boolean) -> (bst 0 unit -> bst 0 unit).
+filter p list =
+  case list of
+  ; leaf                    -> leaf
+  ; [node leaf x unit xs] ->
+    let rest = filter p xs in
+    if   p x
+    then [node leaf x unit rest]
+    else rest .
+
+valid : bst integer integer -> boolean .
+valid t =
+  case t of
+  ; leaf           -> true
+  ; [node l k v r] -> and (and (valid l) (valid r)) (and (lessKeys l) (greaterKeys l)) .
+
+lessKeys : bst integer integer -> boolean .
+lessKeys t =
+  ; leaf           -> true
+  ; [node l k v r] ->
+    case l of
+      ; leaf               -> true
+      ; [node l' k' v' r'] ->
+          if   (less k' k)
+          then (lessKeys l)
+          else false .
+
+greaterKeys : bst integer integer -> boolean .
+greaterKeys t =
+  ; leaf           -> true
+  ; [node l k v r] ->
+      case r of
+        ; leaf               -> true
+        ; [node l' k' v' r'] ->
+          if   (greater k' k)
+          then (greaterKeys r)
+          else false .
+
+
+
+
+property nil-valid . valid .
+
+property insert-valid k v t . valid (insert k v t) .
+
+property delete-valid k v t . valid (delete k v t) .
+
+property union-valid t1 t2 . valid (union t1 t2) .
+
+property arbitrary-valid t . valid t .
+
+
+
+find_equal : bst integer integer -> boolean .
+find_equal t1 t2 = 
+  case t1 of
+    ; leaf -> 
+      case t2 of
+      ; leaf -> true
+      ; x    -> false
+    ; [node leaf k1 v1 leaf] ->
+      case t2 of
+      ; leaf                   -> false
+      ; [node leaf k2 v2 leaf] -> equal k1 k2 .
+
+property find-post-present k v t . find_equal (find k (insert k v t)) ([node leaf k v leaf]) .
+
+property find-post-absent k t . find_equal (find k (delete k t)) (leaf) .
+
+property insert-delete-complete k t .
+  case (find k t) of
+  ; leaf            -> trees_equal t (delete k   t)
+  ; [node l k1 v r] -> trees_equal t (insert k v t) .
+
+property insert-post k v t k1 .
+  find_equal (find k1 (insert k v t))
+             (if   (equal k k1)
+             then [node leaf k v leaf]
+             else (find k1 t)) .
+
+property insert-post-same-key k v t . insert-post k v t k .
+
+property union-post t1 t2 k . equal_find (find k (union t1 t2))
+                                    (case (find k t1) of
+                                      ; leaf                  -> leaf
+                                        (case (find k t2)
+                                          ; leaf                   -> leaf
+                                          ; [node leaf k1 v1 leaf] -> [node leaf k1 v1 leaf]
+                                        )
+                                      ; [node leaf k2 v leaf] -> [node leaf k2 v leaf]
+                                    ) .
+
+
+
+
+
+equalModels : bst integer integer -> bst integer integer -> true .
+equalModels t1 t2 = unit.
+
+property insert-insert (k1, v1) (k2, v2) t .
+  equalModels (insert k1 v1 (insert k2 v2 t))
+              (if (equal k1 k2)
+              then (insert k1 v1 t)
+              else (insert k2 v2 (insert k1 v1 t))) .
+
+property insert-delete (k1, v1) k2 t .
+  equalModels (insert k1 v1 (delete k2 t))
+              (if (equal k1 k2)
+              then (insert k1 v1 t)
+              else (delete k2 (insert k1 v1 t))) .
+
+property insert-union (k1, v1) t1 t2 .
+  equalModels (insert k1 v1 (union t1 t2))
+              (union (insert k1 v1 t1) t2) .
+
+setEqual : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
+setEqual t1 t2 =
+  if   subset t1 t2
+  then subset t2 t1
+  else false .
+
+subset : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
+subset t1 t2 =
+  case t1 of
+  ; leaf                    -> true
+  ; [node leaf p unit rest] ->
+    case find p t2 of
+    ; leaf -> false
+    ; x    -> subset rest t2 .
+
+
+insertions : t -> bst (integer, integer) unit .
+insertions t =
+  case t of
+  ; leaf           -> empty
+  ; [node l k v r] -> 
+    [node (insertions l) (k, v) unit (insertions r)] .
+
+
+
+delete_key : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
+delete_key k t = filter (not k) t .
+
+property nil-model . equalModels (model nil) (empty) .
+
+property insert-model k v t .
+  equalModels (model (insert k v t))
+              (model_insert (k, v) (delete_key k (model t))) .
+
+property delete-model k v t .
+  equalModels (model (delete k t))
+              (model (delete_key k (model t))) .
+
+property find-model k v .
+  find_equal (find k t)
+             (find k (model t)) .

@@ -29,6 +29,7 @@ library
       PropertyChecker
       Syntax
       TypeInference
+      Unification
   other-modules:
       Paths_pun_lang
   hs-source-dirs:
@@ -60,12 +61,15 @@ test-suite pun-lang-test
   type: exitcode-stdio-1.0
   main-is: Harness.hs
   other-modules:
+      BSTTests
       Examples
       ParserTests
       PropertyCheckerTests
+      BST
       Paths_pun_lang
   hs-source-dirs:
       test
+      benchmark
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

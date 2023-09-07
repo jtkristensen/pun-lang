@@ -45,7 +45,9 @@ executables:
 tests:
   pun-lang-test:
     main:                Harness.hs
-    source-dirs:         test
+    source-dirs:
+    - test
+    - benchmark
     ghc-options:
     - -threaded
     - -rtsopts
