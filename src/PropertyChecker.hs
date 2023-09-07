@@ -151,10 +151,10 @@ newtype Thing = Thing (Term Type)
 propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen Thing
 propertyToCheck p bs t = do
      termGenerators      <- mapM (generateGenerator programConfig) types
-     let terms            = zip names termGenerators 
-     let t'               = foldr (\(x, tx) -> Interpreter.substitute x tx) t terms
+     let terms            = zip names termGenerators
+     let t'               = foldr (uncurry Interpreter.substitute) t terms
      let t''              = Interpreter.normalize p t'
-     return $ Thing (t'')
+     return $ Thing t''
      where currentIndices   = [] -- getIndices p     Tried implementing getIndices with no luck
            currentBindings  = []
            topLevelBindings = declarations p
