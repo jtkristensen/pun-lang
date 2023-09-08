@@ -145,22 +145,15 @@ generateType is bindingTypes =
     ] ++ (return . Variable' . fst <$> is)
       ++ map return bindingTypes
 
-newtype Thing = Thing (Term Type)
-     deriving (Show)
+propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen (Term Type)
+propertyToCheck p bs t =
+  do terms  <- mapM strength $ (\(a, b) -> (a, generateGenerator programConfig b)) <$> bs
+     return $ foldr (\(x, v) t' -> Interpreter.substitute x t' v) t terms
+  where
+    programConfig = ([], [], declarations p)
 
-propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen Thing
-propertyToCheck p bs t = do
-     termGenerators      <- mapM (generateGenerator programConfig) types
-     let terms            = zip names termGenerators
-     let t'               = foldr (uncurry Interpreter.substitute) t terms
-     let t''              = Interpreter.normalize p t'
-     return $ Thing t''
-     where currentIndices   = [] -- getIndices p     Tried implementing getIndices with no luck
-           currentBindings  = []
-           topLevelBindings = declarations p
-           programConfig    = (currentIndices, currentBindings, topLevelBindings)
-           names            = map fst bs
-           types            = map snd bs
+strength :: Monad m => (a, m b) -> m (a, b)
+strength (a, mb) = mb >>= return . (,) a
 
 -- property +-is-commutative m n . m + n = n + m .
 -- m := * | 9 || fst (7, 9)

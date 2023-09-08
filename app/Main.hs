@@ -1,15 +1,16 @@
 module Main (main) where
 
 import Syntax
-import Parser        (parsePunProgram, Info)
-import TypeInference (inferP)
-import Interpreter   (normalize)
+import Parser          (parsePunProgram, Info)
+import TypeInference   (inferP)
+import Interpreter     (normalize)
+import PropertyChecker
+import Debug.Trace
 
 import Control.Monad      (void)
 import System.Exit        (die)
 import System.Environment (getArgs)
 
-import Test.Tasty
 import Test.Tasty.QuickCheck
 
 type ErrorMessage = String
@@ -33,12 +34,19 @@ run a = a >>= \what ->
 
 check :: Program Type -> IO ()
 check program = void $ mapM check1 (properties program)
-  -- defaultMain $ localOption (mkTimeout 5000000) $
-  --   testGroup ".... generated test suite ...." $
-  --   map check1 (properties program)
   where
     check1 (name, (args, body)) =
-      print $ normalize program body
+      do print $ "testing " ++ name ++ ".."
+         print "-------------------------------"
+         print body
+         print "-------------------------------"
+         print "-------------------------------"
+         p <- generate $ propertyToCheck program args body
+         print p
+         print "-------------------------------"
+         print $ normalize program p
+         print "-------------------------------"
+
 
 parse :: String -> IO (Program Info)
 parse file =

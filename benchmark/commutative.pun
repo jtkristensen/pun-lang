@@ -5,7 +5,9 @@ equal m n =
   then n <= m
   else false .
 
+property less m n . m <= n .
+
 // property plus-commutes m n . equal (m + n) (n + m) .
 
-property trivial . true .
-property semi-trivial . equal (5 + 2) 7 .
+// property trivial . true .
+// property semi-trivial . equal (5 + 2) 7 .
