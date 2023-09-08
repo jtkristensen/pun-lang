@@ -5,6 +5,7 @@ module TypeInference where
 import Syntax
 import Control.Monad.RWS
 import Data.Maybe (fromMaybe)
+import Data.Functor ((<&>))
 
 data Constraint
   = Type :=: Type
@@ -163,11 +164,11 @@ emptyEnvironment :: Environment
 emptyEnvironment = error . (++ " is unbound!")
 
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
-infer term = runRWS (annotate term) $ emptyEnvironment
+infer term = runRWS (annotate term) emptyEnvironment
 
 -- alpha renaming.
 alpha :: Index -> (Type -> (Index, Type))
-alpha i t = (if indicies t == [] then i else i + maximum (indicies t) + 1, increment t)
+alpha i t = (if null (indicies t) then i else i + maximum (indicies t) + 1, increment t)
   where increment Integer'        = Integer'
         increment Boolean'        = Boolean'
         increment Unit'           = Unit'
@@ -221,7 +222,7 @@ inferP program = refine (bindings $ cs ++ cs') <$> pt
          p' <- inferP' p
          return $ Definition x t' p'
     inferP' (Property q params t p) =
-      do params' <- mapM (\(x, _) -> hole >>= return . (,) x) params
+      do params' <- mapM (\(x, _) -> hole <&> (,) x) params
          t'      <- local (update params') $ annotate t
          t' `hasType` Boolean'
          p'      <- inferP' p

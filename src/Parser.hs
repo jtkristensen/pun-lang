@@ -113,7 +113,7 @@ term_ =
   , pre "fst" (Fst <$> term_)
   , pre "snd" (Snd <$> term_)
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
-  , pre "let" $ Let <$> name <*> pre "=" term_ <*> (pre "in" term_)
+  , pre "let" $ Let <$> name <*> pre "=" term_ <*> pre "in" term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
   ]
   where
