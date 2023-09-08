@@ -137,7 +137,7 @@ solve (constraint : rest) =
       then (if Variable' i /= t0 then Nothing else solve rest)
       else do c <- solve (substitute t0 i <$> rest)
               return $ (i, t0) : c
-    _                               -> Nothing
+    _                               -> error $ show constraint
 class HasSubstitution thing where
   substitute :: Type -> Index -> (thing -> thing)
 

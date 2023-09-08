@@ -24,18 +24,20 @@ data Problem =
     SeveralDeclarationsOf          X
   | SeveralDefinitionsOf           F
   | PropertyIsDeclaredMoreThanOnce P
+  | DeclaredButNotDefined          F
   | DoesNotParse                   ParseError
   deriving (Eq, Show)
 
 problems :: Program Info -> [Problem]
-problems p = definitions' <> declarations' <> properties'
+problems p =
+     [ SeveralDefinitionsOf              f | f <- ts \\ nub ts ]
+  <> [ SeveralDeclarationsOf             f | f <- ds \\ nub ds ]
+     <> [ PropertyIsDeclaredMoreThanOnce q | q <- ps \\ nub ps ]
+  <> [ DeclaredButNotDefined f | f <- ds , f `notElem` ts ]
   where
-    ts            = fst <$> definitions  p
-    ds            = fst <$> declarations p
-    ps            = fst <$> properties   p
-    definitions'  = SeveralDefinitionsOf           <$> (ts \\ nub ts)
-    declarations' = SeveralDeclarationsOf          <$> (ds \\ nub ds)
-    properties'   = PropertyIsDeclaredMoreThanOnce <$> (ps \\ nub ps)
+    ts = fst <$> definitions  p
+    ds = fst <$> declarations p
+    ps = fst <$> properties   p
 
 -- * Usage:
 
@@ -111,7 +113,7 @@ term_ =
   , pre "fst" (Fst <$> term_)
   , pre "snd" (Snd <$> term_)
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
-  , pre "let" $ Let <$> name <*> pre "=" term_ <*> term_
+  , pre "let" $ Let <$> name <*> pre "=" term_ <*> (pre "in" term_)
   , pre "rec" $ Rec <$> name <*> pre "." term_
   ]
   where
@@ -210,7 +212,7 @@ reserved =
   , "if", "then", "else"
   , "leaf", "node", "case", "of"
   , "fst", "snd"
-  , "let", "rec"
+  , "let", "in", "rec"
   ]
 
 -- Parses p and anny trailing whitespace following it.
