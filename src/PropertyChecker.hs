@@ -4,6 +4,8 @@ module PropertyChecker where
 import Syntax
 import TypeInference
 import Interpreter
+import Data.Functor
+import Data.Bifunctor
 
 import Test.Tasty.QuickCheck
 
@@ -142,8 +144,8 @@ generateType is bindingTypes =
 
 propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen (Term Type)
 propertyToCheck p bs t =
-  do terms  <- mapM strengthen $ (\(a, b) -> (a, generateGenerator programConfig b)) <$> bs
+  do terms  <- mapM strengthen $ second (generateGenerator programConfig) <$> bs
      return $ foldr (\(x, v) t' -> Interpreter.substitute x t' v) t terms
   where
     programConfig = ([], [], declarations p)
-    strengthen (a, mb) = mb >>= return . (,) a
+    strengthen (a, mb) = mb <&> (,) a

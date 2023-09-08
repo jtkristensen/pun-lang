@@ -100,7 +100,7 @@ substitute x t v = -- computes t[v/x].
     (Rec y t1    a) | x /= y -> Rec y (f t1)                                  a
     (Node l k u r a)         ->  Node (f l) (f k) (f u) (f r)                 a
     (Case t0 l (p, n) a)     ->
-      Case (f t0) (f l) (p, (if x `elem` (freeVariables p) then id else f) n) a
+      Case (f t0) (f l) (p, (if x `elem` freeVariables p then id else f) n) a
     _                        -> t
   where
     f = flip (substitute x) v
