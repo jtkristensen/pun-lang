@@ -125,9 +125,7 @@ resolve i is =
       case s of
         (Variable' i') -> resolve i' is
         _              -> s
-    Nothing -> Integer'
-      -- error $ "Unable to resolve index " ++ show i ++
-      -- " to type, was not among current indices."
+    Nothing -> Integer' -- (we actually have several choices here /!\.
 
 generateName :: TopLevelBindings -> Gen Name
 generateName ts = elements (pure <$> ['a'..'z'])
@@ -150,17 +148,8 @@ generateType is bindingTypes =
 
 propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen (Term Type)
 propertyToCheck p bs t =
-  do terms  <- mapM strength $ (\(a, b) -> (a, generateGenerator programConfig b)) <$> bs
+  do terms  <- mapM strengthen $ (\(a, b) -> (a, generateGenerator programConfig b)) <$> bs
      return $ foldr (\(x, v) t' -> Interpreter.substitute x t' v) t terms
   where
     programConfig = ([], [], declarations p)
-
-strength :: Monad m => (a, m b) -> m (a, b)
-strength (a, mb) = mb >>= return . (,) a
-
--- property +-is-commutative m n . m + n = n + m .
--- m := * | 9 || fst (7, 9)
--- n := 7 | 5 || if true then 7 else 5
-
--- (fst (7, 9)) + (if true then 7 else 5) = (if true then 7 else 5) + (fst (7, 9))
--- 7 - 7 = 7 - 7
+    strengthen (a, mb) = mb >>= return . (,) a

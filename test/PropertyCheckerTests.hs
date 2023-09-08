@@ -3,16 +3,9 @@ module PropertyCheckerTests where
 import Syntax
 import PropertyChecker
 import TypeInference
--- import Examples
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck
--- import Test.Tasty.HUnit
-
--- Is there a more general test case, that relies on something that commutes
--- with `infer` (Joachim)?
-
--- Todo, do something better than the empty substitution in : generateGenerator <mempty>.
 
 newtype Primitive
     = Primitive (Term Type)
