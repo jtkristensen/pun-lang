@@ -107,10 +107,15 @@ annotate (Case t0 l (p, n) _) =
      t0'  <- annotate t0
      t0' `hasType` BST tau1 tau2
      l'   <- annotate l
-     p'   <- annotate p
-     n'   <- annotate n
+     fvs  <- mapM (\x -> (,) x <$> hole) $ freeVariables p
+     p'   <- local (liftFV fvs) $ annotate p
+     n'   <- local (liftFV fvs) $ annotate n
      l'  `hasSameTypeAs` n'
      return $ Case t0' l' (p', n') (annotation l')
+  where
+    liftFV :: [(X, Type)] -> (Environment -> Environment)
+    liftFV [] f = f
+    liftFV ((x, t) : rest) f = bind x t $ liftFV rest f
 
 solve :: [Constraint] -> Maybe Substitution
 solve [                 ] = return mempty
@@ -154,8 +159,11 @@ indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
 indexes (BST    k v)  = indexes k  ++ indexes v
 indexes _             = mempty
 
+emptyEnvironment :: Environment
+emptyEnvironment = error . (++ " is unbound!")
+
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
-infer term = runRWS (annotate term) $ error . (++ " is unbound!")
+infer term = runRWS (annotate term) $ emptyEnvironment
 
 -- alpha renaming.
 alpha :: Index -> (Type -> (Index, Type))
@@ -190,9 +198,8 @@ type GlobalEnv = X -> Maybe Type
 inferP :: Program a -> Program Type
 inferP program = refine (bindings cs) <$> pt
   where
-    unbound     = error . (++ " is unbound!")
-    (pt, _, cs) = runRWS (program' :: Annotation (Program Type)) unbound 0
-    program'    = inferP' program
+    (pt, _, cs) = runRWS program' emptyEnvironment 0
+    program'    = inferP' program :: Annotation (Program Type)
     inferP' (Declaration x t p) =
       do i <- get
          let (j, tau) = alpha i t

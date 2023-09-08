@@ -140,3 +140,43 @@ instance Semigroup (Program a) where
 instance Monoid (Program a) where
   mempty  = EndOfProgram
   mappend = (<>)
+
+freeVariables :: Term a -> [Name]
+freeVariables (Number _ _) = mempty
+freeVariables (Boolean _ _) = mempty
+freeVariables (Unit      _) = mempty
+freeVariables (Leaf      _) = mempty
+freeVariables (Node l k v r _) =
+     freeVariables l
+  <> freeVariables k
+  <> freeVariables v
+  <> freeVariables r
+freeVariables (Case t l (p, b) _) =
+     freeVariables t
+  <> freeVariables l
+  <> freeVariables p
+  <> freeVariables b
+freeVariables (Variable x _) = return x
+freeVariables (If t0 t1 t2 _) =
+     freeVariables t0
+  <> freeVariables t1
+  <> freeVariables t2
+freeVariables (Plus t0 t1 _) =
+     freeVariables t0
+  <> freeVariables t1
+freeVariables (Leq t0 t1 _) =
+     freeVariables t0
+  <> freeVariables t1
+freeVariables (Pair t0 t1 _) =
+     freeVariables t0
+  <> freeVariables t1
+freeVariables (Fst t0 _) = freeVariables t0
+freeVariables (Snd t0 _) = freeVariables t0
+freeVariables (Lambda x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
+freeVariables (Application t0 t1 _) =
+     freeVariables t0
+  <> freeVariables t1
+freeVariables (Let x t0 t1 _) =
+     freeVariables t0
+  <> [ y | y <- freeVariables t1, y /= x ]
+freeVariables (Rec x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
