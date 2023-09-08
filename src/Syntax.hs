@@ -28,7 +28,16 @@ data Program a
   | Definition  F          (Term a) (Program a)
   | Property    P [(X, a)] (Term a) (Program a)
   | EndOfProgram
-  deriving (Functor, Eq, Show)
+  deriving (Functor, Eq)
+
+instance Show a => Show (Program a) where
+  show (Declaration x t rest) =
+    x ++ " :: " ++ show t ++ "\n\n" ++ show rest
+  show (Definition x t rest) =
+    x ++ " = " ++ show t ++ "\n\n" ++ show rest
+  show (Property p xs t rest) =
+    "property " ++ p ++ " " ++ show xs ++ " . " ++ show t ++ "\n\n" ++ show rest
+  show EndOfProgram = ""
 
 data Type
   = Variable' Index

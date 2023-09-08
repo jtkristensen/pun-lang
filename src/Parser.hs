@@ -1,7 +1,8 @@
 
 module Parser
   ( Parser, Info, term_, type_, program_, nat_, int_
-  , runParser, parseString, problems
+  , Source, runParser, parseString, problems, parsePunProgram
+  , Problem
   )
 where
 
@@ -18,35 +19,39 @@ type Parser           = Parsec Source ()
 type Info             = (SourcePos, SourcePos)
 type Transformation a = (a -> a)
 
--- Should this go int_o the parser?
+-- todo, extend these errors to carry sourse positions info.
 data Problem =
     SeveralDeclarationsOf          X
-  | SeveralDefinitionsOf           X
-  | PropertyIsDeclaredMoreThanOnes P
+  | SeveralDefinitionsOf           F
+  | PropertyIsDeclaredMoreThanOnce P
+  | DoesNotParse                   ParseError
+  deriving (Eq, Show)
 
-problems :: Program a -> [Problem]
+problems :: Program Info -> [Problem]
 problems p = definitions' <> declarations' <> properties'
   where
-    ts           = fst <$> definitions  p
-    ds           = fst <$> declarations p
-    ps           = fst <$> properties   p
-    definitions' =
-      case ts \\ nub ts of
-        (x : _) -> return $ SeveralDefinitionsOf x
-        _       -> mempty
-    declarations' =
-      case ds \\ nub ds of
-        (x : _) -> return $ SeveralDeclarationsOf x
-        _       -> mempty
-    properties' =
-      case ps \\ nub ps of
-        (x : _) -> return $ PropertyIsDeclaredMoreThanOnes x
-        _       -> mempty
+    ts            = fst <$> definitions  p
+    ds            = fst <$> declarations p
+    ps            = fst <$> properties   p
+    definitions'  = SeveralDefinitionsOf           <$> (ts \\ nub ts)
+    declarations' = SeveralDeclarationsOf          <$> (ds \\ nub ds)
+    properties'   = PropertyIsDeclaredMoreThanOnce <$> (ps \\ nub ps)
 
 -- * Usage:
 
 parseString :: Parser a -> Source -> Either ParseError a
 parseString p = runParser p () "<no-such-file>"
+
+parsePunProgram :: Source -> IO (Either [Problem] (Program Info))
+parsePunProgram path =
+  do src <- readFile path
+     return $
+       case runParser (many space >> program_) () path src of
+         (Left  err ) -> Left $ return $ DoesNotParse err
+         (Right code) ->
+           case problems code of
+             [   ] -> return code
+             _     -> Left $ problems code
 
 -- * Implementation:
 

@@ -15,4 +15,3 @@ and b1 b2 =
 
 less : integer -> integer -> boolean .
 less m n = and (m <= n) (not (equal m n)) .
-

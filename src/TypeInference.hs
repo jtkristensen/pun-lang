@@ -159,7 +159,7 @@ infer term = runRWS (annotate term) $ error . (++ " is unbound!")
 
 -- alpha renaming.
 alpha :: Index -> (Type -> (Index, Type))
-alpha i t = (i + maximum (indicies t) + 1, increment t)
+alpha i t = (if indicies t == [] then i else i + maximum (indicies t) + 1, increment t)
   where increment Integer'        = Integer'
         increment Boolean'        = Boolean'
         increment Unit'           = Unit'
@@ -185,11 +185,40 @@ refine s o = refine' s o
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
     refine' s'           (BST    k v)           = BST (refine s' k) (refine s' v)
 
--- annotateProgram :: Program a -> Annotation (Program Type)
--- annotateProgram p = iterate p
---   where
---     iterate
+type GlobalEnv = X -> Maybe Type
 
+inferP :: Program a -> Program Type
+inferP program = refine (bindings cs) <$> pt
+  where
+    unbound     = error . (++ " is unbound!")
+    (pt, _, cs) = runRWS (program' :: Annotation (Program Type)) unbound 0
+    program'    = inferP' program
+    inferP' (Declaration x t p) =
+      do i <- get
+         let (j, tau) = alpha i t
+         put j
+         -- This forces that all recursive functions must have type
+         -- declarations. It also forces the ML style monomorphism
+         -- constraint on recursive things at top-level. This may be be more
+         -- restrictive than what we want, but on the other hand, it was
+         -- easy to implement {^_^}.
+         p' <- local (bind x tau) $ inferP' p
+         return $ Declaration x tau p'
+    inferP' (Definition x t p) =
+      do t' <- annotate t
+         p' <- inferP' p
+         return $ Definition x t' p'
+    inferP' (Property q params t p) =
+      do params' <- mapM (\(x, _) -> hole >>= return . (,) x) params
+         t'      <- local (update params') $ annotate t
+         p'      <- inferP' p
+         return $ Property q params' t' p'
+      where
+        update ps f x =
+          case lookup x ps of
+            Just tau -> tau
+            Nothing  -> f x
+    inferP' EndOfProgram = return EndOfProgram
 
 -- Just here for documentation
 usage :: Term a -> Index -> (Term Type, Index)
