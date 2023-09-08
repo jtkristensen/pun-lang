@@ -5,7 +5,6 @@ import Parser          (parsePunProgram, Info)
 import TypeInference   (inferP)
 import Interpreter     (normalize)
 import PropertyChecker
-import Debug.Trace
 
 import Control.Monad      (void)
 import System.Exit        (die)
@@ -32,21 +31,25 @@ run a = a >>= \what ->
     (Fail          message) -> die message
     (Shell         _      ) -> die "future work"
 
+numberOfTests :: Integer
+numberOfTests = 50
+
 check :: Program Type -> IO ()
 check program = void $ mapM check1 (properties program)
   where
     check1 (name, (args, body)) =
-      do print $ "testing " ++ name ++ ".."
-         print "-------------------------------"
-         print body
-         print "-------------------------------"
-         print "-------------------------------"
-         p <- generate $ propertyToCheck program args body
-         print p
-         print "-------------------------------"
-         print $ normalize program p
-         print "-------------------------------"
-
+      do putStr $ "testing " ++ name ++ ": "
+         iter numberOfTests
+      where
+        iter 0 = putStrLn " ok"
+        iter n =
+          do p <- generate $ propertyToCheck program args body
+             case normalize program p of
+               Boolean True _ -> putStr "." >> iter (n - 1)
+               _              ->
+                 do print "failed with counter example :"
+                    print $ show p
+                    print $ "after " ++ show (numberOfTests - n) ++ " tests."
 
 parse :: String -> IO (Program Info)
 parse file =
