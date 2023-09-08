@@ -8,7 +8,7 @@ type Unifier a = [(Name, Term a)]
 
 unify :: Show a => Canonical a -> Pattern a -> Unifier a
 unify v p = if isPattern p
-  then 
+  then
     (case unify' v p of
       Nothing -> error "non-exhaustive patterns in case statement"
       Just  u -> if names == nub names
@@ -19,7 +19,7 @@ unify v p = if isPattern p
           names = map fst u)
   else
     error $ show p ++ " is not a legal pattern for case statements"
-  
+
 unify' :: Canonical a -> Pattern a -> Maybe (Unifier a)
 unify' (Number v   _) (Number  v'   _) | v == v' = return []
 unify' (Boolean v  _) (Boolean v'   _) | v == v' = return []

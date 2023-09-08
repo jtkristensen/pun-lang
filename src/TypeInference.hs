@@ -196,9 +196,14 @@ refine s o = refine' s o
 type GlobalEnv = X -> Maybe Type
 
 inferP :: Program a -> Program Type
-inferP program = refine (bindings cs) <$> pt
+inferP program = refine (bindings $ cs ++ cs') <$> pt
   where
     (pt, _, cs) = runRWS program' emptyEnvironment 0
+    cs'         = [ t' :=: annotation t''
+                  | (x, t' ) <- declarations pt
+                  , (y, t'') <- definitions  pt
+                  , x == y
+                  ]
     program'    = inferP' program :: Annotation (Program Type)
     inferP' (Declaration x t p) =
       do i <- get

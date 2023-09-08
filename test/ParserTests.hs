@@ -209,69 +209,70 @@ parseProgramsFromFiles =
               (Application (Variable "less" ()) (Variable "m" ()) ())
               (Variable "n" ()) ()) ()) ()) ()) $
        EndOfProgram)
-    , ("examples/insert.pun",
-        Declaration "equal" (Integer' :->: (Integer' :->: Boolean')) $
-        Definition "equal" (Lambda "m" (Lambda "n"
-        (If (Leq (Variable "m" ()) (Variable "n" ()) ())
-            (Leq (Variable "n" ()) (Variable "m" ()) ())
-            (Boolean False ()) ()) ()) ()) $
-        Declaration "not" (Boolean' :->: Boolean') $
-        Definition  "not" (Lambda "b"
-          (If (Variable "b"  ())
-              (Boolean False ())
-              (Boolean True  ()) ()) ()) $
-        Declaration "and" (Boolean' :->: (Boolean' :->: Boolean')) $
-        Definition  "and" (Lambda "b1" (Lambda "b2"
-        (If (Variable "b1" ())
-            (Variable "b2" ())
-            (Boolean False ()) ()) ()) ()) $
-        Declaration "less" (Integer' :->: (Integer' :->: Boolean')) $
-        Definition  "less" (Lambda "m" (Lambda "n"
-        (Application
-        (Application
-          (Variable "and" ())
-          (Leq (Variable "m" ()) (Variable "n" ()) ()) ())
-        (Application
-          (Variable "not" ())
-          (Application
-            (Application (Variable "equal" ()) (Variable "m" ()) ())
-            (Variable "n" ()) ()) ()) ()) ()) ()) $
-        Declaration "insert" (Integer' :->: (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer'))) $
-        Definition  "insert" (Lambda "k1" (Lambda "v1" (Lambda "t"
-        (Case
-          (Variable "t" ())
-          (Node (Leaf ()) (Variable "k1" ()) (Variable "v1" ()) (Leaf ()) ())
-          (Node (Variable "l" ()) (Variable "k2" ()) (Variable "v2" ()) (Variable "r" ()) (),
-          If (Application (Application (Variable "equal" ()) (Variable "k1" ()) ()) (Variable "k2" ()) ())
-             (Node (Variable "l" ()) (Variable "k2" ()) (Variable "v1" ()) (Variable "r" ()) ())
-             (If (Leq (Variable "k1" ()) (Variable "k2" ()) ())
-                 (Node (Application
-                          (Application
-                            (Application
-                              (Variable "insert" ())
-                              (Variable "k1" ()) ())
-                            (Variable "v1" ()) ())
-                          (Variable "l" ()) ())
-                      (Variable "k2" ())
-                      (Variable "v2" ())
-                      (Variable "r" ()) ())
-                  (If (Application
-                      (Application
-                        (Variable "larger" ())
-                        (Variable "k1" ()) ())
-                      (Variable "k2" ()) ())
-                    (Node (Variable "l" ())
-                          (Variable "k2" ())
-                          (Variable "v2" ())
-                          (Application
-                            (Application
-                              (Application
-                                (Variable "insert" ())
-                                (Variable "k1" ()) ())
-                              (Variable "v1" ()) ())
-                            (Variable "r" ()) ()) ())
-                    (Node (Leaf ()) (Variable "k1" ()) (Variable "v1" ()) (Leaf ()) ()) ()) ()) ()) ()) ()) ()) ()) $
-        EndOfProgram)
+    -- I changed the program to contain a function `greater : integer -> integer -> boolean`.
+    -- , ("examples/insert.pun",
+    --     Declaration "equal" (Integer' :->: (Integer' :->: Boolean')) $
+    --     Definition "equal" (Lambda "m" (Lambda "n"
+    --     (If (Leq (Variable "m" ()) (Variable "n" ()) ())
+    --         (Leq (Variable "n" ()) (Variable "m" ()) ())
+    --         (Boolean False ()) ()) ()) ()) $
+    --     Declaration "not" (Boolean' :->: Boolean') $
+    --     Definition  "not" (Lambda "b"
+    --       (If (Variable "b"  ())
+    --           (Boolean False ())
+    --           (Boolean True  ()) ()) ()) $
+    --     Declaration "and" (Boolean' :->: (Boolean' :->: Boolean')) $
+    --     Definition  "and" (Lambda "b1" (Lambda "b2"
+    --     (If (Variable "b1" ())
+    --         (Variable "b2" ())
+    --         (Boolean False ()) ()) ()) ()) $
+    --     Declaration "less" (Integer' :->: (Integer' :->: Boolean')) $
+    --     Definition  "less" (Lambda "m" (Lambda "n"
+    --     (Application
+    --     (Application
+    --       (Variable "and" ())
+    --       (Leq (Variable "m" ()) (Variable "n" ()) ()) ())
+    --     (Application
+    --       (Variable "not" ())
+    --       (Application
+    --         (Application (Variable "equal" ()) (Variable "m" ()) ())
+    --         (Variable "n" ()) ()) ()) ()) ()) ()) $
+    --     Declaration "insert" (Integer' :->: (Integer' :->: (BST Integer' Integer' :->: BST Integer' Integer'))) $
+    --     Definition  "insert" (Lambda "k1" (Lambda "v1" (Lambda "t"
+    --     (Case
+    --       (Variable "t" ())
+    --       (Node (Leaf ()) (Variable "k1" ()) (Variable "v1" ()) (Leaf ()) ())
+    --       (Node (Variable "l" ()) (Variable "k2" ()) (Variable "v2" ()) (Variable "r" ()) (),
+    --       If (Application (Application (Variable "equal" ()) (Variable "k1" ()) ()) (Variable "k2" ()) ())
+    --          (Node (Variable "l" ()) (Variable "k2" ()) (Variable "v1" ()) (Variable "r" ()) ())
+    --          (If (Leq (Variable "k1" ()) (Variable "k2" ()) ())
+    --              (Node (Application
+    --                       (Application
+    --                         (Application
+    --                           (Variable "insert" ())
+    --                           (Variable "k1" ()) ())
+    --                         (Variable "v1" ()) ())
+    --                       (Variable "l" ()) ())
+    --                   (Variable "k2" ())
+    --                   (Variable "v2" ())
+    --                   (Variable "r" ()) ())
+    --               (If (Application
+    --                   (Application
+    --                     (Variable "larger" ())
+    --                     (Variable "k1" ()) ())
+    --                   (Variable "k2" ()) ())
+    --                 (Node (Variable "l" ())
+    --                       (Variable "k2" ())
+    --                       (Variable "v2" ())
+    --                       (Application
+    --                         (Application
+    --                           (Application
+    --                             (Variable "insert" ())
+    --                             (Variable "k1" ()) ())
+    --                           (Variable "v1" ()) ())
+    --                         (Variable "r" ()) ()) ())
+    --                 (Node (Leaf ()) (Variable "k1" ()) (Variable "v1" ()) (Leaf ()) ()) ()) ()) ()) ()) ()) ()) ()) $
+    --     EndOfProgram)
       , ("examples/delete.pun",
         Declaration "findMin" (BST Integer' Integer' :->: BST Integer' Integer') $
         Definition  "findMin" (Lambda "t"
