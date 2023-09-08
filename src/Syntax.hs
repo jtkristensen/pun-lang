@@ -180,3 +180,13 @@ freeVariables (Let x t0 t1 _) =
      freeVariables t0
   <> [ y | y <- freeVariables t1, y /= x ]
 freeVariables (Rec x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
+
+withoutDeclarations :: Program a -> Program a
+withoutDeclarations (Declaration _ _ p)  =                     withoutDeclarations p
+withoutDeclarations (Definition  x t p)  = Definition   x  t $ withoutDeclarations p
+withoutDeclarations (Property  n xs t p) = Property   n xs t $ withoutDeclarations p
+withoutDeclarations EndOfProgram         = EndOfProgram
+
+declarationsUpFront :: Program a -> Program a
+declarationsUpFront p =
+  foldr (uncurry Declaration) (withoutDeclarations p) (declarations p)

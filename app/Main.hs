@@ -25,7 +25,7 @@ run a =
      case what of
        (Shell     _program) -> undefined
        (Check     _program) -> undefined
-       (TypeCheck program) -> print $ inferP program
+       (TypeCheck program) -> print $ inferP $ declarationsUpFront program
        (Fail  message)  -> die message
 
 action :: [String] -> IO Action
