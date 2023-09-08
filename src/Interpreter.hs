@@ -61,8 +61,7 @@ interpret (Case t0 l (p, n) _) =
      case v of
        (Leaf _) -> interpret l
        _        ->
-         let u = unify v p
-         in  return $ substituteWithUnifier u n
+         interpret $ substituteWithUnifier (unify v p) n
 interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).

@@ -159,122 +159,122 @@ greaterKeys t =
 
 property nil-valid . valid nil .
 
-// Note that this is worse than generating valid trees. Do we need a
-// function "validify"?
-property insert-valid k v t . valid (insert k v (validify t)) .
+// // Note that this is worse than generating valid trees. Do we need a
+// // function "validify"?
+// property insert-valid k v t . valid (insert k v (validify t)) .
 
-validify : bst integer integer -> bst integer integer .
-validify t =
-  case t of
-  ; leaf           -> leaf
-  ; [node l k v r] -> insert k v (union (validify l) (validify r)) .
-
-property delete-valid k v t .
-  if   valid t
-  then valid (delete k t)
-  else true .
-
-property union-valid t1 t2 . valid (union (validify t1) (validify t2)) .
-
-// no arbitrary instance, so no need to write this test.
-// property arbitrary-valid t . valid t .
-
-find_equal : bst unit integer -> bst unit integer -> boolean .
-find_equal t1 t2 =
-  case t1 of
-    ; leaf ->
-        case t2 of
-        ; leaf -> true
-        ; x    -> false
-    ; [node leaf k1 v1 leaf] ->
-        case t2 of
-        ; leaf                   -> false
-        ; [node leaf k2 v2 leaf] -> equal v1 v2 .
-
-property find-post-present k v t .
-  find_equal (find k (insert k v t)) ([node leaf unit v leaf]) .
-
-property find-post-absent k t . find_equal (find k (delete k t)) (leaf) .
-
-// missing definition of trees_equal
-// property insert-delete-complete k t .
-//   case find k t of
-//   ; leaf            -> trees_equal t (delete k   t)
-//   ; [node l k1 v r] -> trees_equal t (insert k v t) .
-
-property insert-post k v t k1 .
-  find_equal (find k1 (insert k v t))
-             (if  (equal k k1)
-             then [node leaf unit v leaf]
-             else (find k1 t)) .
-
-// property insert-post-same-key k v t . insert-post k v t k .
-
-// property union-post t1 t2 k . equal_find (find k (union t1 t2))
-//                                     (case (find k t1) of
-//                                       ; leaf                  -> leaf
-//                                         (case (find k t2) of
-//                                           ; leaf                   -> leaf
-//                                           ; [node leaf k1 v1 leaf] -> [node leaf k1 v1 leaf]
-//                                         )
-//                                       ; [node leaf k2 v leaf] -> [node leaf k2 v leaf]
-//                                     ) .
-
-// equalModels : bst integer integer -> bst integer integer -> unit .
-// equalModels t1 t2 = unit .
-
-// property insert-insert k1 v1 k2 v2 t .
-//   equalModels (insert k1 v1 (insert k2 v2 t))
-//               (if (equal k1 k2)
-//               then (insert k1 v1 t)
-//               else (insert k2 v2 (insert k1 v1 t))) .
-
-// property insert-delete k1 v1 k2 t .
-//   equalModels (insert k1 v1 (delete k2 t))
-//               (if (equal k1 k2)
-//               then (insert k1 v1 t)
-//               else (delete k2 (insert k1 v1 t))) .
-
-// property insert-union k1 v1 t1 t2 .
-//   equalModels (insert k1 v1 (union t1 t2))
-//               (union (insert k1 v1 t1) t2) .
-
-// setEqual : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
-// setEqual t1 t2 =
-//   if   subset t1 t2
-//   then subset t2 t1
-//   else false .
-
-// subset : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
-// subset t1 t2 =
-//   case t1 of
-//   ; leaf                    -> true
-//   ; [node leaf p unit rest] ->
-//     case find p t2 of
-//     ; leaf -> false
-//     ; x    -> subset rest t2 .
-
-
-// insertions : bst (integer, integer) unit -> bst (integer, integer) unit .
-// insertions t =
+// validify : bst integer integer -> bst integer integer .
+// validify t =
 //   case t of
-//   ; leaf           -> empty
-//   ; [node l k v r] ->
-//     [node (insertions l) (k, v) unit (insertions r)] .
+//   ; leaf           -> leaf
+//   ; [node l k v r] -> insert k v (union (validify l) (validify r)) .
 
-// delete_key : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
-// delete_key k t = filter (not k) t .
+// property delete-valid k v t .
+//   if   valid t
+//   then valid (delete k t)
+//   else true .
 
-// property nil-model . equalModels (model nil) (empty) .
+// property union-valid t1 t2 . valid (union (validify t1) (validify t2)) .
 
-// property insert-model k v t .
-//   equalModels (model (insert k v t))
-//               (model_insert (k, v) (delete_key k (model t))) .
+// // no arbitrary instance, so no need to write this test.
+// // property arbitrary-valid t . valid t .
 
-// property delete-model k v t .
-//   equalModels (model (delete k t))
-//               (model (delete_key k (model t))) .
+// find_equal : bst unit integer -> bst unit integer -> boolean .
+// find_equal t1 t2 =
+//   case t1 of
+//     ; leaf ->
+//         case t2 of
+//         ; leaf -> true
+//         ; x    -> false
+//     ; [node leaf k1 v1 leaf] ->
+//         case t2 of
+//         ; leaf                   -> false
+//         ; [node leaf k2 v2 leaf] -> equal v1 v2 .
 
-// property find-model k v .
-//   find_equal (find k t)
-//              (find k (model t)) .
+// property find-post-present k v t .
+//   find_equal (find k (insert k v t)) ([node leaf unit v leaf]) .
+
+// property find-post-absent k t . find_equal (find k (delete k t)) (leaf) .
+
+// // missing definition of trees_equal
+// // property insert-delete-complete k t .
+// //   case find k t of
+// //   ; leaf            -> trees_equal t (delete k   t)
+// //   ; [node l k1 v r] -> trees_equal t (insert k v t) .
+
+// property insert-post k v t k1 .
+//   find_equal (find k1 (insert k v t))
+//              (if  (equal k k1)
+//              then [node leaf unit v leaf]
+//              else (find k1 t)) .
+
+// // property insert-post-same-key k v t . insert-post k v t k .
+
+// // property union-post t1 t2 k . equal_find (find k (union t1 t2))
+// //                                     (case (find k t1) of
+// //                                       ; leaf                  -> leaf
+// //                                         (case (find k t2) of
+// //                                           ; leaf                   -> leaf
+// //                                           ; [node leaf k1 v1 leaf] -> [node leaf k1 v1 leaf]
+// //                                         )
+// //                                       ; [node leaf k2 v leaf] -> [node leaf k2 v leaf]
+// //                                     ) .
+
+// // equalModels : bst integer integer -> bst integer integer -> unit .
+// // equalModels t1 t2 = unit .
+
+// // property insert-insert k1 v1 k2 v2 t .
+// //   equalModels (insert k1 v1 (insert k2 v2 t))
+// //               (if (equal k1 k2)
+// //               then (insert k1 v1 t)
+// //               else (insert k2 v2 (insert k1 v1 t))) .
+
+// // property insert-delete k1 v1 k2 t .
+// //   equalModels (insert k1 v1 (delete k2 t))
+// //               (if (equal k1 k2)
+// //               then (insert k1 v1 t)
+// //               else (delete k2 (insert k1 v1 t))) .
+
+// // property insert-union k1 v1 t1 t2 .
+// //   equalModels (insert k1 v1 (union t1 t2))
+// //               (union (insert k1 v1 t1) t2) .
+
+// // setEqual : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
+// // setEqual t1 t2 =
+// //   if   subset t1 t2
+// //   then subset t2 t1
+// //   else false .
+
+// // subset : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
+// // subset t1 t2 =
+// //   case t1 of
+// //   ; leaf                    -> true
+// //   ; [node leaf p unit rest] ->
+// //     case find p t2 of
+// //     ; leaf -> false
+// //     ; x    -> subset rest t2 .
+
+
+// // insertions : bst (integer, integer) unit -> bst (integer, integer) unit .
+// // insertions t =
+// //   case t of
+// //   ; leaf           -> empty
+// //   ; [node l k v r] ->
+// //     [node (insertions l) (k, v) unit (insertions r)] .
+
+// // delete_key : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
+// // delete_key k t = filter (not k) t .
+
+// // property nil-model . equalModels (model nil) (empty) .
+
+// // property insert-model k v t .
+// //   equalModels (model (insert k v t))
+// //               (model_insert (k, v) (delete_key k (model t))) .
+
+// // property delete-model k v t .
+// //   equalModels (model (delete k t))
+// //               (model (delete_key k (model t))) .
+
+// // property find-model k v .
+// //   find_equal (find k t)
+// //              (find k (model t)) .

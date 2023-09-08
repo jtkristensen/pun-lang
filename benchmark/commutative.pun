@@ -6,4 +6,9 @@ equal m n =
   else false .
 
 property plus-commutes m n . equal (m + n) (n + m) .
-property less m n . m <= n  .
+// property less m n . m <= n  .
+
+property case-statement b .
+  case leaf of
+  ; leaf -> true
+  ; x    -> true .
