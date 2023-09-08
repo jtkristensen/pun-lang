@@ -54,6 +54,7 @@ insert k v (Branch left k' v' right)
     | k >  k' = Branch left              k' v' (insert k v right)
 insert k v _  = Branch (Leaf) k v (Leaf)
 
+
 delete :: Ord k => k -> BST k v -> BST k v
 delete _ Leaf = Leaf
 delete k tree@(Branch left k' v' right)

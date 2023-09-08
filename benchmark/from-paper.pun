@@ -1,0 +1,27 @@
+
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
+property plus-commutes m n . equal (m + n) (n + m) .
+
+// property less m n . m <= n  .
+
+property plus-zero-identity f n . equal (f (n + 0)) ((f (n)) + 0) .
+
+negate : integer -> integer .
+negate n =
+  if   equal n 0
+  then 0
+  else
+    if   1 <= n
+    then negate (n + ~1) + ~1
+    else negate (n + 1) + 1 .
+
+sub : integer -> integer -> integer .
+sub m n = m + (negate n) .
+
+// fails (as it should).
+property subtraction-commutes m n . equal (sub n m) (sub m n) .
