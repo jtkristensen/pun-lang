@@ -9,7 +9,4 @@ property plus-commutes m n . equal (m + n) (n + m) .
 
 // property less m n . m <= n  .
 
-property case-statement t .
-  case t of
-  ; leaf -> true
-  ; x    -> true .
+property plus-zero f n . equal (f (n + 0)) ((f (n)) + 0) .
