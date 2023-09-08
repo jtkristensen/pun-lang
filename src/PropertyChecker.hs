@@ -45,17 +45,11 @@ generateGeneratorSized s@(is, bs, ts) Integer' size =
          f       <- generateGeneratorSized s (argType :->: Integer') (decrease size)
          arg     <- generateGeneratorSized s argType (decrease size)
          return $ Application f arg Integer'
-    --     Gamma |- t1 : T1         Gamma[x -> T1] |- t2 : T
-    -- Let --------------------------------------------------
-    --             Gamma |- let x = t1 in t2 : T
     , do x     <- generateName ts
          type1 <- generateType is (map snd bs)
          t1    <- generateGeneratorSized s type1 (decrease size)
          t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs, ts) Integer' (decrease size)
          return $ Let x t1 t2 Integer'
-    --            Gamma[x -> T] |- rec x t : T
-    -- Let --------------------------------------------------
-    --               Gamma |- rec x t : T
     , do x     <- generateName ts
          -- this is the trivially terminating recursive term, because x does not occur !
          t1    <- generateGeneratorSized (is, filter ((/=x) . fst) bs, ts) Integer' (decrease size)
@@ -136,7 +130,7 @@ generateType is bindingTypes =
   oneof $
     [ return Integer'
     , return Boolean'
-    , return Unit'
+    -- , return Unit'
     , do type1 <- generateType is bindingTypes
          type2 <- generateType is bindingTypes
          return $ type1 :*: type2

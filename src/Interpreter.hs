@@ -70,9 +70,9 @@ bool :: Term a -> Runtime a Bool
 bool (Boolean b _) = return b
 bool _             = error "expected a boolean value"
 
-number :: Term a -> Runtime a Integer
+number :: Show a => Term a -> Runtime a Integer
 number (Number n _) = return n
-number _            = error "expected an integer"
+number t            = error $ "expected an integer, but got a " ++ show t
 
 pair :: Term a -> Runtime a (Term a, Term a)
 pair (Pair t1 t2 _) = return (t1, t2)

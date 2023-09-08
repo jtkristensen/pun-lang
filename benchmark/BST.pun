@@ -183,36 +183,36 @@ property union-valid t1 t2 .
 // no arbitrary instance, so no need to write this test.
 // property arbitrary-valid t . valid t .
 
-// find_equal : bst unit integer -> bst unit integer -> boolean .
-// find_equal t1 t2 =
-//   case t1 of
-//     ; leaf ->
-//         case t2 of
-//         ; leaf -> true
-//         ; x    -> false
-//     ; [node leaf k1 v1 leaf] ->
-//         case t2 of
-//         ; leaf                   -> false
-//         ; [node leaf k2 v2 leaf] -> equal v1 v2 .
+find_equal : bst unit integer -> bst unit integer -> boolean .
+find_equal t1 t2 =
+  case t1 of
+    ; leaf ->
+        case t2 of
+        ; leaf -> true
+        ; x    -> false
+    ; [node leaf k1 v1 leaf] ->
+        case t2 of
+        ; leaf                   -> false
+        ; [node leaf k2 v2 leaf] -> equal v1 v2 .
 
-// property find-post-present k v t .
-//   find_equal (find k (insert k v t)) ([node leaf unit v leaf]) .
+property find-post-present k v t .
+  find_equal (find k (insert k v t)) ([node leaf unit v leaf]) .
 
-// property find-post-absent k t . find_equal (find k (delete k t)) (leaf) .
+property find-post-absent k t . find_equal (find k (delete k t)) (leaf) .
 
-// // missing definition of trees_equal
-// // property insert-delete-complete k t .
-// //   case find k t of
-// //   ; leaf            -> trees_equal t (delete k   t)
-// //   ; [node l k1 v r] -> trees_equal t (insert k v t) .
+// missing definition of trees_equal
+// property insert-delete-complete k t .
+//   case find k t of
+//   ; leaf            -> trees_equal t (delete k   t)
+//   ; [node l k1 v r] -> trees_equal t (insert k v t) .
 
-// property insert-post k v t k1 .
-//   find_equal (find k1 (insert k v t))
-//              (if  (equal k k1)
-//              then [node leaf unit v leaf]
-//              else (find k1 t)) .
+property insert-post k v t k1 .
+  find_equal (find k1 (insert k v t))
+             (if  (equal k k1)
+             then [node leaf unit v leaf]
+             else (find k1 t)) .
 
-// // property insert-post-same-key k v t . insert-post k v t k .
+// property insert-post-same-key k v t . insert-post k v t k .
 
 // // property union-post t1 t2 k . equal_find (find k (union t1 t2))
 // //                                     (case (find k t1) of
