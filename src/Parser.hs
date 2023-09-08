@@ -46,7 +46,7 @@ parsePunProgram :: Source -> IO (Either [Problem] (Program Info))
 parsePunProgram path =
   do src <- readFile path
      return $
-       case runParser (many space >> program_) () path src of
+       case runParser (many whitespace >> program_) () path src of
          (Left  err ) -> Left $ return $ DoesNotParse err
          (Right code) ->
            case problems code of
@@ -217,8 +217,14 @@ reserved =
 lexeme :: Parser a -> Parser a
 lexeme p =
   do a <- p
-     _ <- many (void space)
+     _ <- many whitespace
      return a
+
+comment :: Parser ()
+comment = void $ lexeme $ symbol "//" >> many (noneOf ['\n'])
+
+whitespace :: Parser ()
+whitespace = comment <|> void space
 
 -- Holds if a name constitutes a reserved keyword.
 isReserved :: Name -> Bool

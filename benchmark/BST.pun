@@ -114,7 +114,7 @@ model_union t1 t2 =
   ; [node leaf p unit rest] -> model_insert p (model_union rest t2) .
 
 without : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
-without key list = filter (\p -> not (equal (fst p) key)) list
+without key list = filter (\p -> not (equal (fst p) key)) list .
 
 empty : bst (integer, integer) unit.
 empty = nil .
@@ -140,23 +140,25 @@ valid t =
 
 lessKeys : bst integer integer -> boolean .
 lessKeys t =
+  case t of
   ; leaf           -> true
   ; [node l k v r] ->
     case l of
       ; leaf               -> true
-      ; [node l' k' v' r'] ->
-          if   (less k' k)
+      ; [node l1 k1 v1 r1] ->
+          if   (less k1 k)
           then (lessKeys l)
           else false .
 
 greaterKeys : bst integer integer -> boolean .
 greaterKeys t =
+  case t of
   ; leaf           -> true
   ; [node l k v r] ->
       case r of
         ; leaf               -> true
-        ; [node l' k' v' r'] ->
-          if   (greater k' k)
+        ; [node l1 k1 v1 r1] ->
+          if   (greater k1 k)
           then (greaterKeys r)
           else false .
 
@@ -207,7 +209,7 @@ property insert-post-same-key k v t . insert-post k v t k .
 property union-post t1 t2 k . equal_find (find k (union t1 t2))
                                     (case (find k t1) of
                                       ; leaf                  -> leaf
-                                        (case (find k t2)
+                                        (case (find k t2) of
                                           ; leaf                   -> leaf
                                           ; [node leaf k1 v1 leaf] -> [node leaf k1 v1 leaf]
                                         )
@@ -218,22 +220,22 @@ property union-post t1 t2 k . equal_find (find k (union t1 t2))
 
 
 
-equalModels : bst integer integer -> bst integer integer -> true .
-equalModels t1 t2 = unit.
+equalModels : bst integer integer -> bst integer integer -> unit .
+equalModels t1 t2 = unit .
 
-property insert-insert (k1, v1) (k2, v2) t .
+property insert-insert k1 v1 k2 v2 t .
   equalModels (insert k1 v1 (insert k2 v2 t))
               (if (equal k1 k2)
               then (insert k1 v1 t)
               else (insert k2 v2 (insert k1 v1 t))) .
 
-property insert-delete (k1, v1) k2 t .
+property insert-delete k1 v1 k2 t .
   equalModels (insert k1 v1 (delete k2 t))
               (if (equal k1 k2)
               then (insert k1 v1 t)
               else (delete k2 (insert k1 v1 t))) .
 
-property insert-union (k1, v1) t1 t2 .
+property insert-union k1 v1 t1 t2 .
   equalModels (insert k1 v1 (union t1 t2))
               (union (insert k1 v1 t1) t2) .
 
@@ -253,7 +255,7 @@ subset t1 t2 =
     ; x    -> subset rest t2 .
 
 
-insertions : t -> bst (integer, integer) unit .
+insertions : bst (integer, integer) unit -> bst (integer, integer) unit .
 insertions t =
   case t of
   ; leaf           -> empty
