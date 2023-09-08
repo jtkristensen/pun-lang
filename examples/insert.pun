@@ -15,9 +15,6 @@ and b1 b2 =
 less : integer -> integer -> boolean .
 less m n = and (m <= n) (not (equal m n)) .
 
-greater : integer -> integer -> boolean .
-greater m n = not (m <= n) .
-
 insert : integer -> integer -> bst integer integer -> bst integer integer .
 insert k1 v1 t =
   case t of
@@ -27,6 +24,6 @@ insert k1 v1 t =
     then [node l k2 v1 r]
     else if   k1 <= k2
          then [node (insert k1 v1 l) k2 v2 r]
-         else if   greater k1 k2
+         else if   larger k1 k2
               then [node l k2 v2 (insert k1 v1 r)]
               else [node (leaf) k1 v1 (leaf)] .

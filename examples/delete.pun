@@ -11,7 +11,7 @@ delete : integer -> integer -> bst integer integer -> bst integer integer .
 delete k v t =
     case t of
     ; leaf             -> leaf
-    ; [node l k1 v1 r] -> 
+    ; [node l k1 v1 r] ->
         if   less k k1
         then [node (delete k v l) k1 v1 r]
         else if larger k k1
