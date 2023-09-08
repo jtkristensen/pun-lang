@@ -55,7 +55,7 @@ findMin t =
         ; [node l1 k1 v1 r1] -> findMin l1 .
 
 // mutually recursive functions must be declared up front (for now)
-delete : integer -> integer -> bst integer integer -> bst integer integer .
+delete  : integer -> integer -> bst integer integer -> bst integer integer .
 delete1 : integer -> integer -> bst integer integer -> bst integer integer.
 
 delete k v t =
@@ -84,13 +84,10 @@ delete1 k v t =
 
 union : bst integer integer -> bst integer integer -> bst integer integer .
 union t1 t2 =
-    case t2 of
-    ; leaf           -> t1
-    ; [node l k v r] ->
-      case t1 of
-      ; leaf               -> t2
-      ; [node l1 k1 v1 r1] ->
-        union (delete k1 v1 t1) (insert k1 v1 t2) .
+  case t1 of
+  ; leaf               -> t2
+  ; [node l1 k1 v1 r1] ->
+    union (delete k1 v1 t1) (insert k1 v1 t2) .
 
 // list api.
 empty :      bst (integer, integer) unit.
@@ -134,55 +131,63 @@ model_union t1 t2 =
   ; leaf                    -> t2
   ; [node leaf p unit rest] -> model_insert p (model_union rest t2) .
 
-// valid : bst integer integer -> boolean .
-// valid t =
-//   case t of
-//   ; leaf           -> true
-//   ; [node l k v r] -> and (and (valid l) (valid r)) (and (lessKeys l) (greaterKeys l)) .
+valid : bst integer integer -> boolean .
+lessKeys : bst integer integer -> boolean .
+greaterKeys : bst integer integer -> boolean .
 
-// lessKeys : bst integer integer -> boolean .
-// lessKeys t =
-//   case t of
-//   ; leaf           -> true
-//   ; [node l k v r] ->
-//     case l of
-//       ; leaf               -> true
-//       ; [node l1 k1 v1 r1] ->
-//           if   (less k1 k)
-//           then (lessKeys l)
-//           else false .
+valid t =
+  case t of
+  ; leaf           -> true
+  ; [node l k v r] -> and (and (valid l) (valid r)) (and (lessKeys l) (greaterKeys l)) .
 
-// greaterKeys : bst integer integer -> boolean .
-// greaterKeys t =
-//   case t of
-//   ; leaf           -> true
-//   ; [node l k v r] ->
-//       case r of
-//         ; leaf               -> true
-//         ; [node l1 k1 v1 r1] ->
-//           if   (greater k1 k)
-//           then (greaterKeys r)
-//           else false .
+lessKeys t =
+  case t of
+  ; leaf           -> true
+  ; [node l k v r] ->
+    case l of
+      ; leaf               -> true
+      ; [node l1 k1 v1 r1] ->
+          if   (less k1 k)
+          then (lessKeys l)
+          else false .
 
+greaterKeys t =
+  case t of
+  ; leaf           -> true
+  ; [node l k v r] ->
+      case r of
+        ; leaf               -> true
+        ; [node l1 k1 v1 r1] ->
+          if   (greater k1 k)
+          then (greaterKeys r)
+          else false .
 
+property nil-valid . valid nil .
 
+// Note that this is worse than generating valid trees. Do we need a
+// function "validify"?
+property insert-valid k v t .
+   if   valid t
+   then valid (insert k v t)
+   else true .
 
-// property nil-valid . valid .
+property delete-valid k v t .
+  if   valid t
+  then valid (delete k v t)
+  else true .
 
-// property insert-valid k v t . valid (insert k v t) .
+property union-valid t1 t2 .
+  if and (valid t1) (valid t2)
+  then valid (union t1 t2)
+  else true .
 
-// property delete-valid k v t . valid (delete k v t) .
-
-// property union-valid t1 t2 . valid (union t1 t2) .
-
+// no arbitrary instance, so no need to write this test.
 // property arbitrary-valid t . valid t .
 
-
-
 // find_equal : bst integer integer -> boolean .
-// find_equal t1 t2 = 
+// find_equal t1 t2 =
 //   case t1 of
-//     ; leaf -> 
+//     ; leaf ->
 //       case t2 of
 //       ; leaf -> true
 //       ; x    -> false
@@ -261,7 +266,7 @@ model_union t1 t2 =
 // insertions t =
 //   case t of
 //   ; leaf           -> empty
-//   ; [node l k v r] -> 
+//   ; [node l k v r] ->
 //     [node (insertions l) (k, v) unit (insertions r)] .
 
 

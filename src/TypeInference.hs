@@ -223,6 +223,7 @@ inferP program = refine (bindings $ cs ++ cs') <$> pt
     inferP' (Property q params t p) =
       do params' <- mapM (\(x, _) -> hole >>= return . (,) x) params
          t'      <- local (update params') $ annotate t
+         t' `hasType` Boolean'
          p'      <- inferP' p
          return $ Property q params' t' p'
       where
