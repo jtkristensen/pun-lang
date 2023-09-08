@@ -1,0 +1,11 @@
+
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
+// property plus-commutes m n . equal (m + n) (n + m) .
+
+property trivial . true .
+property semi-trivial . equal (5 + 2) 7 .

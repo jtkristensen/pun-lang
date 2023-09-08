@@ -107,10 +107,15 @@ annotate (Case t0 l (p, n) _) =
      t0'  <- annotate t0
      t0' `hasType` BST tau1 tau2
      l'   <- annotate l
-     p'   <- annotate p
-     n'   <- annotate n
+     fvs  <- mapM (\x -> (,) x <$> hole) $ freeVariables p
+     p'   <- local (liftFV fvs) $ annotate p
+     n'   <- local (liftFV fvs) $ annotate n
      l'  `hasSameTypeAs` n'
      return $ Case t0' l' (p', n') (annotation l')
+  where
+    liftFV :: [(X, Type)] -> (Environment -> Environment)
+    liftFV [] f = f
+    liftFV ((x, t) : rest) f = bind x t $ liftFV rest f
 
 solve :: [Constraint] -> Maybe Substitution
 solve [                 ] = return mempty
@@ -132,7 +137,7 @@ solve (constraint : rest) =
       then (if Variable' i /= t0 then Nothing else solve rest)
       else do c <- solve (substitute t0 i <$> rest)
               return $ (i, t0) : c
-    _                               -> Nothing
+    _                               -> error $ show constraint
 class HasSubstitution thing where
   substitute :: Type -> Index -> (thing -> thing)
 
@@ -154,12 +159,15 @@ indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
 indexes (BST    k v)  = indexes k  ++ indexes v
 indexes _             = mempty
 
+emptyEnvironment :: Environment
+emptyEnvironment = error . (++ " is unbound!")
+
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
-infer term = runRWS (annotate term) $ error . (++ " is unbound!")
+infer term = runRWS (annotate term) $ emptyEnvironment
 
 -- alpha renaming.
 alpha :: Index -> (Type -> (Index, Type))
-alpha i t = (i + maximum (indicies t) + 1, increment t)
+alpha i t = (if indicies t == [] then i else i + maximum (indicies t) + 1, increment t)
   where increment Integer'        = Integer'
         increment Boolean'        = Boolean'
         increment Unit'           = Unit'
@@ -185,11 +193,45 @@ refine s o = refine' s o
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
     refine' s'           (BST    k v)           = BST (refine s' k) (refine s' v)
 
--- annotateProgram :: Program a -> Annotation (Program Type)
--- annotateProgram p = iterate p
---   where
---     iterate
+type GlobalEnv = X -> Maybe Type
 
+inferP :: Program a -> Program Type
+inferP program = refine (bindings $ cs ++ cs') <$> pt
+  where
+    (pt, _, cs) = runRWS program' emptyEnvironment 0
+    cs'         = [ t' :=: annotation t''
+                  | (x, t' ) <- declarations pt
+                  , (y, t'') <- definitions  pt
+                  , x == y
+                  ]
+    program'    = inferP' program :: Annotation (Program Type)
+    inferP' (Declaration x t p) =
+      do i <- get
+         let (j, tau) = alpha i t
+         put j
+         -- This forces that all recursive functions must have type
+         -- declarations. It also forces the ML style monomorphism
+         -- constraint on recursive things at top-level. This may be be more
+         -- restrictive than what we want, but on the other hand, it was
+         -- easy to implement {^_^}.
+         p' <- local (bind x tau) $ inferP' p
+         return $ Declaration x tau p'
+    inferP' (Definition x t p) =
+      do t' <- annotate t
+         p' <- inferP' p
+         return $ Definition x t' p'
+    inferP' (Property q params t p) =
+      do params' <- mapM (\(x, _) -> hole >>= return . (,) x) params
+         t'      <- local (update params') $ annotate t
+         t' `hasType` Boolean'
+         p'      <- inferP' p
+         return $ Property q params' t' p'
+      where
+        update ps f x =
+          case lookup x ps of
+            Just tau -> tau
+            Nothing  -> f x
+    inferP' EndOfProgram = return EndOfProgram
 
 -- Just here for documentation
 usage :: Term a -> Index -> (Term Type, Index)

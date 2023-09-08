@@ -28,7 +28,16 @@ data Program a
   | Definition  F          (Term a) (Program a)
   | Property    P [(X, a)] (Term a) (Program a)
   | EndOfProgram
-  deriving (Functor, Eq, Show)
+  deriving (Functor, Eq)
+
+instance Show a => Show (Program a) where
+  show (Declaration x t rest) =
+    x ++ " :: " ++ show t ++ "\n\n" ++ show rest
+  show (Definition x t rest) =
+    x ++ " = " ++ show t ++ "\n\n" ++ show rest
+  show (Property p xs t rest) =
+    "property " ++ p ++ " " ++ show xs ++ " . " ++ show t ++ "\n\n" ++ show rest
+  show EndOfProgram = ""
 
 data Type
   = Variable' Index
@@ -131,3 +140,54 @@ instance Semigroup (Program a) where
 instance Monoid (Program a) where
   mempty  = EndOfProgram
   mappend = (<>)
+
+freeVariables :: Term a -> [Name]
+freeVariables (Number _ _) = mempty
+freeVariables (Boolean _ _) = mempty
+freeVariables (Unit      _) = mempty
+freeVariables (Leaf      _) = mempty
+freeVariables (Node l k v r _) =
+     freeVariables l
+  <> freeVariables k
+  <> freeVariables v
+  <> freeVariables r
+freeVariables (Case t l (p, b) _) =
+     freeVariables t
+  <> freeVariables l
+  <> freeVariables p
+  <> freeVariables b
+freeVariables (Variable x _) = return x
+freeVariables (If t0 t1 t2 _) =
+     freeVariables t0
+  <> freeVariables t1
+  <> freeVariables t2
+freeVariables (Plus t0 t1 _) =
+     freeVariables t0
+  <> freeVariables t1
+freeVariables (Leq t0 t1 _) =
+     freeVariables t0
+  <> freeVariables t1
+freeVariables (Pair t0 t1 _) =
+     freeVariables t0
+  <> freeVariables t1
+freeVariables (Fst t0 _) = freeVariables t0
+freeVariables (Snd t0 _) = freeVariables t0
+freeVariables (Lambda x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
+freeVariables (Application t0 t1 _) =
+     freeVariables t0
+  <> freeVariables t1
+freeVariables (Let x t0 t1 _) =
+     freeVariables t0
+  <> [ y | y <- freeVariables t1, y /= x ]
+freeVariables (Rec x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
+
+-- /!\ optimisation : declarations can be thrown away at runtime to make the program smaller.
+withoutDeclarations :: Program a -> Program a
+withoutDeclarations (Declaration _ _ p)  =                     withoutDeclarations p
+withoutDeclarations (Definition  x t p)  = Definition   x  t $ withoutDeclarations p
+withoutDeclarations (Property  n xs t p) = Property   n xs t $ withoutDeclarations p
+withoutDeclarations EndOfProgram         = EndOfProgram
+
+declarationsUpFront :: Program a -> Program a
+declarationsUpFront p =
+  foldr (uncurry Declaration) (withoutDeclarations p) (declarations p)

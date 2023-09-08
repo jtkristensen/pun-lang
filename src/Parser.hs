@@ -1,7 +1,8 @@
 
 module Parser
   ( Parser, Info, term_, type_, program_, nat_, int_
-  , runParser, parseString, problems
+  , Source, runParser, parseString, problems, parsePunProgram
+  , Problem
   )
 where
 
@@ -18,35 +19,41 @@ type Parser           = Parsec Source ()
 type Info             = (SourcePos, SourcePos)
 type Transformation a = (a -> a)
 
--- Should this go int_o the parser?
+-- todo, extend these errors to carry sourse positions info.
 data Problem =
     SeveralDeclarationsOf          X
-  | SeveralDefinitionsOf           X
-  | PropertyIsDeclaredMoreThanOnes P
+  | SeveralDefinitionsOf           F
+  | PropertyIsDeclaredMoreThanOnce P
+  | DeclaredButNotDefined          F
+  | DoesNotParse                   ParseError
+  deriving (Eq, Show)
 
-problems :: Program a -> [Problem]
-problems p = definitions' <> declarations' <> properties'
+problems :: Program Info -> [Problem]
+problems p =
+     [ SeveralDefinitionsOf              f | f <- ts \\ nub ts ]
+  <> [ SeveralDeclarationsOf             f | f <- ds \\ nub ds ]
+     <> [ PropertyIsDeclaredMoreThanOnce q | q <- ps \\ nub ps ]
+  <> [ DeclaredButNotDefined f | f <- ds , f `notElem` ts ]
   where
-    ts           = fst <$> definitions  p
-    ds           = fst <$> declarations p
-    ps           = fst <$> properties   p
-    definitions' =
-      case ts \\ nub ts of
-        (x : _) -> return $ SeveralDefinitionsOf x
-        _       -> mempty
-    declarations' =
-      case ds \\ nub ds of
-        (x : _) -> return $ SeveralDeclarationsOf x
-        _       -> mempty
-    properties' =
-      case ps \\ nub ps of
-        (x : _) -> return $ PropertyIsDeclaredMoreThanOnes x
-        _       -> mempty
+    ts = fst <$> definitions  p
+    ds = fst <$> declarations p
+    ps = fst <$> properties   p
 
 -- * Usage:
 
 parseString :: Parser a -> Source -> Either ParseError a
 parseString p = runParser p () "<no-such-file>"
+
+parsePunProgram :: Source -> IO (Either [Problem] (Program Info))
+parsePunProgram path =
+  do src <- readFile path
+     return $
+       case runParser (many whitespace >> program_) () path src of
+         (Left  err ) -> Left $ return $ DoesNotParse err
+         (Right code) ->
+           case problems code of
+             [   ] -> return code
+             _     -> Left $ problems code
 
 -- * Implementation:
 
@@ -106,7 +113,7 @@ term_ =
   , pre "fst" (Fst <$> term_)
   , pre "snd" (Snd <$> term_)
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
-  , pre "let" $ Let <$> name <*> pre "=" term_ <*> term_
+  , pre "let" $ Let <$> name <*> pre "=" term_ <*> (pre "in" term_)
   , pre "rec" $ Rec <$> name <*> pre "." term_
   ]
   where
@@ -205,15 +212,21 @@ reserved =
   , "if", "then", "else"
   , "leaf", "node", "case", "of"
   , "fst", "snd"
-  , "let", "rec"
+  , "let", "in", "rec"
   ]
 
 -- Parses p and anny trailing whitespace following it.
 lexeme :: Parser a -> Parser a
 lexeme p =
   do a <- p
-     _ <- many (void space)
+     _ <- many whitespace
      return a
+
+comment :: Parser ()
+comment = void $ lexeme $ symbol "//" >> many (noneOf ['\n'])
+
+whitespace :: Parser ()
+whitespace = comment <|> void space
 
 -- Holds if a name constitutes a reserved keyword.
 isReserved :: Name -> Bool

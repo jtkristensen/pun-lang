@@ -59,7 +59,6 @@ intParserTests_negative =
   , " ~0"
   ]
 
-
 typeParserTests_positive :: [TestTree]
 typeParserTests_positive =
   map (\(s, v) -> testCase s $ (type_, s) `parsesTo` v)
@@ -182,12 +181,12 @@ parseProgramsFromFiles =
             (Leq (Variable "n" ()) (Variable "m" ()) ())
             (Boolean False ()) ()) ()) ()) $
        Declaration "not" (Boolean' :->: Boolean') $
-       Definition  "not" (Lambda "b" 
+       Definition  "not" (Lambda "b"
          (If (Variable "b"  ())
              (Boolean False ())
              (Boolean True  ()) ()) ()) $
        Declaration "and" (Boolean' :->: (Boolean' :->: Boolean')) $
-       Definition  "and" (Lambda "b1" (Lambda "b2" 
+       Definition  "and" (Lambda "b1" (Lambda "b2"
         (If (Variable "b1" ())
             (Variable "b2" ())
             (Boolean False ()) ()) ()) ()) $
@@ -197,7 +196,7 @@ parseProgramsFromFiles =
         (Application
           (Variable "and" ())
           (Leq (Variable "m" ()) (Variable "n" ()) ()) ())
-        (Application 
+        (Application
           (Variable "not" ())
           (Application
             (Application (Variable "equal" ()) (Variable "m" ()) ())
@@ -217,12 +216,12 @@ parseProgramsFromFiles =
             (Leq (Variable "n" ()) (Variable "m" ()) ())
             (Boolean False ()) ()) ()) ()) $
         Declaration "not" (Boolean' :->: Boolean') $
-        Definition  "not" (Lambda "b" 
+        Definition  "not" (Lambda "b"
           (If (Variable "b"  ())
               (Boolean False ())
               (Boolean True  ()) ()) ()) $
         Declaration "and" (Boolean' :->: (Boolean' :->: Boolean')) $
-        Definition  "and" (Lambda "b1" (Lambda "b2" 
+        Definition  "and" (Lambda "b1" (Lambda "b2"
         (If (Variable "b1" ())
             (Variable "b2" ())
             (Boolean False ()) ()) ()) ()) $
@@ -232,7 +231,7 @@ parseProgramsFromFiles =
         (Application
           (Variable "and" ())
           (Leq (Variable "m" ()) (Variable "n" ()) ()) ())
-        (Application 
+        (Application
           (Variable "not" ())
           (Application
             (Application (Variable "equal" ()) (Variable "m" ()) ())
