@@ -88,16 +88,18 @@ substitute :: X -> Term a -> (Term a -> Term a)
 substitute x t v = -- computes t[v/x].
   case t of
     (Variable y  _) | x == y -> v
-    (If t1 t2 t3 a)          -> If   (f t1) (f t2) (f t3)                    a
-    (Plus t1 t2  a)          -> Plus (f t1) (f t2)                           a
-    (Leq  t1 t2  a)          -> Leq  (f t1) (f t2)                           a
-    (Pair t1 t2  a)          -> Pair (f t1) (f t2)                           a
-    (Fst  t1     a)          -> Fst  (f t1)                                  a
-    (Snd  t1     a)          -> Snd  (f t1)                                  a
-    (Lambda y t1 a) | x /= y -> Lambda y (f t1)                              a
-    (Application t1 t2 a)    -> Application (f t1) (f t2)                    a
-    (Let y t1 t2 a)          -> Let y (f t1) ((if x == y then id else f) t2) a
-    (Rec y t1    a) | x /= y -> Rec y (f t1)                                 a
+    (If t1 t2 t3 a)          -> If   (f t1) (f t2) (f t3)                     a
+    (Plus t1 t2  a)          -> Plus (f t1) (f t2)                            a
+    (Leq  t1 t2  a)          -> Leq  (f t1) (f t2)                            a
+    (Pair t1 t2  a)          -> Pair (f t1) (f t2)                            a
+    (Fst  t1     a)          -> Fst  (f t1)                                   a
+    (Snd  t1     a)          -> Snd  (f t1)                                   a
+    (Lambda y t1 a) | x /= y -> Lambda y (f t1)                               a
+    (Application t1 t2 a)    -> Application (f t1) (f t2)                     a
+    (Let y t1 t2 a)          -> Let y (f t1) ((if x == y then id else f) t2)  a
+    (Rec y t1    a) | x /= y -> Rec y (f t1)                                  a
+    (Case t0 l (p, n) a)     ->
+      Case (f t0) (f l) (p, (if x `elem` (freeVariables p) then id else f) n) a
     _                        -> t
   where
     f = flip (substitute x) v
@@ -113,4 +115,3 @@ notAtTopLevel (x, _) =
   do program <- ask
      when (x `elem` (fst <$> definitions program)) $
        error $ "the name " ++ x ++ "shadows the top level declaration of " ++ x
-

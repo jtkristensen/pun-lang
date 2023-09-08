@@ -125,8 +125,9 @@ resolve i is =
       case s of
         (Variable' i') -> resolve i' is
         _              -> s
-    Nothing -> error $ "Unable to resolve index " ++ show i ++
-      " to type, was not among current indices."
+    Nothing -> Integer'
+      -- error $ "Unable to resolve index " ++ show i ++
+      -- " to type, was not among current indices."
 
 generateName :: TopLevelBindings -> Gen Name
 generateName ts = elements (pure <$> ['a'..'z'])
