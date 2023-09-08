@@ -57,7 +57,8 @@ generateGeneratorSized s@(is, bs, ts) Integer' size =
     -- Let --------------------------------------------------
     --               Gamma |- rec x t : T
     , do x     <- generateName ts
-         t1    <- generateGeneratorSized (is, (x, Integer') : filter ((/=x) . fst) bs, ts) Integer' (decrease size)
+         -- this is the trivially terminating recursive term, because x does not occur !
+         t1    <- generateGeneratorSized (is, filter ((/=x) . fst) bs, ts) Integer' (decrease size)
          return $ Rec x t1 Integer'
          ]
     ++ ((\a -> (15, return a)) . flip Variable Integer' <$> [ n | (n, t) <- bs , t == Integer' ])
@@ -91,7 +92,8 @@ generateGeneratorSized s@(is, bs, ts) Boolean' size           =
          t2    <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs, ts) Boolean' (decrease size)
          return $ Let x t1 t2 Boolean'
     , do x     <- generateName ts
-         t1    <- generateGeneratorSized (is, (x, Boolean') : filter ((/=x) . fst) bs, ts) Boolean' (decrease size)
+         -- this is the trivially terminating recursive term, because x does not occur !
+         t1    <- generateGeneratorSized (is, filter ((/=x) . fst) bs, ts) Boolean' (decrease size)
          return $ Rec x t1 Boolean'
          ]
     ++ ((\a -> (15, return a)) . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
