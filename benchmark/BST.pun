@@ -161,20 +161,20 @@ property nil-valid . valid nil .
 
 // Note that this is worse than generating valid trees. Do we need a
 // function "validify"?
-property insert-valid k v t .
-   if   valid t
-   then valid (insert k v t)
-   else true .
+property insert-valid k v t . valid (insert k v (validify t)) .
+
+validify : bst integer integer -> bst integer integer .
+validify t =
+  case t of
+  ; leaf           -> leaf
+  ; [node l k v r] -> insert k v (union (validify l) (validify r)) .
 
 property delete-valid k v t .
   if   valid t
   then valid (delete k t)
   else true .
 
-property union-valid t1 t2 .
-  if and (valid t1) (valid t2)
-  then valid (union t1 t2)
-  else true .
+property union-valid t1 t2 . valid (union (validify t1) (validify t2)) .
 
 // no arbitrary instance, so no need to write this test.
 // property arbitrary-valid t . valid t .

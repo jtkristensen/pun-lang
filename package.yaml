@@ -41,6 +41,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - pun-lang
+    - tasty             >= 1.4  && < 1.5
+
 
 tests:
   pun-lang-test:

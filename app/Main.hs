@@ -9,6 +9,9 @@ import Control.Monad      (void)
 import System.Exit        (die)
 import System.Environment (getArgs)
 
+import Test.Tasty
+import Test.Tasty.QuickCheck
+
 type ErrorMessage = String
 
 data Action =
@@ -29,9 +32,12 @@ run a = a >>= \what ->
     (Shell         _      ) -> die "future work"
 
 check :: Program Type -> IO ()
-check program = void $ mapM checkProperty (properties program)
+check program = void $ mapM check1 (properties program)
+  -- defaultMain $ localOption (mkTimeout 5000000) $
+  --   testGroup ".... generated test suite ...." $
+  --   map check1 (properties program)
   where
-    checkProperty (name, (args, body)) =
+    check1 (name, (args, body)) =
       print $ normalize program body
 
 parse :: String -> IO (Program Info)

@@ -47,7 +47,7 @@ newtype AcyclicIndices = AcyclicIndices CurrentIndices
   deriving Show
 
 instance Arbitrary AcyclicIndices where
-  arbitrary = 
+  arbitrary =
     do length'       <- choose (0, 100)
        indices       <- shuffle ([(index, Variable' index') | index <- [0..length'], index' <- [index + 1]])
        canonicalType <- elements [Integer', Boolean']
@@ -105,7 +105,7 @@ occurrence declaredNames usedNames
   | otherwise          = "There were occurrences of declared names."
 
 combine :: ([String], [String]) -> ([String], [String]) -> ([String], [String])
-combine (d1, u1) (d2, u2) = (d1 ++ d2, u1 ++ u2) 
+combine (d1, u1) (d2, u2) = (d1 ++ d2, u1 ++ u2)
 
 analyse :: Term Type -> ([String], [String])
 analyse (Number        _ _)     = (mempty, mempty)
