@@ -181,6 +181,7 @@ freeVariables (Let x t0 t1 _) =
   <> [ y | y <- freeVariables t1, y /= x ]
 freeVariables (Rec x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
 
+-- /!\ optimisation : declarations can be thrown away at runtime to make the program smaller.
 withoutDeclarations :: Program a -> Program a
 withoutDeclarations (Declaration _ _ p)  =                     withoutDeclarations p
 withoutDeclarations (Definition  x t p)  = Definition   x  t $ withoutDeclarations p

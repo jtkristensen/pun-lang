@@ -40,10 +40,10 @@ from within the repository.
 
 # Getting started.
 
-To interpret a program, run:
+To typecheck a a program, run:
 
 ```bash
-> pun <program-name>.pun
+> pun --types <program-name>.pun
 ```
 
 and start typing in terms to evaluate.
