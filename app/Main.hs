@@ -9,6 +9,7 @@ import PropertyChecker
 import Control.Monad      (void)
 import System.Exit        (die)
 import System.Environment (getArgs)
+import System.IO          (hFlush, stdout)
 
 import Test.Tasty.QuickCheck
 
@@ -46,7 +47,7 @@ check program = void $ mapM check1 (properties program)
           do p <- generate $ propertyToCheck program args body
              -- print p
              case normalize program p of
-               Boolean True _ -> putStr "." >> iter (n - 1)
+               Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
                _              ->
                  do print "failed with counter example :"
                     print $ show p
