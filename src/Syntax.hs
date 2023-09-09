@@ -73,6 +73,7 @@ putParens :: String -> String
 putParens = ("(" ++) . (++ ")")
 
 instance Show (Term a) where
+  -- todo (minimally bracketed printer + tests) --
   show (Number  n         _) = show n
   show (Boolean b         _) = show b
   show (Unit              _) = "unit"
