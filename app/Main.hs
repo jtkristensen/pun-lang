@@ -3,10 +3,12 @@ module Main (main) where
 import Syntax
 import Parser          (parsePunProgram, Info)
 import TypeInference   (inferP)
-import Interpreter     (normalize)
+import Interpreter     (normalize, substitute)
 import GeneratorGenerator
 
 import Control.Monad      (void)
+import Control.Arrow      (second)
+import Data.Functor       ((<&>))
 import System.Exit        (die)
 import System.Environment (getArgs)
 import System.IO          (hFlush, stdout)
@@ -34,6 +36,15 @@ run a = a >>= \what ->
 
 numberOfTests :: Integer
 numberOfTests = 50
+
+propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen (Term Type)
+propertyToCheck p bs t =
+  do terms  <- mapM strengthen $ second (generateGenerator programConfig) <$> bs
+     return $ foldr (\(x, v) t' -> substitute x t' v) t terms
+  where
+    programConfig = ([], [], declarations p)
+    strengthen (a, mb) = mb <&> (,) a
+
 
 check :: Program Type -> IO ()
 check program = void $ mapM check1 (properties program)

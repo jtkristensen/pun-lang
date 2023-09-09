@@ -3,9 +3,6 @@ module GeneratorGenerator where
 
 import Syntax
 import TypeInference
-import Interpreter
-import Data.Functor
-import Data.Bifunctor
 
 import Test.Tasty.QuickCheck
 
@@ -142,10 +139,3 @@ generateType is bindingTypes =
     ] ++ (return . Variable' . fst <$> is)
       ++ map return bindingTypes
 
-propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen (Term Type)
-propertyToCheck p bs t =
-  do terms  <- mapM strengthen $ second (generateGenerator programConfig) <$> bs
-     return $ foldr (\(x, v) t' -> Interpreter.substitute x t' v) t terms
-  where
-    programConfig = ([], [], declarations p)
-    strengthen (a, mb) = mb <&> (,) a
