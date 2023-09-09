@@ -36,7 +36,7 @@ instance Arbitrary SubstType where
        term  <- generateGenerator (subs, [], []) canonT
        return $ SubstType (subs, t, term, canonT)
 
-newtype AcyclicIndices = AcyclicIndices CurrentIndices
+newtype AcyclicIndices = AcyclicIndices LocalIndices
   deriving Show
 
 instance Arbitrary AcyclicIndices where

@@ -2,21 +2,22 @@
 module GeneratorGenerator where
 
 import Syntax
-import Test.Tasty.QuickCheck
 
-type Generator            = Gen (Term Type)
-type CurrentIndices       = [(Index, Type)]
-type CurrentBindings      = [(Name, Type)]
-type TopLevelBindings     = [(Name, Type)]
-type ProgramConfiguration = (CurrentIndices, CurrentBindings, TopLevelBindings)
+import Test.Tasty.QuickCheck
+  (Gen, oneof, frequency, arbitrary, elements, suchThat, sized)
+
+type LocalIndices         = [(Index, Type)]
+type LocalBindings        = [(Name,  Type)]
+type GlobalBindings       = [(Name,  Type)]
+type ProgramConfiguration = (LocalIndices, LocalBindings, GlobalBindings)
 
 decrease :: Int -> Int
 decrease size = size `div` 2
 
-generateGenerator :: ProgramConfiguration -> (Type -> Generator)
+generateGenerator :: ProgramConfiguration -> (Type -> Gen (Term Type))
 generateGenerator s t = sized (generateGeneratorSized s t)
 
-generateGeneratorSized :: ProgramConfiguration -> (Type -> Int -> Generator)
+generateGeneratorSized :: ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
 generateGeneratorSized _          Unit'    _ = return $ Unit Unit'
 generateGeneratorSized s          Integer' 0 = generateGeneratorSized s Integer' 1
 generateGeneratorSized _          Integer' 1 = flip Number  Integer' <$> arbitrary
@@ -109,7 +110,7 @@ generateGeneratorSized s bst@(BST type1 type2) size =
         , return $ Leaf (BST type1 type2)
         ]
 
-resolve :: Index -> CurrentIndices -> Type
+resolve :: Index -> LocalIndices -> Type
 resolve i is =
   case lookup i is of
     Just s ->
@@ -118,11 +119,11 @@ resolve i is =
         _              -> s
     Nothing -> Integer' -- (we actually have several choices here /!\.
 
-generateName :: TopLevelBindings -> Gen Name
+generateName :: GlobalBindings -> Gen Name
 generateName ts = elements (pure <$> ['a'..'z'])
                   `suchThat` (\a -> notElem a $ map fst ts)
 
-generateType :: CurrentIndices -> [Type] -> Gen Type
+generateType :: LocalIndices -> [Type] -> Gen Type
 generateType is bindingTypes =
   oneof $
     [ return Integer'
