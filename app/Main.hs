@@ -45,7 +45,6 @@ check program = void $ mapM check1 (properties program)
         iter 0 = putStrLn " ok"
         iter n =
           do p <- generate $ propertyToCheck program args body
-             -- print p
              case normalize program p of
                Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
                _              ->
