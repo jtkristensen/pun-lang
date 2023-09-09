@@ -24,4 +24,4 @@ sub : integer -> integer -> integer .
 sub m n = m + (negate n) .
 
 // fails (as it should).
-// property subtraction-commutes m n . equal (sub n m) (sub m n) .
+property subtraction-commutes m n . equal (sub n m) (sub m n) .

@@ -67,7 +67,30 @@ data Term a =
   | Application        (T1 a) (T2 a)    a
   | Let Name           (T1 a) (T2 a)    a
   | Rec Name    (T0 a)                  a
-  deriving (Functor, Eq, Show)
+  deriving (Functor, Eq)
+
+putParens :: String -> String
+putParens = ("(" ++) . (++ ")")
+
+instance Show (Term a) where
+  show (Number  n         _) = show n
+  show (Boolean b         _) = show b
+  show (Unit              _) = "unit"
+  show (Leaf              _) = "leaf"
+  show (Node l k v r      _) = "[node " ++ show l ++ show k ++ show v ++ show r ++ "]"
+  show (Case t l (p, n)   _) =
+         "case " ++ show t ++ " of ; leaf -> " ++ show l ++ "; " ++ show p ++ " -> " ++ show n
+  show (Variable n        _) = n
+  show (If t0 t1 t2       _) = "if " ++ show t0  ++ " then " ++ show t1 ++ " else " ++ show t2
+  show (Plus t0 t1        _) = putParens (show t0) ++ " + "  ++ putParens (show t1)
+  show (Leq  t0 t1        _) = putParens (show t0) ++ " <= " ++ putParens (show t1)
+  show (Pair t0 t1        _) = putParens $ show t0 ++ ", "   ++ show t1
+  show (Fst  t0           _) = "fst " ++ putParens (show t0)
+  show (Snd  t0           _) = "snd " ++ putParens (show t0)
+  show (Lambda x t0       _) = "\\" ++ x ++ " -> " ++ show t0
+  show (Application t0 t1 _) = putParens (show t0) ++ " " ++ putParens (show t1)
+  show (Let x t0 t1       _) = "let " ++ x ++ " = " ++ show t0 ++ " in " ++ show t1
+  show (Rec x t0          _) = "rec " ++ x ++ " . " ++ show t0
 
 canonical :: Term a -> Bool
 canonical (Number  _     _) = True
