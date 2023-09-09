@@ -60,7 +60,9 @@ check program = void $ mapM check1 (properties program)
                     smaller eval body parts test
                     putStrLn $ "after " ++ show (numberOfTests - n) ++ " tests."
 
-smaller :: (Term Type -> Term Type) -> Term Type -> t (X, Term Type) -> Term Type -> IO ()
+type Evaluator = Term Type -> Term Type
+
+smaller :: Evaluator -> Term Type -> [(X, Term Type)] -> Term Type -> IO ()
 smaller _ _ _ test = print test
 
 parse :: String -> IO (Program Info)

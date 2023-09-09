@@ -2,11 +2,10 @@
 module GeneratorGenerator where
 
 import Syntax
-import TypeInference
 import Test.Tasty.QuickCheck
 
 type Generator            = Gen (Term Type)
-type CurrentIndices       = Substitution
+type CurrentIndices       = [(Index, Type)]
 type CurrentBindings      = [(Name, Type)]
 type TopLevelBindings     = [(Name, Type)]
 type ProgramConfiguration = (CurrentIndices, CurrentBindings, TopLevelBindings)
