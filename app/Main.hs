@@ -45,13 +45,13 @@ check program = void $ mapM check1 (properties program)
       do putStr $ "testing:" ++ name ++ "> "
          iter numberOfTests
       where
-        config = ([], [], declarations program)
-        gen    = generate $ mapM strengthen $ second (generateGenerator config) <$> args
-        term   = uncurry $ foldr (\(x, v) t -> substitute x t v)
-        eval   = normalize program
-        iter 0 = putStrLn " ok"
-        iter n =
-          do parts <- gen
+        config   = ([], [], declarations program)
+        genParts = mapM strengthen $ second (generateGenerator config) <$> args
+        term     = uncurry $ foldr (\(x, v) t -> substitute x t v)
+        eval     = normalize program
+        iter 0   = putStrLn " ok"
+        iter n   =
+          do parts <- generate genParts
              test  <- term <$> return (body, parts)
              case eval test of
                Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
