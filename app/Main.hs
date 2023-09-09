@@ -30,7 +30,7 @@ run a = a >>= \what ->
     (PropertyCheck program) -> check program
     (TypeCheck     program) -> typed program >>= print
     (Fail          message) -> die message
-    (Shell         _      ) -> die "future work"
+    (Shell         program) -> shell program
 
 numberOfTests :: Integer
 numberOfTests = 50
@@ -42,7 +42,7 @@ check :: Program Type -> IO ()
 check program = void $ mapM check1 (properties program)
   where
     check1 (name, (args, body)) =
-      do putStr $ "testing " ++ name ++ ": "
+      do putStr $ "testing:" ++ name ++ "> "
          iter numberOfTests
       where
         config = ([], [], declarations program)
@@ -57,13 +57,14 @@ check program = void $ mapM check1 (properties program)
                Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
                _              ->
                  do putStrLn "x failed:"
-                    smaller eval body parts test
+                    putStr "shrinking> " >> hFlush stdout
+                    counterexample <- smaller parts
+                    print counterexample
                     putStrLn $ "after " ++ show (numberOfTests - n) ++ " tests."
-
-type Evaluator = Term Type -> Term Type
-
-smaller :: Evaluator -> Term Type -> [(X, Term Type)] -> Term Type -> IO ()
-smaller _ _ _ test = print test
+        smaller parts =
+          do putStr ".. currently not implemented ..\n"
+             -- todo --
+             term <$> return (body, parts)
 
 parse :: String -> IO (Program Info)
 parse file =
@@ -74,6 +75,11 @@ parse file =
 
 typed :: Program Info -> IO (Program Type)
 typed = return . inferP . declarationsUpFront
+
+shell :: Program Type -> IO ()
+shell _program =
+  do -- todo --
+    die "future work"
 
 -- todo: refactor.
 action :: [String] -> IO Action
