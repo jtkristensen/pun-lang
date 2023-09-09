@@ -87,8 +87,8 @@ instance Show (Term a) where
   show (Pair t0 t1        _) = putParens $ show t0 ++ ", "   ++ show t1
   show (Fst  t0           _) = "fst " ++ putParens (show t0)
   show (Snd  t0           _) = "snd " ++ putParens (show t0)
-  show (Lambda x t0       _) = "\\" ++ x ++ " -> " ++ show t0
-  show (Application t0 t1 _) = putParens (show t0) ++ " " ++ putParens (show t1)
+  show (Lambda x t0       _) = putParens $ "\\" ++ x ++ " -> " ++ show t0
+  show (Application t0 t1 _) = show t0 ++ " " ++ putParens (show t1)
   show (Let x t0 t1       _) = "let " ++ x ++ " = " ++ show t0 ++ " in " ++ show t1
   show (Rec x t0          _) = "rec " ++ x ++ " . " ++ show t0
 
