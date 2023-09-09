@@ -30,15 +30,6 @@ data Program a
   | EndOfProgram
   deriving (Functor, Eq)
 
-instance Show a => Show (Program a) where
-  show (Declaration x t rest) =
-    x ++ " :: " ++ show t ++ "\n\n" ++ show rest
-  show (Definition x t rest) =
-    x ++ " = " ++ show t ++ "\n\n" ++ show rest
-  show (Property p xs t rest) =
-    "property " ++ p ++ " " ++ show xs ++ " . " ++ show t ++ "\n\n" ++ show rest
-  show EndOfProgram = ""
-
 data Type
   = Variable' Index
   | Integer'
@@ -69,8 +60,42 @@ data Term a =
   | Rec Name    (T0 a)                  a
   deriving (Functor, Eq)
 
+-- Dealing with annotations.
+class Annotated thing where
+  annotation  :: thing a -> a
+  annotations :: thing a -> [a]
+
+instance Annotated Term where
+  annotations (Number          _ a) = return a
+  annotations (Boolean         _ a) = return a
+  annotations (Variable        _ a) = return a
+  annotations (Unit              a) = return a
+  annotations (If       t0 t1 t2 a) = a : ([t0, t1, t2] >>= annotations)
+  annotations (Plus     t0 t1    a) = a : ([t0, t1]     >>= annotations)
+  annotations (Leq      t0 t1    a) = a : ([t0, t1]     >>= annotations)
+  annotations (Pair     t0 t1    a) = a : ([t0, t1]     >>= annotations)
+  annotations (Let    _    t1 t2 a) = a : ([t1, t2]     >>= annotations)
+  annotations (Application t1 t2 a) = a : ([t1, t2]     >>= annotations)
+  annotations (Fst      t0       a) = a : annotations t0
+  annotations (Snd      t0       a) = a : annotations t0
+  annotations (Lambda _ t0       a) = a : annotations t0
+  annotations (Rec    _ t0       a) = a : annotations t0
+  annotations (Leaf              a) = return a
+  annotations (Node      l k v r a) = a : ([l, k, v, r]    >>= annotations)
+  annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
+  annotation  term                  = head $ annotations term
+
 putParens :: String -> String
 putParens = ("(" ++) . (++ ")")
+
+instance Show a => Show (Program a) where
+  show (Declaration x t rest) =
+    x ++ " :: " ++ show t ++ "\n\n" ++ show rest
+  show (Definition x t rest) =
+    x ++ " = " ++ show t ++ "\n\n" ++ show rest
+  show (Property p xs t rest) =
+    "property " ++ p ++ " " ++ show xs ++ " . " ++ show t ++ "\n\n" ++ show rest
+  show EndOfProgram = ""
 
 instance Show (Term a) where
   -- todo (minimally bracketed printer + tests) --
@@ -102,31 +127,6 @@ canonical (Lambda  {}     ) = True
 canonical (Leaf          _) = True
 canonical (Node   l k v r _) = all canonical [l, k, v, r]
 canonical _                 = False
-
--- Dealing with annotations.
-class Annotated thing where
-  annotation  :: thing a -> a
-  annotations :: thing a -> [a]
-
-instance Annotated Term where
-  annotations (Number          _ a) = return a
-  annotations (Boolean         _ a) = return a
-  annotations (Variable        _ a) = return a
-  annotations (Unit              a) = return a
-  annotations (If       t0 t1 t2 a) = a : ([t0, t1, t2] >>= annotations)
-  annotations (Plus     t0 t1    a) = a : ([t0, t1]     >>= annotations)
-  annotations (Leq      t0 t1    a) = a : ([t0, t1]     >>= annotations)
-  annotations (Pair     t0 t1    a) = a : ([t0, t1]     >>= annotations)
-  annotations (Let    _    t1 t2 a) = a : ([t1, t2]     >>= annotations)
-  annotations (Application t1 t2 a) = a : ([t1, t2]     >>= annotations)
-  annotations (Fst      t0       a) = a : annotations t0
-  annotations (Snd      t0       a) = a : annotations t0
-  annotations (Lambda _ t0       a) = a : annotations t0
-  annotations (Rec    _ t0       a) = a : annotations t0
-  annotations (Leaf              a) = return a
-  annotations (Node      l k v r a) = a : ([l, k, v, r]    >>= annotations)
-  annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
-  annotation  term                  = head $ annotations term
 
 definitions :: Program a -> [(F, Term a)]
 definitions (Definition  x t rest) = (x, t) : definitions rest
