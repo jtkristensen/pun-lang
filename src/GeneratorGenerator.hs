@@ -1,5 +1,5 @@
 
-module PropertyChecker where
+module GeneratorGenerator where
 
 import Syntax
 import TypeInference

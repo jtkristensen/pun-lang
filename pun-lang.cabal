@@ -24,9 +24,9 @@ source-repository head
 
 library
   exposed-modules:
+      GeneratorGenerator
       Interpreter
       Parser
-      PropertyChecker
       Syntax
       TypeInference
       Unification
@@ -63,8 +63,8 @@ test-suite pun-lang-test
   main-is: Harness.hs
   other-modules:
       BSTTests
+      GeneratorGeneratorTests
       ParserTests
-      PropertyCheckerTests
       BST
       Paths_pun_lang
   hs-source-dirs:

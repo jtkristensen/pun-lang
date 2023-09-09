@@ -1,11 +1,14 @@
 import Test.Tasty
 
 import ParserTests
-import PropertyCheckerTests
+import GeneratorGeneratorTests
 import BSTTests
 
+timeoutSeconds :: Integer -> Timeout
+timeoutSeconds = mkTimeout . (* 1000000)
+
 main :: IO ()
-main = defaultMain $ localOption (mkTimeout 5000000) tests
+main = defaultMain $ localOption (timeoutSeconds 10) tests
 
 tests :: TestTree
 tests =

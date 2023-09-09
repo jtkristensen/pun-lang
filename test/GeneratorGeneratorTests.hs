@@ -1,7 +1,7 @@
-module PropertyCheckerTests where
+module GeneratorGeneratorTests where
 
 import Syntax
-import PropertyChecker
+import GeneratorGenerator
 import TypeInference
 
 import Test.Tasty (TestTree, testGroup)

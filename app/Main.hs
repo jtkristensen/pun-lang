@@ -4,7 +4,7 @@ import Syntax
 import Parser          (parsePunProgram, Info)
 import TypeInference   (inferP)
 import Interpreter     (normalize)
-import PropertyChecker
+import GeneratorGenerator
 
 import Control.Monad      (void)
 import System.Exit        (die)
