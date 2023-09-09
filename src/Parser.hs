@@ -42,7 +42,7 @@ problems p =
 -- * Usage:
 
 parseString :: Parser a -> Source -> Either ParseError a
-parseString p = runParser p () "<no-such-file>"
+parseString p = runParser p () "<repl>"
 
 parsePunProgram :: Source -> IO (Either [Problem] (Program Info))
 parsePunProgram path =

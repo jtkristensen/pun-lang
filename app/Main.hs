@@ -47,15 +47,16 @@ check program = void $ mapM check1 (properties program)
       where
         config = ([], [], declarations program)
         gen    = generate $ mapM strengthen $ second (generateGenerator config) <$> args
+        term   = uncurry $ foldr (\(x, v) t -> substitute x t v)
         iter 0 = putStrLn " ok"
         iter n =
-          do terms <- gen
-             let term = foldr (\(x, v) t -> substitute x t v) body terms
-             case normalize program term of
+          do parts <- gen
+             p     <- term <$> return (body, parts)
+             case normalize program p of
                Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
                _              ->
                  do print "failed with counter example :"
-                    print $ show term
+                    print $ show p
                     print $ "after " ++ show (numberOfTests - n) ++ " tests."
 
 parse :: String -> IO (Program Info)
