@@ -1,19 +1,17 @@
 module Main (main) where
 
 import Syntax
-import Parser          (parsePunProgram, Info)
-import TypeInference   (inferP)
-import Interpreter     (normalize, substitute)
-import GeneratorGenerator
-
-import Control.Monad      (void)
-import Control.Arrow      (second)
-import Data.Functor       ((<&>))
-import System.Exit        (die)
-import System.Environment (getArgs)
-import System.IO          (hFlush, stdout)
-
-import Test.Tasty.QuickCheck
+import Parser                (parsePunProgram, Info)
+import TypeInference         (inferP)
+import Interpreter           (normalize, substitute)
+import GeneratorGenerator    (generateGenerator)
+import Control.Monad         (void)
+import Control.Arrow         (second)
+import Data.Functor          ((<&>))
+import System.Exit           (die)
+import System.Environment    (getArgs)
+import System.IO             (hFlush, stdout)
+import Test.Tasty.QuickCheck (generate)
 
 type ErrorMessage = String
 
@@ -37,14 +35,8 @@ run a = a >>= \what ->
 numberOfTests :: Integer
 numberOfTests = 50
 
-propertyToCheck :: Program Type -> [(Name, Type)] -> Term Type -> Gen (Term Type)
-propertyToCheck p bs t =
-  do terms  <- mapM strengthen $ second (generateGenerator programConfig) <$> bs
-     return $ foldr (\(x, v) t' -> substitute x t' v) t terms
-  where
-    programConfig = ([], [], declarations p)
-    strengthen (a, mb) = mb <&> (,) a
-
+strengthen :: Monad m => (a, m b) -> m (a, b)
+strengthen (a, mb) = mb <&> (,) a
 
 check :: Program Type -> IO ()
 check program = void $ mapM check1 (properties program)
@@ -53,14 +45,17 @@ check program = void $ mapM check1 (properties program)
       do putStr $ "testing " ++ name ++ ": "
          iter numberOfTests
       where
+        config = ([], [], declarations program)
+        gen    = generate $ mapM strengthen $ second (generateGenerator config) <$> args
         iter 0 = putStrLn " ok"
         iter n =
-          do p <- generate $ propertyToCheck program args body
-             case normalize program p of
+          do terms <- gen
+             let term = foldr (\(x, v) t -> substitute x t v) body terms
+             case normalize program term of
                Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
                _              ->
                  do print "failed with counter example :"
-                    print $ show p
+                    print $ show term
                     print $ "after " ++ show (numberOfTests - n) ++ " tests."
 
 parse :: String -> IO (Program Info)

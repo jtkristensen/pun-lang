@@ -3,7 +3,6 @@ module GeneratorGenerator where
 
 import Syntax
 import TypeInference
-
 import Test.Tasty.QuickCheck
 
 type Generator            = Gen (Term Type)
@@ -138,4 +137,3 @@ generateType is bindingTypes =
          return $ type1 :->: type2
     ] ++ (return . Variable' . fst <$> is)
       ++ map return bindingTypes
-
