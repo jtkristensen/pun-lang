@@ -198,7 +198,7 @@ find_equal t1 t2 =
 property find-post-present k v t .
   find_equal (find k (insert k v t)) ([node leaf unit v leaf]) .
 
-// property find-post-absent k t . find_equal (find k (delete k t)) (leaf) .
+property find-post-absent k t . find_equal (find k (delete k t)) (leaf) .
 
 // missing definition of trees_equal
 // property insert-delete-complete k t .

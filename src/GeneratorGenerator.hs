@@ -100,7 +100,7 @@ generateGeneratorSized s t@(type1 :*: type2) size =
 generateGeneratorSized (is, bs, ts) (type1 :->: type2) size =
   do x  <- generateName ts
      t0 <- generateGeneratorSized (is, (x, type1) : filter ((/=x) . fst) bs, ts) type2 (decrease size)
-     return $ Lambda x t0 type2
+     return $ Lambda x t0 (type1 :->: type2)
 generateGeneratorSized s bst@(BST type1 type2) size =
   oneof [ do k <- generateGeneratorSized s type1 (decrease size)
              v <- generateGeneratorSized s type2 (decrease size)
