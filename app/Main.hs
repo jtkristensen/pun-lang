@@ -62,9 +62,10 @@ check program = void $ mapM check1 (properties program)
                     print counterexample
                     putStrLn $ "after " ++ show (numberOfTests - n) ++ " tests."
         smaller parts =
-          do putStr ".. currently not implemented ..\n"
-             -- todo --
-             term <$> return (body, parts)
+          -- TODO: better shrink (and message)
+          do putStr ""
+             let parts' = map (second eval) parts
+             term <$> return (body, parts')
 
 parse :: String -> IO (Program Info)
 parse file =
