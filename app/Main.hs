@@ -64,8 +64,7 @@ check program = void $ mapM check1 (properties program)
         smaller parts =
           -- TODO: better shrink (and message)
           do putStr ""
-             let parts' = map (second eval) parts
-             term <$> return (body, parts')
+             term <$> return (body, map (second eval) parts)
 
 parse :: String -> IO (Program Info)
 parse file =
