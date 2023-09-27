@@ -71,9 +71,9 @@ type_ =
       ]
     type'' =
       choice
-      [ Unit'    <$ unit
-      , Integer' <$ symbol "integer"
-      , Boolean' <$ symbol "boolean"
+      [ Unit'     <$  unit
+      , Integer'  <$  symbol "integer"
+      , Boolean'  <$  symbol "boolean"
       , symbol "bst" >> BST <$> type' <*> type'
       , Variable' <$> nat_
       , parens type_
@@ -84,9 +84,9 @@ simple =
   choice
   [ info $ int_  <&> Number
   , info $ bool_ <&> Boolean
-  , info $ symbol "leaf" >> return Leaf
-  , info $ Unit <$ unit
-  , info $ name <&> Variable
+  , info $ Leaf  <$ symbol "leaf"
+  , info $ Unit  <$ unit
+  , info $ name  <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
   , parens term_
   , info $
@@ -98,7 +98,7 @@ simple =
 term_ :: Parser (Term Info)
 term_ =
   choice $
-    chainl1 simple operator :
+    foldr (flip chainl1) simple [leq, add, app] :
    map info
   [ do _ <- keyword "case"
        t <- term_
@@ -117,13 +117,10 @@ term_ =
   , pre "rec" $ Rec <$> name <*> pre "." term_
   ]
   where
-    about t1 t2   = (fst $ annotation t1, snd $ annotation t2)
-    operator      =
-      choice
-        [ pre  "+" $ return $ \t1 t2 -> Plus t1 t2 $ about t1 t2
-        , pre "<=" $ return $ \t1 t2 -> Leq t1 t2 $ about t1 t2
-        , return $ \f x -> Application f x $ about f x
-        ]
+    lift1 op t1 t2 = op t1 t2 $ (fst $ annotation t1, snd $ annotation t2)
+    leq            = pre "<=" $ return $ lift1 Leq
+    add            = pre  "+" $ return $ lift1 Plus
+    app            = return $ lift1 Application
 
 declaration_ :: Parser (Transformation (Program Info))
 declaration_ =
