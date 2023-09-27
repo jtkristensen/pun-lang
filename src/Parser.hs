@@ -117,7 +117,7 @@ term_ =
   , pre "rec" $ Rec <$> name <*> pre "." term_
   ]
   where
-    lift1 op t1 t2 = op t1 t2 $ (fst $ annotation t1, snd $ annotation t2)
+    lift1 op t1 t2 = op t1 t2 (fst $ annotation t1, snd $ annotation t2)
     leq            = pre "<=" $ return $ lift1 Leq
     add            = pre  "+" $ return $ lift1 Plus
     app            = return $ lift1 Application
