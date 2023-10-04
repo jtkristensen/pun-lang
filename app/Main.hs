@@ -63,32 +63,56 @@ check program = void $ mapM check1 (properties program)
                _              ->
                  do putStrLn "x failed:"
                     putStr "shrinking> " >> hFlush stdout
-                    counterexample <- smaller parts
+                    counterexample <- (fst <$> smaller parts)::IO (Term Type)
                     print counterexample
                     putStrLn $ "after " ++ show (numberOfTests - n) ++ " tests."
-        smaller parts =
-            -- TODO: better shrink (and message)
+        smaller parts = do (runShrink (shrink' parts) program body parts)
+          -- case ...
+          -- check if of type Term Type
+          -- otherwise (term <$> return (body, parts)) ?
+
+          {-
           do putStr ""
+             -- is this of type IO () ?
+             -- Why can I have this - why do I need putStr "" above?
              term <$> return (body, map (shrink program body parts) parts)
+             runShrink
+          -}
 
-type Body a = Term a
-type Part a = (X, Term a)
-type Parts a = [Part a]
-type Information a = Program a -> Body a -> Parts a
+type Body        = Term Type
+type Part        = (X, Term Type)
+type Parts       = [Part]
+type PropConfig  = Program Type -> Body -> Parts
 
-newtype ShrinkMonad a = ShrinkMonad { runShrink :: Information a -> Part a }
+newtype Shrink a = Shrink { runShrink :: Program Type -> Term Type -> Parts -> IO (a, Parts) } 
+-- Gen instead of IO?
 
--- instance Monad ShrinkMonad where
---   -- Minimal value to return
---   return a     = ShrinkMonad $ \_ -> a
---   shrink >>= f = ShrinkMonad $ \_ ->
+-- can generalise later with m 
 
-instance Functor ShrinkMonad where
+-- get for getting parts
+-- update for updating parts
+
+instance Monad Shrink where
+  return = pure
+  ma >>= f = Shrink $ \program body parts -> do
+    (a, parts') <- runShrink ma program body parts
+    runShrink (f a) program body parts'
+
+instance Functor Shrink where
   fmap = liftM
 
-instance Applicative ShrinkMonad where
-  pure = return;
-  (<*>) = ap
+instance Applicative Shrink where
+  pure a = Shrink $ \_ _ parts -> return (a, parts);
+  (<*>)  = ap
+
+-- shrink' :: [(X, Term Type)] -> Shrink IO (Term Type)
+-- shrink' :: [(X, Term Type)] -> Shrink IO a
+-- shrink' [] = return ()
+shrink' _  = undefined
+
+-- shrink' part@(name, term) = 
+--   case (normalize program term') of
+--     (Number int type') -> shrinkNum
 
 -- TODO: better variable names
 swap :: (X, Term a) -> [(X, Term a)] -> [(X, Term a)]
@@ -105,6 +129,12 @@ closestToZero current (n:numbers) =
   then (closestToZero n       numbers)
   else (closestToZero current numbers)
 
+{-
+eval' :: [(X, Term Type)] -> Shrink (Term Type)
+eval' thing = Shrink $ \program body _ -> return (normalize program (term (body, thing)))
+-}
+
+{-
 -- TODO: refactor, it's a bit unreadable
 shrinkNum :: Show a => Program a -> Term a -> [(X, Term a)] -> (X, Term a) -> (X, Term a)
 shrinkNum program body parts part@(name, (Number int type')) = do
@@ -121,19 +151,27 @@ shrinkNum program body parts part@(name, (Number int type')) = do
   where
     evalsToFalse p i t' =
       let thing = swap (name, Number i t') parts in
-      case normalize p (term (body, thing)) of
+      case eval' thing of
         (Boolean False _) -> True
         _                 -> False
 shrinkNum _ _ _ part = part
 
+shrink part@(name, term') = 
+  ShrinkMonad $ \program body parts -> 
+    case (normalize program term') of
+      (Number int       type' ) -> return (shrinkNum program body parts (name, (Number int type')))
+      _ -> return body
+-}
 -- TODO: are there any parameters I can get rid of?
+{-
 shrink :: Show a => Program a -> Term a -> [(X, Term a)] -> (X, Term a) -> (X, Term a)
 shrink program body parts part@(name, term') = 
   case (normalize program term') of
     (Number int       type' ) -> (shrinkNum program body parts (name, (Number int type')))
     -- (Node   l k v r   type'') -> 
     _                         -> part
-            
+-}
+
 parse :: String -> IO (Program Info)
 parse file =
   do unchecked <- parsePunProgram file
