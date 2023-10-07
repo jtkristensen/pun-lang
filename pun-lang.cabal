@@ -30,6 +30,7 @@ library
       Syntax
       TypeInference
       Unification
+      Shrink
   other-modules:
       Paths_pun_lang
   hs-source-dirs:
