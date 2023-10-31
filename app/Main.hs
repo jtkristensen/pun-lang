@@ -3,15 +3,15 @@ module Main (main) where
 import Syntax
 import Parser                (parsePunProgram, Info)
 import TypeInference         (inferP)
-import Interpreter           (normalize, substitute)
+import Interpreter           (normalize)
 import GeneratorGenerator    (generateGenerator)
-import Control.Monad         (void, liftM, ap)
+import Control.Monad         (void)
 import Control.Arrow         (second)
 import Data.Functor          ((<&>))
 import System.Exit           (die)
 import System.Environment    (getArgs)
 import System.IO             (hFlush, stdout)
-import Test.Tasty.QuickCheck (generate, shrinkIntegral, Gen)
+import Test.Tasty.QuickCheck (generate)
 import Shrink
 
 type ErrorMessage = String
@@ -59,18 +59,12 @@ check program = void $ mapM check1 (properties program)
                _              ->
                  do putStrLn "x failed:"
                     putStr "shrinking> " >> hFlush stdout
-                    counterexample <- fst <$> (generate (smaller parts::Gen (Term Type, Parts)))
-                    -- counterexample <- return ((smaller parts)::(Term Type))
-                    -- counterexample <- (fst <$> smaller parts)::IO (Term Type) 
-                    print counterexample
+                    counterexample <- smaller parts
+                    print counterexample 
                     putStrLn $ "after " ++ show (numberOfTests - n) ++ " tests."
-        smaller parts = do runShrink (shrink' parts) program body parts
-        
-          {-
-          do putStr ""
-             term <$> return (body, map (shrink program body parts) parts)
-             runShrink
-          -}
+        smaller parts = do
+          (p, _) <- generate (runShrink (shrinkAll parts) program body parts)
+          term <$> return (body, p)
 
 parse :: String -> IO (Program Info)
 parse file =
