@@ -1,0 +1,8 @@
+dumbPairFunction : boolean -> boolean -> (boolean, boolean) .
+dumbPairFunction x y = (x, y) .
+
+property dumbPairProperty x y .
+    if  (fst (dumbPairFunction x y))
+    then true
+    else false .
+
