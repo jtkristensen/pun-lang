@@ -32,7 +32,6 @@ instance Applicative Shrink where
 -- liftShrink :: (a -> b) -> (Shrink a -> Shrink b)
 
 -- ---------------------------- Helper functions ----------------------------
--- TODO: better variable names
 swap :: Part -> Parts -> Parts
 swap newPart@(name, _) (part:parts) =
   if   (fst part == name)
@@ -99,7 +98,6 @@ smallest shrinked part@(_, Number int _) = do
     -- True meaning it does evaluate to False
     True  -> return $ Just smaller
     False -> smallest (remove smaller shrinked) part
--- just to remove warning
 smallest _ _ = return Nothing
 
 -- ---------------------------- Operations of the Shrink monad ----------------------------
@@ -127,9 +125,9 @@ shrinkAll ((name, term'):parts) = do
   let evaluatedTerm = normalize program term'
   maybeShrinked <- shrink (name, evaluatedTerm)
   case maybeShrinked of
-    Just    shrinkedPart -> updatePart shrinkedPart (shrinkAll parts)
-    Nothing              -> shrinkAll  parts
- 
+    Just    shrinkedPart -> updatePart shrinkedPart  (shrinkAll parts)
+    Nothing              -> updatePart (name, evaluatedTerm) (shrinkAll parts)
+
 shrink :: Part -> Shrink (Maybe ShrinkedPart)
 shrink part@(name, term'@(Number int _)) =
   case shrinkIntegral int of
@@ -140,10 +138,14 @@ shrink part@(name, term'@(Number int _)) =
         Just small -> return (Just (name, (replace term' small)))
         Nothing    -> return Nothing
 shrink (_, (Variable _ _)) = return Nothing -- TODO: get value it corresponds to and shrink that?
+shrink (name, term'@(Lambda _ _ _)) = do
+  let shrinkedFun = shrinkFun term'
+  return $ Just (name, shrinkedFun)
 shrink part@(name, term'@(Node     _ _ _ _ _)) = do
   -- TODO: check if shrinked at all?
   shrinkedNode <- shrinkNode name term' part
   return $ Just (name, shrinkedNode)
+-- TODO: shrink Pair
 shrink _ = return Nothing
 
 -- TODO: refactor/change name - shrinkTree instead?
@@ -158,3 +160,42 @@ shrinkNode name node@(Node left _ _ right _) part = do
         True  -> shrinkNode name right part
         False -> return node
 shrinkNode _ term' _ = return term' 
+
+shrinkFun :: Term Type -> Term Type
+shrinkFun (Node l k v r         t) = (Node (shrinkFun l ) (shrinkFun k) 
+                                           (shrinkFun v ) (shrinkFun r)             t)
+shrinkFun (Case t0 l (p, t') t) = (Case (shrinkFun t0) (shrinkFun l) (p, shrinkFun t') t)
+shrinkFun (If   t0 t1 t2     t) = (If   (shrinkFun t0) (shrinkFun t1) (shrinkFun t2) t)
+shrinkFun (Plus t0 t1    t) = (Plus (shrinkFun t0) (shrinkFun t1) t)
+shrinkFun (Leq  t0 t1    t) = (Leq  (shrinkFun t0) (shrinkFun t1) t)
+shrinkFun (Pair t0 t1    t) = (Pair (shrinkFun t0) (shrinkFun t1) t)
+shrinkFun (Fst  (Pair t0 _ _)       _) = shrinkFun t0
+shrinkFun (Snd  (Pair _ t1 _)       _) = shrinkFun t1
+shrinkFun (Application    t0 t1 t) = (Application (shrinkFun t0) (shrinkFun t1) t)
+shrinkFun (Lambda  n  t0        t) = (Lambda n (shrinkFun t0) t)
+shrinkFun (Rec     n  t0        t) = (Rec n (shrinkFun t0) t)
+shrinkFun (Let     n  t0 t1     t) = 
+  case findName n t1 of
+    True  -> (Let n (shrinkFun t0) (shrinkFun t1) t)
+    False -> (shrinkFun t1) -- removing the outer let
+shrinkFun term' = term'     -- number, bool, unit, leaf and variable (?)
+
+checkIfFound :: Name -> [Term Type] -> Bool
+checkIfFound name terms = True `elem` fmap (findName name) terms
+
+-- TODO: refactor
+findName :: Name -> Term Type -> Bool
+findName name (Node        l  k  v  r _) = checkIfFound name [l,  k, v , r]
+findName name (Case        t0 l  n    _) = checkIfFound name [t0, l, snd n]
+findName name (Variable    n          _) = (name == n)
+findName name (If          t0 t1 t2   _) = checkIfFound name [t0, t1, t2  ]
+findName name (Plus        t0 t1      _) = checkIfFound name [t0, t1      ]
+findName name (Leq         t0 t1      _) = checkIfFound name [t0, t1      ]
+findName name (Pair        t0 t1      _) = checkIfFound name [t0, t1      ]
+findName name (Fst         t0         _) = findName     name  t0
+findName name (Snd         t0         _) = findName     name  t0
+findName name (Lambda      _  t0      _) = findName     name  t0
+findName name (Application t0 t1      _) = checkIfFound name [t0, t1      ]
+findName name (Let         _  t0 t1   _) = checkIfFound name [t0, t1      ]
+findName name (Rec         _  t0      _) = findName     name  t0
+findName _    _                          = False -- number, boolean, unit and leaf
