@@ -1,0 +1,9 @@
+dumbFunction : (integer -> boolean) -> integer -> boolean .
+dumbFunction f i = (f i) .
+
+property dumbFunctionProperty f i .
+    if   (dumbFunction f i)
+    then true 
+    else false .
+
+// if dumbFunction ((\y -> (\g -> (13) <= (0)) (y))) (0) then True else False
