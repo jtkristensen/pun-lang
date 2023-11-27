@@ -3,7 +3,6 @@ module Shrink where
 import Syntax
 import Interpreter           (normalize, substitute)
 import Control.Monad         (liftM, ap)
--- import Control.Monad.Trans
 import Test.Tasty.QuickCheck (shrinkIntegral, Gen, oneof)
 
 type Body         = Term Type
@@ -12,7 +11,6 @@ type ShrinkedPart = (X, Term Type)
 type Parts        = [Part]
 type PropConfig   = Program Type -> Body -> Parts
 
--- TODO: Do I really need Gen when only 'oneof' is used once?
 newtype Shrink a = Shrink { runShrink :: Program Type -> Term Type -> Parts -> Gen (a, Parts) }
 
 instance Monad Shrink where
@@ -28,9 +26,6 @@ instance Applicative Shrink where
   pure a = Shrink $ \_ _ parts -> return (a, parts);
   (<*>)  = ap
 
--- TODO: own lift
--- liftShrink :: (a -> b) -> (Shrink a -> Shrink b)
-
 -- ---------------------------- Helper functions ----------------------------
 swap :: Part -> Parts -> Parts
 swap newPart@(name, _) (part:parts) =
@@ -40,8 +35,8 @@ swap newPart@(name, _) (part:parts) =
 swap _ [] = []
 
 replace :: Term a -> Integer -> Term a
-replace (Number _ type') int' = (Number int' type')
-replace _ _ = undefined
+replace (Number _ type') int' = Number int' type'
+replace t                _    = t
 
 term :: (Term a, [(X, Term a)]) -> Term a
 term = uncurry $ foldr (\(x, v) t -> substitute x t v)
@@ -50,17 +45,6 @@ oneof' :: [Shrink a] -> Shrink a
 oneof' shrinks = Shrink $ \program body parts -> do
   gens <- mapM (\s -> runShrink s program body parts) shrinks
   oneof (return <$> gens)
-
-f' :: [Shrink a] -> ([Gen (a, Parts)] -> Gen (a, Parts)) -> Shrink a
-f' shrinks g = Shrink $ \program body parts -> do
-  gens <- mapM (\s -> runShrink s program body parts) shrinks
-  g (return <$> gens)
-
--- something that takes a Gen (a, Parts) and
--- returns a Gen (b, Parts)
-
--- function Gen (a, Parts) -> Gen (b, Parts)
--- turn to Shrink a -> Shrink b
 
 eval' :: Parts -> Shrink (Term Type)
 eval' parts = Shrink $ \program body parts' -> return (normalize program (term (body, parts)), parts')
@@ -88,17 +72,47 @@ closestToZero current (n:numbers) =
   then (closestToZero n       numbers)
   else (closestToZero current numbers)
 
--- TODO: Refactor
 smallest :: [Integer] -> Part -> Shrink (Maybe Integer)
 smallest [] _ = return Nothing
 smallest shrinked part@(_, Number int _) = do
   let smaller = closestToZero int shrinked
-  evalSmaller <- evalsToFalse part (Number smaller Integer')
-  case evalSmaller of
-    -- True meaning it does evaluate to False
+  smallerEvalsToFalse <- evalsToFalse part (Number smaller Integer')
+  case smallerEvalsToFalse of
     True  -> return $ Just smaller
-    False -> smallest (remove smaller shrinked) part
+    False -> do 
+      let removedSmaller = remove smaller shrinked
+      smallest removedSmaller part
 smallest _ _ = return Nothing
+
+-- Returns the term with the function applied to the subterms
+applyToSubterms :: (Term Type -> Term Type) -> Term Type -> Term Type
+applyToSubterms f (Node          l k v r      t) = Node          (f l ) (f k ) (f v) (f r) t
+applyToSubterms f (Case          t0 l (p, t') t) = Case          (f t0) (f l ) (p, f t')   t
+applyToSubterms f (If            t0 t1 t2     t) = If            (f t0) (f t1) (f t2)      t
+applyToSubterms f (Plus          t0 t1        t) = Plus          (f t0) (f t1)             t
+applyToSubterms f (Leq           t0 t1        t) = Leq           (f t0) (f t1)             t
+applyToSubterms f (Pair          t0 t1        t) = Pair          (f t0) (f t1)             t
+applyToSubterms f (Lambda      n t0           t) = Lambda      n (f t0)                    t
+applyToSubterms f (Rec         n t0           t) = Rec         n (f t0)                    t
+applyToSubterms f (Application   t0 t1        t) = Application   (f t0) (f t1)             t
+applyToSubterms f (Fst (Pair     t0 t1 t')    t) = Fst (Pair     (f t0)    t1  t')         t
+applyToSubterms f (Snd (Pair     t0 t1 t')    t) = Snd (Pair        t0  (f t1) t')         t
+applyToSubterms _ t                              = t
+
+-- Applies function to subterms
+applyToSubterms' :: (Term Type -> a) -> Term Type -> [a]
+applyToSubterms' f (Node          l k v r      _) = fmap f [l, k, v, r]
+applyToSubterms' f (Case          t0 l (_, t') _) = fmap f [t0, l, t']
+applyToSubterms' f (If            t0 t1 t2     _) = fmap f [t0, t1, t2]
+applyToSubterms' f (Plus          t0 t1        _) = fmap f [t0, t1]
+applyToSubterms' f (Leq           t0 t1        _) = fmap f [t0, t1]
+applyToSubterms' f (Pair          t0 t1        _) = fmap f [t0, t1]
+applyToSubterms' f (Application   t0 t1        _) = fmap f [t0, t1]
+applyToSubterms' f (Lambda      _ t0           _) = [f t0]
+applyToSubterms' f (Rec         _ t0           _) = [f t0]
+applyToSubterms' f (Fst (Pair     t0 _ _)      _) = [f t0]
+applyToSubterms' f (Snd (Pair     _ t1 _)      _) = [f t1]
+applyToSubterms' f t                              = [f t]
 
 -- ---------------------------- Operations of the Shrink monad ----------------------------
 -- Updates one part
@@ -108,16 +122,10 @@ updatePart part shrinkM = Shrink $ \program body parts -> (runShrink shrinkM) pr
 getProgram :: Shrink (Program Type)
 getProgram = Shrink $ \program _ parts -> return (program, parts)
 
--- Updates all parts
-updateParts :: Parts -> (Shrink a -> Shrink a)
-updateParts parts' shrinkM = Shrink $ \program body _ -> (runShrink shrinkM) program body parts'
-
--- TODO: fix
 getParts :: Shrink Parts
 getParts = Shrink $ \_ _ parts -> return (parts, parts)
 
 -- ---------------------------- Shrinking ----------------------------
--- TODO: replace a in return of monad Gen (a, Parts)?
 shrinkAll :: Parts -> Shrink Parts
 shrinkAll []           = getParts
 shrinkAll ((name, term'):parts) = do
@@ -135,20 +143,20 @@ shrink part@(name, term'@(Number int _)) =
     shrinked -> do
       smaller <- smallest shrinked part
       case smaller of
-        Just small -> return (Just (name, (replace term' small)))
+        Just small -> return $ Just (name, (replace term' small))
         Nothing    -> return Nothing
-shrink (_, (Variable _ _)) = return Nothing -- TODO: get value it corresponds to and shrink that?
 shrink (name, term'@(Lambda _ _ _)) = do
-  let shrinkedFun = shrinkFun term'
+  let shrinkedFun = removeBloat term'
   return $ Just (name, shrinkedFun)
 shrink part@(name, term'@(Node     _ _ _ _ _)) = do
-  -- TODO: check if shrinked at all?
   shrinkedNode <- shrinkNode name term' part
   return $ Just (name, shrinkedNode)
--- TODO: shrink Pair
+shrink (name, (Pair left right type')) = do
+  let shrinkedLeft  = removeBloat left
+  let shrinkedRight = removeBloat right
+  return $ Just (name, (Pair shrinkedLeft shrinkedRight type'))
 shrink _ = return Nothing
 
--- TODO: refactor/change name - shrinkTree instead?
 shrinkNode :: Name -> Term Type -> Part -> Shrink (Term Type)
 shrinkNode name node@(Node left _ _ right _) part = do
   evalLeft  <- evalsToFalse part left
@@ -161,41 +169,19 @@ shrinkNode name node@(Node left _ _ right _) part = do
         False -> return node
 shrinkNode _ term' _ = return term' 
 
-shrinkFun :: Term Type -> Term Type
-shrinkFun (Node l k v r         t) = (Node (shrinkFun l ) (shrinkFun k) 
-                                           (shrinkFun v ) (shrinkFun r)             t)
-shrinkFun (Case t0 l (p, t') t) = (Case (shrinkFun t0) (shrinkFun l) (p, shrinkFun t') t)
-shrinkFun (If   t0 t1 t2     t) = (If   (shrinkFun t0) (shrinkFun t1) (shrinkFun t2) t)
-shrinkFun (Plus t0 t1    t) = (Plus (shrinkFun t0) (shrinkFun t1) t)
-shrinkFun (Leq  t0 t1    t) = (Leq  (shrinkFun t0) (shrinkFun t1) t)
-shrinkFun (Pair t0 t1    t) = (Pair (shrinkFun t0) (shrinkFun t1) t)
-shrinkFun (Fst  (Pair t0 _ _)       _) = shrinkFun t0
-shrinkFun (Snd  (Pair _ t1 _)       _) = shrinkFun t1
-shrinkFun (Application    t0 t1 t) = (Application (shrinkFun t0) (shrinkFun t1) t)
-shrinkFun (Lambda  n  t0        t) = (Lambda n (shrinkFun t0) t)
-shrinkFun (Rec     n  t0        t) = (Rec n (shrinkFun t0) t)
-shrinkFun (Let     n  t0 t1     t) = 
-  case findName n t1 of
-    True  -> (Let n (shrinkFun t0) (shrinkFun t1) t)
-    False -> (shrinkFun t1) -- removing the outer let
-shrinkFun term' = term'     -- number, bool, unit, leaf and variable (?)
+removeBloat :: Term Type -> Term Type
+removeBloat (Let     n  t0 t1     t) = 
+  case findFunOccurrence n t1 of
+    True  -> Let n (removeBloat t0) (removeBloat t1) t
+    False -> removeBloat t1                             -- removing outer let
+removeBloat (Fst  (Pair t0 _ _)   _) = removeBloat t0   -- removing outer fst
+removeBloat (Snd  (Pair _ t1 _)   _) = removeBloat t1   -- removing outer snd
+removeBloat term'                    = applyToSubterms removeBloat term'
 
-checkIfFound :: Name -> [Term Type] -> Bool
-checkIfFound name terms = True `elem` fmap (findName name) terms
-
--- TODO: refactor
-findName :: Name -> Term Type -> Bool
-findName name (Node        l  k  v  r _) = checkIfFound name [l,  k, v , r]
-findName name (Case        t0 l  n    _) = checkIfFound name [t0, l, snd n]
-findName name (Variable    n          _) = (name == n)
-findName name (If          t0 t1 t2   _) = checkIfFound name [t0, t1, t2  ]
-findName name (Plus        t0 t1      _) = checkIfFound name [t0, t1      ]
-findName name (Leq         t0 t1      _) = checkIfFound name [t0, t1      ]
-findName name (Pair        t0 t1      _) = checkIfFound name [t0, t1      ]
-findName name (Fst         t0         _) = findName     name  t0
-findName name (Snd         t0         _) = findName     name  t0
-findName name (Lambda      _  t0      _) = findName     name  t0
-findName name (Application t0 t1      _) = checkIfFound name [t0, t1      ]
-findName name (Let         _  t0 t1   _) = checkIfFound name [t0, t1      ]
-findName name (Rec         _  t0      _) = findName     name  t0
-findName _    _                          = False -- number, boolean, unit and leaf
+findFunOccurrence :: Name -> Term Type -> Bool
+findFunOccurrence name (Variable    n          _) = name == n
+findFunOccurrence _    (Number      _          _) = False
+findFunOccurrence _    (Boolean     _          _) = False
+findFunOccurrence _    (Unit                   _) = False
+findFunOccurrence _    (Leaf                   _) = False
+findFunOccurrence name term'                      = any (== True) (applyToSubterms' (findFunOccurrence name) term')
