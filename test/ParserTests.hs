@@ -172,7 +172,7 @@ parseProgramsFromFiles =
      Property "add-is-commutative" [("m",()),("n",())]
        (Application (Application (Variable "equal" ())
             (Application (Application (Variable "add" ()) (Variable "m" ()) ()) (Variable "n" ()) ()) ())
-            (Application (Application (Variable "add" ()) (Variable "m" ()) ()) (Variable "n" ()) ()) ())
+            (Application (Application (Variable "add" ()) (Variable "n" ()) ()) (Variable "m" ()) ()) ())
      EndOfProgram)
     , ("examples/comparison-and-logical-operators.pun",
        Declaration "equal" (Integer' :->: (Integer' :->: Boolean')) $
