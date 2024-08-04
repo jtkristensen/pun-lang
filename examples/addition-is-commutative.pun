@@ -7,4 +7,5 @@ equal m n =
 add : integer -> integer -> integer .
 add m n = m + n .
 
-property add-is-commutative m n . equal (add m n) (add m n) .
+property add-is-commutative m n . equal (add m n) (add n m) .
+

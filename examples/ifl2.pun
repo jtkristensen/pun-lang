@@ -1,0 +1,10 @@
+
+// pun does not come with a built in for equal.
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
+// property from first code example in the paper.
+property plus-one-identity f n . equal (f (n) + 1) (f (n + 1)).

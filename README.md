@@ -1,14 +1,13 @@
-# The `pun` Programming Language,The `fun` Language with Properties.
+# The `pun` Programming Language : A Fun Programming Language with Properties.
 
 [![tests](https://github.com/jtkristensen/pun-lang/actions/workflows/main-test.yaml/badge.svg)](https://github.com/jtkristensen/pun-lang/actions/workflows/main-test.yaml)
 [![hlint](https://github.com/jtkristensen/pun-lang/actions/workflows/main-hlint.yaml/badge.svg)](https://github.com/jtkristensen/pun-lang/actions/workflows/main-hlint.yaml)
 
-Pun is an extension of a minimal garden variety functional programming
-langauge (similar to the Fun langauge from Pierce's "Types and Progamming
-Languages", and the REC language from Glynn Winskel's "The Formal Semantics
-of Programming Langauges").
+Pun is a small functional programming langauge (similar to the Fun langauge
+from Pierce's "Types and Progamming Languages", and the REC language from
+Glynn Winskel's "The Formal Semantics of Programming Langauges").
 
-The main feature is a `property` declaration, which has the form:
+The main feature is a `property` declaration, which has the syntactic form:
 
 ```haskell
 propery <name> <parameters> . <term> .
@@ -37,6 +36,15 @@ You should be able to install `pun` by running
 ```
 
 from within the repository.
+
+# Artifact
+
+To reproduce the result the paper currently submitted to IFL, run
+
+```bash
+pun --check examples/ifl1.pun
+pun --check examples/ifl2.pun
+```
 
 # Getting started.
 

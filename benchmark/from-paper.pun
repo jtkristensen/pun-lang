@@ -9,7 +9,7 @@ property plus-commutes m n . equal (m + n) (n + m) .
 
 // property less m n . m <= n  .
 
-property plus-zero-identity f n . equal (f (n + 0)) (f (n) + 0) .
+property plus-zero-identity f n . equal (f (n + 0)) ((f n) + 0) .
 
 negate : integer -> integer .
 negate n =
