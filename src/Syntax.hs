@@ -7,6 +7,7 @@ type Name        = String
 type F           = Name
 type X           = Name
 type C           = Name
+type D           = Name
 type P           = Name
 type Index       = Integer
 type T0        a = Term a
@@ -24,11 +25,15 @@ type Pattern   a = Term a
 type Canonical a = Term a
 
 data Program a
-  = Declaration X           Type    (Program a)
+  = Data        D [TypeConstructor] (Program a)
+  | Declaration X           Type    (Program a)
   | Definition  F          (Term a) (Program a)
   | Property    P [(X, a)] (Term a) (Program a)
   | EndOfProgram
   deriving (Functor, Eq)
+
+data TypeConstructor = TypeConstructor C [Type]
+  deriving Eq
 
 data Type
   = Variable' Index
@@ -37,6 +42,7 @@ data Type
   | Unit'
   | Type :*: Type
   | Type :->: Type
+  | Algebraic D
   | BST Key Value
   deriving (Eq, Show)
 
@@ -45,6 +51,7 @@ data Term a =
   | Boolean   Bool                      a
   | Unit                                a
   | Leaf                                a
+  | Constructor C [Term a]              a
   | Node (Left a) (K a) (V a) (Right a) a
   | Case (T0 a) (Leaf a) (Node a)       a
   | Variable  Name                      a
