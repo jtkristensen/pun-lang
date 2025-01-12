@@ -190,6 +190,8 @@ freeVariables (Number _ _) = mempty
 freeVariables (Boolean _ _) = mempty
 freeVariables (Unit      _) = mempty
 freeVariables (Leaf      _) = mempty
+freeVariables (Constructor _ ts _) =
+  foldr (\t fvs -> fvs <> freeVariables t) mempty ts
 freeVariables (Node l k v r _) =
      freeVariables l
   <> freeVariables k
