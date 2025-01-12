@@ -56,6 +56,9 @@ interpret (Node l k v r a) =
      v' <- interpret v
      r' <- interpret r
      return $ Node l' k' v' r' a
+interpret (Constructor c ts a) =
+  do ts' <- mapM interpret ts
+     return $ Constructor c ts' a
 interpret (Case t0 l (p, n) _) =
   do v <- interpret t0
      case v of
