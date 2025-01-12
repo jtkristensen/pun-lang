@@ -2,6 +2,8 @@
 
 module Syntax where
 
+import Data.List (intercalate)
+
 -- Abbreviations.
 type Name        = String
 type F           = Name
@@ -110,6 +112,7 @@ instance Show (Term a) where
   show (Number  n         _) = show n
   show (Boolean b         _) = show b
   show (Unit              _) = "unit"
+  show (Constructor c ts  _) = show c ++ " [" ++ intercalate ", " (map show ts) ++ "]"
   show (Leaf              _) = "leaf"
   show (Node l k v r      _) = "[node " ++ show l ++ show k ++ show v ++ show r ++ "]"
   show (Case t l (p, n)   _) =
