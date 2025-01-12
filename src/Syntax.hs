@@ -126,14 +126,15 @@ instance Show (Term a) where
   show (Rec x t0          _) = "rec " ++ x ++ " . " ++ show t0
 
 canonical :: Term a -> Bool
-canonical (Number  _     _) = True
-canonical (Boolean _     _) = True
-canonical (Unit          _) = True
-canonical (Pair    t1 t2 _) = canonical t1 && canonical t2
-canonical (Lambda  {}     ) = True
-canonical (Leaf          _) = True
-canonical (Node   l k v r _) = all canonical [l, k, v, r]
-canonical _                 = False
+canonical (Number  _        _) = True
+canonical (Boolean _        _) = True
+canonical (Unit             _) = True
+canonical (Constructor _ ts _) = all canonical ts
+canonical (Pair    t1 t2    _) = canonical t1 && canonical t2
+canonical (Lambda  {}        ) = True
+canonical (Leaf             _) = True
+canonical (Node   l k v r   _) = all canonical [l, k, v, r]
+canonical _                    = False
 
 dataDeclarations :: Program a -> [(D, [TypeConstructor])]
 dataDeclarations (Data        d ts rest) = (d, ts) : dataDeclarations rest
