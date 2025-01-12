@@ -73,7 +73,7 @@ generateGeneratorTests =
         equivalent t typeOfT',
     testProperty "Only valid types are generated from a substitution." $
     \(SubstType (subs, t, _, _)) ->
-      all (`elem` (fst <$> subs)) (indicies t),
+      all (`elem` (fst <$> subs)) (indices t),
     testProperty "generateGenerator generates appropriate type for generated substitution." $
     \(SubstType (_, _, term, canonT)) ->
       let (t', _, cs) = infer term 0
@@ -168,9 +168,9 @@ unifiesWith Boolean' Boolean' = return []
 unifiesWith Unit'    Unit'    = return []
 unifiesWith (Variable' a) (Variable' b) = return [(a, Variable' b)]
 unifiesWith (Variable' a) t             =
-  if a `elem` indicies t then Nothing else return [(a, t)]
+  if a `elem` indices t then Nothing else return [(a, t)]
 unifiesWith t             (Variable' b) =
-  if b `elem` indicies t then Nothing else return [(b, t)]
+  if b `elem` indices t then Nothing else return [(b, t)]
 unifiesWith (t1 :*: t2)  (ta :*: tb) =
   do a1 <-          t1 `unifiesWith` ta
      b2 <- subst a1 t2 `unifiesWith` subst a1 tb

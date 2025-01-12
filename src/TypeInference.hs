@@ -168,7 +168,7 @@ infer term = runRWS (annotate term) emptyEnvironment
 
 -- alpha renaming.
 alpha :: Index -> (Type -> (Index, Type))
-alpha i t = (if null (indicies t) then i else i + maximum (indicies t) + 1, increment t)
+alpha i t = (if null (indices t) then i else i + maximum (indices t) + 1, increment t)
   where increment Integer'        = Integer'
         increment Boolean'        = Boolean'
         increment Unit'           = Unit'

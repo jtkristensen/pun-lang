@@ -168,15 +168,15 @@ properties (Declaration _ _  rest) = properties rest
 properties (Property  p x t  rest) = (p, (x, t)) : properties rest
 properties _                       = mempty
 
-indicies :: Type -> [Index]
-indicies (Variable' a)  = [a]
-indicies  Integer'      = []
-indicies  Boolean'      = []
-indicies  Unit'         = []
-indicies (t1 :*:   t2)  = indicies t1 <> indicies t2
-indicies (t1 :->:  t2)  = indicies t1 <> indicies t2
-indicies (BST   t1 t2)  = indicies t1 <> indicies t2
-indicies (Algebraic d)  = []
+indices :: Type -> [Index]
+indices (Variable' a)  = [a]
+indices  Integer'      = []
+indices  Boolean'      = []
+indices  Unit'         = []
+indices (t1 :*:   t2)  = indices t1 <> indices t2
+indices (t1 :->:  t2)  = indices t1 <> indices t2
+indices (BST   t1 t2)  = indices t1 <> indices t2
+indices (Algebraic d)  = []
 
 instance Semigroup (Program a) where
   (Declaration x t p1) <> p2 = Declaration x  t (p1 <> p2)
