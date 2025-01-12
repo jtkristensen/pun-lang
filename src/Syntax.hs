@@ -77,6 +77,7 @@ instance Annotated Term where
   annotations (Boolean         _ a) = return a
   annotations (Variable        _ a) = return a
   annotations (Unit              a) = return a
+  annotations (Constructor _ ts  a) = a : (ts           >>= annotations)
   annotations (If       t0 t1 t2 a) = a : ([t0, t1, t2] >>= annotations)
   annotations (Plus     t0 t1    a) = a : ([t0, t1]     >>= annotations)
   annotations (Leq      t0 t1    a) = a : ([t0, t1]     >>= annotations)
@@ -88,7 +89,7 @@ instance Annotated Term where
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
   annotations (Leaf              a) = return a
-  annotations (Node      l k v r a) = a : ([l, k, v, r]    >>= annotations)
+  annotations (Node      l k v r a) = a : ([l, k, v, r]  >>= annotations)
   annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
   annotation  term                  = head $ annotations term
 
