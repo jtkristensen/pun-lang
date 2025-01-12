@@ -173,6 +173,7 @@ indicies  Unit'         = []
 indicies (t1 :*:   t2)  = indicies t1 <> indicies t2
 indicies (t1 :->:  t2)  = indicies t1 <> indicies t2
 indicies (BST   t1 t2)  = indicies t1 <> indicies t2
+indicies (Algebraic d)  = []
 
 instance Semigroup (Program a) where
   (Declaration x t p1) <> p2 = Declaration x  t (p1 <> p2)
