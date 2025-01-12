@@ -14,8 +14,8 @@ data Constraint
 -- Abbreviations.
 type Mapping a b  = a -> b
 type Mapsto  a b  = Mapping a b -> Mapping a b
-type Environment  = Mapping Name Type
-type Annotation   = RWS Environment [Constraint] Index
+type Bindings     = Mapping Name Type
+type Annotation   = RWS Bindings [Constraint] Index
 type Substitution = [(Index, Type)]
 
 hole :: Annotation Type
@@ -114,7 +114,7 @@ annotate (Case t0 l (p, n) _) =
      l'  `hasSameTypeAs` n'
      return $ Case t0' l' (p', n') (annotation l')
   where
-    liftFV :: [(X, Type)] -> (Environment -> Environment)
+    liftFV :: [(X, Type)] -> (Bindings -> Bindings)
     liftFV [] f = f
     liftFV ((x, t) : rest) f = bind x t $ liftFV rest f
 
@@ -160,11 +160,11 @@ indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
 indexes (BST    k v)  = indexes k  ++ indexes v
 indexes _             = mempty
 
-emptyEnvironment :: Environment
-emptyEnvironment = error . (++ " is unbound!")
+emptyBindings :: Bindings
+emptyBindings = error . (++ " is unbound!")
 
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
-infer term = runRWS (annotate term) emptyEnvironment
+infer term = runRWS (annotate term) emptyBindings
 
 -- alpha renaming.
 alpha :: Index -> (Type -> (Index, Type))
@@ -199,7 +199,7 @@ type GlobalEnv = X -> Maybe Type
 inferP :: Program a -> Program Type
 inferP program = refine (bindings $ cs ++ cs') <$> pt
   where
-    (pt, _, cs) = runRWS program' emptyEnvironment 0
+    (pt, _, cs) = runRWS program' emptyBindings 0
     cs'         = [ t' :=: annotation t''
                   | (x, t' ) <- declarations pt
                   , (y, t'') <- definitions  pt
