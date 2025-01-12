@@ -122,6 +122,22 @@ term_ =
     add            = pre  "+" $ return $ lift1 Plus
     app            = return $ lift1 Application
 
+typeConstructor :: Parser (TypeConstructor)
+typeConstructor = 
+  do 
+    c  <- (:) <$> upper <*> many letter
+    ts <- option [] $ brackets (sepBy1 type_ (symbol ","))
+    return $ TypeConstructor c ts
+
+data_ :: Parser (Transformation (Program Info))
+data_ =
+  do _  <- keyword "data"
+     d  <- name
+     _  <- symbol "="
+     cs <- typeConstructor `sepBy1` symbol "|"
+     _  <- symbol "."
+     return $ Data d cs
+
 declaration_ :: Parser (Transformation (Program Info))
 declaration_ =
   do f <- name
@@ -152,7 +168,7 @@ property_ xa =
 program_ :: Parser (Program Info)
 program_ =
   fmap (foldr (\a b -> a b) EndOfProgram) $
-  do p <- many (choice [ try declaration_, definition_, property_ (info ((,) <$> name))])
+  do p <- many (choice [ try declaration_, definition_, data_, property_ (info ((,) <$> name))])
      _ <- eof
      return p
 
@@ -210,6 +226,7 @@ reserved =
   , "leaf", "node", "case", "of"
   , "fst", "snd"
   , "let", "in", "rec"
+  , "data"
   ]
 
 -- Parses p and anny trailing whitespace following it.
