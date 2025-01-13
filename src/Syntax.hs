@@ -258,8 +258,9 @@ freeVariables (Rec x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
 
 -- /!\ optimisation : declarations can be thrown away at runtime to make the program smaller.
 withoutDeclarations :: Program a -> Program a
-withoutDeclarations (Declaration _ _ p)  =                     withoutDeclarations p
-withoutDeclarations (Definition  x t p)  = Definition   x  t $ withoutDeclarations p
+withoutDeclarations (Declaration _ _  p) =                     withoutDeclarations p
+withoutDeclarations (Data        d ts p) = Data         d ts $ withoutDeclarations p
+withoutDeclarations (Definition  x t  p) = Definition   x  t $ withoutDeclarations p
 withoutDeclarations (Property  n xs t p) = Property   n xs t $ withoutDeclarations p
 withoutDeclarations EndOfProgram         = EndOfProgram
 
