@@ -56,7 +56,7 @@ data Term a =
   | Leaf                                a
   | Constructor C [Term a]              a
   | Node (Left a) (K a) (V a) (Right a) a
-  | Case (T0 a) (Leaf a) (Node a)       a
+  | Case (T0 a) [(Pattern a, Term a)]   a
   | Variable  Name                      a
   | If          (T0 a) (T1 a) (T2 a)    a
   | Plus        (T0 a) (T1 a)           a
@@ -93,7 +93,7 @@ instance Annotated Term where
   annotations (Rec    _ t0       a) = a : annotations t0
   annotations (Leaf              a) = return a
   annotations (Node      l k v r a) = a : ([l, k, v, r]  >>= annotations)
-  annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
+  annotations (Case  t cs        a) = a : (t:(concatMap (\(x, y) -> [x, y]) cs) >>= annotations)
   annotation  term                  = head $ annotations term
 
 
@@ -127,8 +127,7 @@ instance Show (Term a) where
   show (Constructor c ts  _) = c ++ " [" ++ intercalate ", " (map show ts) ++ "]"
   show (Leaf              _) = "leaf"
   show (Node l k v r      _) = "[node " ++ show l ++ show k ++ show v ++ show r ++ "]"
-  show (Case t l (p, n)   _) =
-         "case " ++ show t ++ " of ; leaf -> " ++ show l ++ "; " ++ show p ++ " -> " ++ show n
+  show (Case t cs         _) = "case " ++ show t ++ " of\n" ++ intercalate "\n" (map (\(x, y) -> "  ; " ++ show x ++  " -> " ++ show y) cs)
   show (Variable n        _) = n
   show (If t0 t1 t2       _) = "if " ++ show t0  ++ " then " ++ show t1 ++ " else " ++ show t2
   show (Plus t0 t1        _) = putParens (show t0) ++ " + "  ++ putParens (show t1)
@@ -233,11 +232,9 @@ freeVariables (Node l k v r _) =
   <> freeVariables k
   <> freeVariables v
   <> freeVariables r
-freeVariables (Case t l (p, b) _) =
+freeVariables (Case t cs _) =
      freeVariables t
-  <> freeVariables l
-  <> freeVariables p
-  <> freeVariables b
+  <> foldr (\(p, t) fvs -> fvs <> freeVariables p <> freeVariables t) mempty cs
 freeVariables (Variable x _) = return x
 freeVariables (If t0 t1 t2 _) =
      freeVariables t0
