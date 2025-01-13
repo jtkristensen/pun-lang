@@ -40,21 +40,22 @@ isPattern (Pair  t1 t2   _) = all isPattern [t1, t2]
 isPattern t                 = canonical t
 
 contains :: Pattern a -> X -> Bool
-contains (Variable y  _) x = x == y
-contains (If t0 t1 t2 _) x = any (`contains` x) [t0, t1, t2]
-contains (Plus  t0 t1 _) x = t0 `contains` x || t1 `contains` x
-contains (Leq   t0 t1 _) x = t0 `contains` x || t1 `contains` x
-contains (Pair  t0 t1 _) x = t0 `contains` x || t1 `contains` x
-contains (Fst   t0    _) x = t0 `contains` x
-contains (Snd   t0    _) x = t0 `contains` x
-contains (Lambda n t0 _) x = n == x || t0 `contains` x
-contains (Let n t1 t2 _) x =
+contains (Variable y       _) x = x == y
+contains (Constructor _ ts _) x = any (`contains` x) ts
+contains (If t0 t1 t2      _) x = any (`contains` x) [t0, t1, t2]
+contains (Plus  t0 t1      _) x = t0 `contains` x || t1 `contains` x
+contains (Leq   t0 t1      _) x = t0 `contains` x || t1 `contains` x
+contains (Pair  t0 t1      _) x = t0 `contains` x || t1 `contains` x
+contains (Fst   t0         _) x = t0 `contains` x
+contains (Snd   t0         _) x = t0 `contains` x
+contains (Lambda n t0      _) x = n == x || t0 `contains` x
+contains (Let n t1 t2      _) x =
   n   ==        x ||
   t1 `contains` x ||
   t2 `contains` x
-contains (Rec n t0    _) x = n == x || t0 `contains` x
+contains (Rec n t0          _) x = n == x || t0 `contains` x
 contains (Application t1 t2 _) x = t1 `contains` x || t2 `contains` x
-contains _              _ = False
+contains _                     _ = False
 
 substitutes :: Pattern a -> X -> Unifier a
 substitutes p x = return (x, p)
