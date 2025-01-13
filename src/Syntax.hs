@@ -99,6 +99,8 @@ putParens :: String -> String
 putParens = ("(" ++) . (++ ")")
 
 instance Show a => Show (Program a) where
+  show (Data d taus rest) =
+    "data " ++ d ++ " = " ++ show taus ++ "\n\n" ++ show rest
   show (Declaration x t rest) =
     x ++ " :: " ++ show t ++ "\n\n" ++ show rest
   show (Definition x t rest) =
@@ -106,6 +108,10 @@ instance Show a => Show (Program a) where
   show (Property p xs t rest) =
     "property " ++ p ++ " " ++ show xs ++ " . " ++ show t ++ "\n\n" ++ show rest
   show EndOfProgram = ""
+
+instance Show TypeConstructor where
+  show (TypeConstructor c []) = c
+  show (TypeConstructor c cs) = c ++ " (" ++ intercalate ", " (map show cs) ++ ")"
 
 instance Show (Term a) where
   -- todo (minimally bracketed printer + tests) --
