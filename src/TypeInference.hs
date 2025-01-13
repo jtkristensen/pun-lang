@@ -191,6 +191,14 @@ alpha i t = (if null (indices t) then i else i + maximum (indices t) + 1, increm
         increment (t1 :->: t2 )   = increment t1 :->: increment t2
         increment (BST key value) = BST (increment key) (increment value)
 
+alphaADT :: Index -> [TypeConstructor] -> (Index, [TypeConstructor])
+alphaADT i = foldr (\c (j, k) -> second (: k) (alphaDef j c)) (i, [])
+
+alphaDef :: Index -> TypeConstructor -> (Index, TypeConstructor)
+alphaDef i (TypeConstructor c cs) = second (TypeConstructor c)
+                                    (foldr (\t (j, ts) ->
+                                              second (: ts) (alpha j t)) (i, []) cs)
+
 -- TODO: Better error handling {^o^}!
 bindings :: [Constraint] -> Substitution
 bindings = fromMaybe (error "type error") . solve
