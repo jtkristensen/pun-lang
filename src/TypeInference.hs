@@ -228,7 +228,13 @@ inferP program = refine (bindings $ cs ++ cs') <$> pt
                   , (y, t'') <- definitions  pt
                   , x == y
                   ]
-    program'    = inferP' program :: Annotation (Program Type)
+    program' = inferP' program
+    inferP' (Data d taus p) =
+      do i <- get
+         let (j, taus') = alphaADT i taus
+         put j
+         rest' <- local (bind d (Algebraic d)) $ inferP' p
+         return $ Data d taus' rest'
     inferP' (Declaration x t p) =
       do i <- get
          let (j, tau) = alpha i t
