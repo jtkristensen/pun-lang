@@ -34,10 +34,11 @@ unify' (Node l1 k1 v1 r1 _) (Node l2 k2 v2 r2 _) =
 unify' _ _ = Nothing
 
 isPattern :: Term a -> Bool
-isPattern (Variable    _ _) = True
-isPattern (Node  l k v r _) = all isPattern [l, k, v, r]
-isPattern (Pair  t1 t2   _) = all isPattern [t1, t2]
-isPattern t                 = canonical t
+isPattern (Variable       _ _) = True
+isPattern (Node     l k v r _) = all isPattern [l, k, v, r]
+isPattern (Pair       t1 t2 _) = all isPattern [t1, t2]
+isPattern (Constructor _ ts _) = all isPattern ts
+isPattern t                    = canonical t
 
 contains :: Pattern a -> X -> Bool
 contains (Variable y       _) x = x == y
