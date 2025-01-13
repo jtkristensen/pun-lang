@@ -42,6 +42,13 @@ annotate (Unit       _)  = return $ Unit Unit'
 annotate (Variable x _)  =
   do env <- ask
      return $ Variable x $ env x
+annotate (Constructor c ts _) =
+  do vs   <- mapM annotate ts
+     env  <- environment
+     adt  <- datatype env c
+     taus <- fieldTypes env c
+     vs `haveTypes` taus
+     return $ Constructor c vs (Algebraic adt)
 annotate (If t0 t1 t2 _) =
   do t0' <- annotate t0
      t1' <- annotate t1
