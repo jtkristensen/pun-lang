@@ -185,10 +185,11 @@ indices (BST   t1 t2)  = indices t1 <> indices t2
 indices (Algebraic d)  = []
 
 instance Semigroup (Program a) where
-  (Declaration x t p1) <> p2 = Declaration x  t (p1 <> p2)
-  (Definition  x t p1) <> p2 = Definition  x  t (p1 <> p2)
-  (Property p xs t p1) <> p2 = Property  p xs t (p1 <> p2)
-  EndOfProgram         <> p2 = p2
+  (Data        d ts p1) <> p2 = Data        d ts (p1 <> p2)
+  (Declaration x t  p1) <> p2 = Declaration x  t (p1 <> p2)
+  (Definition  x t  p1) <> p2 = Definition  x  t (p1 <> p2)
+  (Property p xs t  p1) <> p2 = Property  p xs t (p1 <> p2)
+  EndOfProgram          <> p2 = p2
 
 instance Monoid (Program a) where
   mempty  = EndOfProgram
