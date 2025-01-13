@@ -173,35 +173,35 @@ typeConstructorFields p = map (\(TypeConstructor c ts) -> (c, ts)) constructors
     constructors = map fst (typeConstructors p)
 
 definitions :: Program a -> [(F, Term a)]
-definitions (Data        d ts rest) = definitions rest
-definitions (Definition  x t  rest) = (x, t) : definitions rest
-definitions (Declaration _ _  rest) = definitions rest
-definitions (Property  _ _ _  rest) = definitions rest
-definitions _                       = mempty
+definitions (Data        _ _ rest) = definitions rest
+definitions (Definition  x t rest) = (x, t) : definitions rest
+definitions (Declaration _ _ rest) = definitions rest
+definitions (Property  _ _ _ rest) = definitions rest
+definitions _                      = mempty
 
 declarations :: Program a -> [(X, Type)]
-declarations (Data        d ts rest) = declarations rest
-declarations (Definition  _ _  rest) = declarations rest
-declarations (Declaration x t  rest) = (x, t) : declarations rest
-declarations (Property  _ _ _  rest) = declarations rest
-declarations _                       = mempty
+declarations (Data        _ _ rest) = declarations rest
+declarations (Definition  _ _ rest) = declarations rest
+declarations (Declaration x t rest) = (x, t) : declarations rest
+declarations (Property  _ _ _ rest) = declarations rest
+declarations _                      = mempty
 
 properties :: Program a -> [(P, ([(X, a)], Term a))]
-properties (Data        d ts rest) = properties rest
-properties (Definition  _ _  rest) = properties rest
-properties (Declaration _ _  rest) = properties rest
-properties (Property  p x t  rest) = (p, (x, t)) : properties rest
-properties _                       = mempty
+properties (Data        _ _ rest) = properties rest
+properties (Definition  _ _ rest) = properties rest
+properties (Declaration _ _ rest) = properties rest
+properties (Property  p x t rest) = (p, (x, t)) : properties rest
+properties _                      = mempty
 
 indices :: Type -> [Index]
-indices (Variable' a)  = [a]
-indices  Integer'      = []
-indices  Boolean'      = []
-indices  Unit'         = []
-indices (t1 :*:   t2)  = indices t1 <> indices t2
-indices (t1 :->:  t2)  = indices t1 <> indices t2
-indices (BST   t1 t2)  = indices t1 <> indices t2
-indices (Algebraic d)  = []
+indices (Variable' a) = [a]
+indices  Integer'     = []
+indices  Boolean'     = []
+indices  Unit'        = []
+indices (t1 :*:   t2) = indices t1 <> indices t2
+indices (t1 :->:  t2) = indices t1 <> indices t2
+indices (BST   t1 t2) = indices t1 <> indices t2
+indices (Algebraic _) = []
 
 instance Semigroup (Program a) where
   (Data        d ts p1) <> p2 = Data        d ts (p1 <> p2)
