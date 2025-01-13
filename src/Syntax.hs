@@ -95,6 +95,11 @@ instance Annotated Term where
   annotations (Case  t0 l (p, n) a) = a : ([t0, l, p, n] >>= annotations)
   annotation  term                  = head $ annotations term
 
+
+-- Utility functions
+swap :: (a, b) -> (b, a)
+swap (a, b) = (b, a)
+
 putParens :: String -> String
 putParens = ("(" ++) . (++ ")")
 
@@ -152,6 +157,20 @@ dataDeclarations (Definition  _ _  rest) = dataDeclarations rest
 dataDeclarations (Declaration _ _  rest) = dataDeclarations rest
 dataDeclarations (Property  _ _ _  rest) = dataDeclarations rest
 dataDeclarations _                       = mempty
+
+typeConstructors :: Program a -> [(TypeConstructor, D)]
+typeConstructors p = concatMap (fromConstructor . swap) (dataDeclarations p)
+  where
+    fromConstructor :: ([TypeConstructor], D) -> [(TypeConstructor, D)]
+    fromConstructor (ctrs, t) = [ (c, t) | c <- ctrs ]
+
+typeConstructorNames :: Program a -> [(C, D)]
+typeConstructorNames p = map (\(TypeConstructor c _, t) -> (c, t)) (typeConstructors p)
+
+typeConstructorFields :: Program a -> [(C, [Type])]
+typeConstructorFields p = map (\(TypeConstructor c ts) -> (c, ts)) constructors
+  where
+    constructors = map fst (typeConstructors p)
 
 definitions :: Program a -> [(F, Term a)]
 definitions (Data        d ts rest) = definitions rest
