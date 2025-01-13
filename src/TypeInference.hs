@@ -3,7 +3,7 @@
 module TypeInference where
 
 import Syntax
-import Control.Monad.RWS
+import Environment
 import Data.Maybe (fromMaybe)
 import Data.Functor ((<&>))
 
@@ -15,22 +15,23 @@ data Constraint
 type Mapping a b  = a -> b
 type Mapsto  a b  = Mapping a b -> Mapping a b
 type Bindings     = Mapping Name Type
-type Annotation   = RWS Bindings [Constraint] Index
+type Annotation a = ERWS a Bindings [Constraint] Index
 type Substitution = [(Index, Type)]
 
-hole :: Annotation Type
+hole :: Annotation a Type
 hole = Variable' <$> (get >>= \i -> put (i + 1) >> return i)
 
 bind :: Eq x => x -> a -> x `Mapsto` a
 bind x a look y = if x == y then a else look y
 
-hasSameTypeAs :: Term Type -> Term Type -> Annotation ()
+hasSameTypeAs :: Term Type -> Term Type -> Annotation a ()
 t0 `hasSameTypeAs` t1 = tell [annotation t0 :=: annotation t1]
 
-hasType :: Term Type-> Type -> Annotation ()
+hasType :: Term Type -> Type -> Annotation a ()
 t0 `hasType` tau = tell [annotation t0 :=: tau]
 
 annotate :: Term a -> Annotation (Term Type)
+annotate :: Term a -> Annotation a (Term Type)
 annotate (Number   n _)  = return $ Number n Integer'
 annotate (Boolean  b _)  = return $ Boolean b Boolean'
 annotate (Unit       _)  = return $ Unit Unit'
@@ -164,7 +165,7 @@ emptyBindings :: Bindings
 emptyBindings = error . (++ " is unbound!")
 
 infer :: Term a -> Index -> (Term Type, Index, [Constraint])
-infer term = runRWS (annotate term) emptyBindings
+infer term = runERWS (annotate term) EndOfProgram emptyBindings
 
 -- alpha renaming.
 alpha :: Index -> (Type -> (Index, Type))
@@ -199,7 +200,7 @@ type GlobalEnv = X -> Maybe Type
 inferP :: Program a -> Program Type
 inferP program = refine (bindings $ cs ++ cs') <$> pt
   where
-    (pt, _, cs) = runRWS program' emptyBindings 0
+    (pt, _, cs) = runERWS program' program emptyBindings 0
     cs'         = [ t' :=: annotation t''
                   | (x, t' ) <- declarations pt
                   , (y, t'') <- definitions  pt
