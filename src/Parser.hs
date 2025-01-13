@@ -97,15 +97,11 @@ term_ =
   choice $
     foldr (flip chainl1) simple [leq, add, app] :
    map info
-  [ do _ <- keyword "case"
-       t <- term_
-       _ <- keyword "of"
-       _ <- symbol ";" >> symbol "leaf" >> symbol "->"
-       l <- term_
-       p <- symbol ";" >> simple
-       _ <- symbol "->"
-       r <- term_
-       return $ Case t l (p, r)
+  [do _  <- keyword "case"
+      t  <- term_
+      _  <- keyword "of"
+      cs <- many1 caseBranch
+      return $ Case t cs
   , do If <$> pre "if" term_ <*> pre "then" term_ <*> pre "else" term_
   , pre "fst" (Fst <$> term_)
   , pre "snd" (Snd <$> term_)
@@ -119,6 +115,14 @@ term_ =
     leq            = pre "<=" $ return $ lift1 Leq
     add            = pre  "+" $ return $ lift1 Plus
     app            = return $ lift1 Application
+
+caseBranch :: Parser (Pattern Info, Term Info)
+caseBranch =
+  do _ <- symbol ";"
+     p <- simple
+     _ <- symbol "->"
+     r <- term_
+     return $ (p, r)
 
 constructorName :: Parser Name
 constructorName = lexeme $ (:) <$> upper <*> many letter
