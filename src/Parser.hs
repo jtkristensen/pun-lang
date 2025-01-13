@@ -112,7 +112,7 @@ term_ =
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> pre "in" term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
-  , Constructor <$> constructorName <*> (option [] (brackets (sepBy term_ (symbol ","))))
+  , Constructor <$> constructorName <*> (option [] $ brackets $ term_ `sepBy` symbol ",")
   ]
   where
     lift1 op t1 t2 = op t1 t2 (fst $ annotation t1, snd $ annotation t2)
@@ -120,10 +120,10 @@ term_ =
     add            = pre  "+" $ return $ lift1 Plus
     app            = return $ lift1 Application
 
-constructorName :: Parser (Name)
+constructorName :: Parser Name
 constructorName = lexeme $ (:) <$> upper <*> many letter
 
-typeConstructor :: Parser (TypeConstructor)
+typeConstructor :: Parser TypeConstructor
 typeConstructor = 
   do 
     c  <- constructorName
