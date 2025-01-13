@@ -6,6 +6,8 @@ import Syntax
 import Environment
 import Data.Maybe (fromMaybe)
 import Data.Functor ((<&>))
+import Control.Arrow (second)
+import Control.Monad (zipWithM_)
 
 data Constraint
   = Type :=: Type
@@ -30,7 +32,9 @@ t0 `hasSameTypeAs` t1 = tell [annotation t0 :=: annotation t1]
 hasType :: Term Type -> Type -> Annotation a ()
 t0 `hasType` tau = tell [annotation t0 :=: tau]
 
-annotate :: Term a -> Annotation (Term Type)
+haveTypes :: [Term Type] -> [Type] -> Annotation a ()
+haveTypes = zipWithM_ hasType
+
 annotate :: Term a -> Annotation a (Term Type)
 annotate (Number   n _)  = return $ Number n Integer'
 annotate (Boolean  b _)  = return $ Boolean b Boolean'
@@ -126,6 +130,7 @@ solve (constraint : rest) =
     Integer'      :=: Integer'      -> solve rest
     Boolean'      :=: Boolean'      -> solve rest
     Unit'         :=: Unit'         -> solve rest
+    (Algebraic d) :=: (Algebraic c) | c == d -> solve rest
     (t0 :*:  t1)  :=: (t2 :*:  t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (t0 :->: t1)  :=: (t2 :->: t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (BST    k v)  :=: (BST  k' v')  -> solve $ (k  :=: k') : (v  :=: v') : rest
@@ -173,6 +178,7 @@ alpha i t = (if null (indices t) then i else i + maximum (indices t) + 1, increm
   where increment Integer'        = Integer'
         increment Boolean'        = Boolean'
         increment Unit'           = Unit'
+        increment (Algebraic d)   = Algebraic d
         increment (Variable' j)   = Variable' (i + j)
         increment (t1  :*: t2 )   = increment t1 :*: increment t2
         increment (t1 :->: t2 )   = increment t1 :->: increment t2
@@ -191,6 +197,7 @@ refine s o = refine' s o
     refine' _            Integer'               = Integer'
     refine' _            Boolean'               = Boolean'
     refine' _            Unit'                  = Unit'
+    refine' _            (Algebraic d)          = Algebraic d
     refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
     refine' s'           (BST    k v)           = BST (refine s' k) (refine s' v)
