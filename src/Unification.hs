@@ -1,7 +1,8 @@
 module Unification where
 
 import Syntax
-import Data.List (nub, intercalate)
+import Data.List  (nub, intercalate)
+import Data.Maybe (isNothing, fromMaybe)
 
 type Unifier a = [(Name, Term a)]
 
@@ -24,6 +25,9 @@ unify' :: Canonical a -> Pattern a -> Maybe (Unifier a)
 unify' (Number v   _) (Number  v'   _) | v == v' = return []
 unify' (Boolean v  _) (Boolean v'   _) | v == v' = return []
 unify' v              (Variable x   _) = return $ v `substitutes` x
+unify' (Constructor c vs _) (Constructor c' vs' _)
+  | c == c' && length vs == length vs'
+  = validateUnifiers $ zipWith unify' vs vs'
 unify' (Pair t0 t1 _) (Pair t0' t1' _) = unify' t0 t0' `mappend` unify' t1 t1'
 unify' (Leaf       _) (Leaf         _) = return []
 unify' (Node l1 k1 v1 r1 _) (Node l2 k2 v2 r2 _) =
@@ -32,6 +36,11 @@ unify' (Node l1 k1 v1 r1 _) (Node l2 k2 v2 r2 _) =
   (unify' v1 v2  `mappend`
    unify' r1 r2)
 unify' _ _ = Nothing
+
+validateUnifiers :: [Maybe (Unifier a)] -> Maybe (Unifier a)
+validateUnifiers us
+  | any isNothing us = Nothing
+  | otherwise        = Just $ foldr (mappend . (fromMaybe [])) mempty us
 
 isPattern :: Term a -> Bool
 isPattern (Variable       _ _) = True
