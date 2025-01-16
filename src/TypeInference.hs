@@ -115,12 +115,13 @@ annotate (Node l k v r _) =
      l' `hasSameTypeAs` r'
      return $ Node l' k' v' r' (annotation l')
 annotate (Case t cs _) =
-  do tau <- hole
-     t'  <- annotate t
+  do tau  <- hole
+     t'   <- annotate t
      t' `hasType` tau
-     cs' <- mapM annotatePattern cs
-     -- TODO all branches in cs must have the same type?
-     -- need `hasSameTypeAs` for all cases
+     cs'  <- mapM annotatePattern cs
+     tau' <- hole
+     mapM_ (`hasType` tau ) (map fst cs')
+     mapM_ (`hasType` tau') (map snd cs')
      return $ Case t' cs' (annotation t')
   where
     liftFV :: [(X, Type)] -> (Bindings -> Bindings)
