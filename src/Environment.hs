@@ -11,11 +11,11 @@ import qualified Control.Monad.RWS as RWS
 -- Definition
 data Environment m a =
   Environment
-    { function      :: F -> m (Term a)
-    , definitionsIn :: [(Name, Term a)]
-    , datatype      :: C -> m D
-    , fieldTypes    :: C -> m [Type]
-    , constructors  :: D -> m [TypeConstructor]
+    { function       :: F -> m (Term a)
+    , definitionsIn  :: [(Name, Term a)]
+    , datatype       :: C -> m D
+    , fieldTypes     :: C -> m [Type]
+    , constructorsOf :: D -> m [TypeConstructor]
     }
 
 -- Implementation
@@ -37,7 +37,7 @@ programEnvironment p =
         case lookup c (typeConstructorFields p) of
           Just ts -> return ts
           Nothing -> error $ "Couldn't find constructor with name '" ++ c ++ "'"
-    , constructors = \d ->
+    , constructorsOf = \d ->
         case lookup d (dataDeclarations p) of
           Just cs -> return cs
           Nothing -> error $ "Couldn't find data type with name '" ++ d ++ "'"
