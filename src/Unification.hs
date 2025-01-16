@@ -40,7 +40,7 @@ unify' _ _ = Nothing
 validateUnifiers :: [Maybe (Unifier a)] -> Maybe (Unifier a)
 validateUnifiers us
   | any isNothing us = Nothing
-  | otherwise        = Just $ foldr (mappend . (fromMaybe [])) mempty us
+  | otherwise        = Just $ foldr (mappend . fromMaybe []) mempty us
 
 isPattern :: Term a -> Bool
 isPattern (Variable       _ _) = True

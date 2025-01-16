@@ -215,7 +215,7 @@ instance Monoid (Program a) where
   mappend = (<>)
 
 freeVariables :: Term a -> [Name]
-freeVariables (Number _ _) = mempty
+freeVariables (Number  _ _) = mempty
 freeVariables (Boolean _ _) = mempty
 freeVariables (Unit      _) = mempty
 freeVariables (Leaf      _) = mempty

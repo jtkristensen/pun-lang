@@ -112,7 +112,7 @@ term_ =
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> pre "in" term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
-  , Constructor <$> constructorName <*> (option [] $ brackets $ term_ `sepBy` symbol ",")
+  , Constructor <$> constructorName <*> option [] (brackets $ term_ `sepBy` symbol ",")
   ]
   where
     lift1 op t1 t2 = op t1 t2 (fst $ annotation t1, snd $ annotation t2)
