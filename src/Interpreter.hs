@@ -59,12 +59,10 @@ interpret (Node l k v r a) =
 interpret (Constructor c ts a) =
   do ts' <- mapM interpret ts
      return $ Constructor c ts' a
-interpret (Case t0 l (p, n) _) =
-  do v <- interpret t0
-     case v of
-       (Leaf _) -> interpret l
-       _        ->
-         interpret $ substituteWithUnifier (unify v p) n
+interpret (Case t cs _) =
+  do t' <- interpret t
+     cs' <- return $ unify t cs
+     interpret $ substituteWithUnifier (fst cs') (snd cs')
 interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).
@@ -101,9 +99,9 @@ substitute x t v = -- computes t[v/x].
     (Application t1 t2 a)    -> Application (f t1) (f t2)                     a
     (Let y t1 t2 a)          -> Let y (f t1) ((if x == y then id else f) t2)  a
     (Rec y t1    a) | x /= y -> Rec y (f t1)                                  a
-    (Node l k u r a)         ->  Node (f l) (f k) (f u) (f r)                 a
-    (Case t0 l (p, n) a)     ->
-      Case (f t0) (f l) (p, (if x `elem` freeVariables p then id else f) n) a
+    (Node l k u r a)         -> Node (f l) (f k) (f u) (f r)                 a
+    -- (Case t0 l (p, n) a)     ->
+    --   Case (f t0) (f l) (p, (if x `elem` freeVariables p then id else f) n) a
     _                        -> t
   where
     f = flip (substitute x) v
