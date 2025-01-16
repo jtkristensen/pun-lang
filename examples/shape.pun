@@ -1,0 +1,1 @@
+data Shape = Square [integer, integer] .
