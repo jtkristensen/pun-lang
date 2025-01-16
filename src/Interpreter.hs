@@ -60,7 +60,7 @@ interpret (Constructor c ts a) =
   do ts' <- mapM interpret ts
      return $ Constructor c ts' a
 interpret (Case t cs _) =
-  do t' <- interpret t
+  do t'  <- interpret t
      cs' <- return $ unify t cs
      interpret $ substituteWithUnifier (fst cs') (snd cs')
 interpret _ = error "expected a non-canonical term!"
