@@ -93,7 +93,7 @@ instance Annotated Term where
   annotations (Rec    _ t0       a) = a : annotations t0
   annotations (Leaf              a) = return a
   annotations (Node      l k v r a) = a : ([l, k, v, r]  >>= annotations)
-  annotations (Case  t cs        a) = a : (t:(concatMap (\(x, y) -> [x, y]) cs) >>= annotations)
+  annotations (Case  t cs        a) = a : (t:(concatMap (\(p, r) -> [p, r]) cs) >>= annotations)
   annotation  term                  = head $ annotations term
 
 
