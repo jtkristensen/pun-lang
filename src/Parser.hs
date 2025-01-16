@@ -89,6 +89,7 @@ simple =
   , info $ Unit  <$ unit
   , info $ name  <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
+  , info $ Constructor <$> constructorName <*> (option [] (brackets (sepBy term_ (symbol ","))))
   , parens term_
   ]
 
@@ -108,7 +109,6 @@ term_ =
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> pre "in" term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
-  , Constructor <$> constructorName <*> option [] (brackets $ term_ `sepBy` symbol ",")
   ]
   where
     lift1 op t1 t2 = op t1 t2 (fst $ annotation t1, snd $ annotation t2)
@@ -137,7 +137,7 @@ typeConstructor =
 data_ :: Parser (Transformation (Program Info))
 data_ =
   do _  <- keyword "data"
-     d  <- name
+     d  <- constructorName
      _  <- symbol "="
      cs <- typeConstructor `sepBy1` symbol "|"
      _  <- symbol "."
