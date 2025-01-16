@@ -109,6 +109,12 @@ generateGeneratorSized ds s bst@(BST type1 type2) size =
              return $ Node l k v r bst
         , return $ Leaf (BST type1 type2)
         ]
+generateGeneratorSized ds s (Algebraic d) size =
+  oneof (map ctrGen (constructors ds d))
+  where
+    ctrGen (TypeConstructor c types) =
+      do ts <- mapM (\tau -> generateGeneratorSized ds s tau (decrease size)) types
+         return $ Constructor c ts (Algebraic d)
 
 resolve :: Index -> LocalIndices -> Type
 resolve i is =
