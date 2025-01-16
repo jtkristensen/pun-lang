@@ -5,26 +5,27 @@ module Syntax where
 import Data.List (intercalate)
 
 -- Abbreviations.
-type Name        = String
-type F           = Name
-type X           = Name
-type C           = Name
-type D           = Name
-type P           = Name
-type Index       = Integer
-type T0        a = Term a
-type T1        a = Term a
-type T2        a = Term a
-type Left      a = Term a
-type Right     a = Term a
-type K         a = Term a
-type V         a = Term a
-type Key         = Type
-type Value       = Type
-type Leaf      a = Term a
-type Node      a = (Pattern a, Term a)
-type Pattern   a = Term a
-type Canonical a = Term a
+type Name             = String
+type F                = Name
+type X                = Name
+type C                = Name
+type D                = Name
+type P                = Name
+type Index            = Integer
+type T0             a = Term a
+type T1             a = Term a
+type T2             a = Term a
+type Left           a = Term a
+type Right          a = Term a
+type K              a = Term a
+type V              a = Term a
+type Key              = Type
+type Value            = Type
+type Leaf           a = Term a
+type Node           a = (Pattern a, Term a)
+type Pattern        a = Term a
+type Canonical      a = Term a
+type DataDeclarations = [(D, [TypeConstructor])]
 
 data Program a
   = Data        D [TypeConstructor] (Program a)
@@ -151,7 +152,7 @@ canonical (Leaf             _) = True
 canonical (Node   l k v r   _) = all canonical [l, k, v, r]
 canonical _                    = False
 
-dataDeclarations :: Program a -> [(D, [TypeConstructor])]
+dataDeclarations :: Program a -> DataDeclarations
 dataDeclarations (Data        d ts rest) = (d, ts) : dataDeclarations rest
 dataDeclarations (Definition  _ _  rest) = dataDeclarations rest
 dataDeclarations (Declaration _ _  rest) = dataDeclarations rest
@@ -168,9 +169,15 @@ typeConstructorNames :: Program a -> [(C, D)]
 typeConstructorNames p = map (\(TypeConstructor c _, t) -> (c, t)) (typeConstructors p)
 
 typeConstructorFields :: Program a -> [(C, [Type])]
-typeConstructorFields p = map (\(TypeConstructor c ts) -> (c, ts)) constructors
-  where
-    constructors = map fst (typeConstructors p)
+typeConstructorFields p = map (\(TypeConstructor c ts) -> (c, ts)) (concatMap snd (dataDeclarations p))
+
+constructors :: DataDeclarations -> D -> [TypeConstructor]
+constructors dataDecls d = case lookup d dataDecls of
+  Just cs -> cs
+  Nothing -> error $ "Algebraic data type '" ++ d ++ "' not defined."
+
+constructorFields :: TypeConstructor -> [Type]
+constructorFields (TypeConstructor _ types) = types
 
 definitions :: Program a -> [(F, Term a)]
 definitions (Data        _ _ rest) = definitions rest
