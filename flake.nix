@@ -1,5 +1,5 @@
 {
-  description = "Development setup for compiling Haskell using Cabal";
+  description = "Development setup for compiling Haskell using Stack";
 
   inputs = {
     nixpkgs.url     = "github:NixOS/nixpkgs/nixos-23.11" ;
