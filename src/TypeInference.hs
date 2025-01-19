@@ -126,7 +126,7 @@ annotate (Case t cs _) =
   where
     liftFV :: [(X, Type)] -> (Bindings -> Bindings)
     liftFV [] f = f
-    liftFV ((x, t) : rest) f = bind x t $ liftFV rest f
+    liftFV ((x, t'') : rest) f = bind x t'' $ liftFV rest f
     annotatePattern (p, n) = do
       fvs <- mapM (\x -> (,) x <$> hole) $ freeVariables p
       p'  <- local (liftFV fvs) $ annotate p
