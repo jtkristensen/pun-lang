@@ -12,11 +12,11 @@
         manager  = import nixpkgs { inherit system; };
         stack    = manager.haskellPackages.stack;
         terminal = manager.mkShell;
-        linker   = manager.gmp;
+        numbers  = manager.gmp;
       in
       {
         devShell = terminal {
-          buildInputs = [ stack linker ];
+          buildInputs = [ stack numbers ];
         };
       }
     );
