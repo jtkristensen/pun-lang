@@ -61,7 +61,7 @@ interpret (Constructor c ts a) =
      return $ Constructor c ts' a
 interpret (Case t cs _) =
   do t'  <- interpret t
-     let cs' = unify t cs
+     let cs' = unify t' cs
      interpret $ uncurry substituteWithUnifier cs'
 interpret _ = error "expected a non-canonical term!"
 
