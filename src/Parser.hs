@@ -77,6 +77,7 @@ type_ =
       , symbol "bst" >> BST <$> type' <*> type'
       , Variable' <$> nat_
       , parens type_
+      , Algebraic <$> constructorName
       ]
 
 simple :: Parser (Term Info)
@@ -89,10 +90,6 @@ simple =
   , info $ name  <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
   , parens term_
-  , info $
-    brackets $
-      symbol "node" >>
-        Node <$> simple <*> simple <*> simple <*> simple
   ]
 
 term_ :: Parser (Term Info)
@@ -115,12 +112,32 @@ term_ =
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> pre "in" term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
+  , Constructor <$> constructorName <*> option [] (brackets $ term_ `sepBy` symbol ",")
   ]
   where
     lift1 op t1 t2 = op t1 t2 (fst $ annotation t1, snd $ annotation t2)
     leq            = pre "<=" $ return $ lift1 Leq
     add            = pre  "+" $ return $ lift1 Plus
     app            = return $ lift1 Application
+
+constructorName :: Parser Name
+constructorName = lexeme $ (:) <$> upper <*> many letter
+
+typeConstructor :: Parser TypeConstructor
+typeConstructor = 
+  do 
+    c  <- constructorName
+    ts <- option [] $ brackets (sepBy1 type_ (symbol ","))
+    return $ TypeConstructor c ts
+
+data_ :: Parser (Transformation (Program Info))
+data_ =
+  do _  <- keyword "data"
+     d  <- name
+     _  <- symbol "="
+     cs <- typeConstructor `sepBy1` symbol "|"
+     _  <- symbol "."
+     return $ Data d cs
 
 declaration_ :: Parser (Transformation (Program Info))
 declaration_ =
@@ -152,7 +169,7 @@ property_ xa =
 program_ :: Parser (Program Info)
 program_ =
   fmap (foldr (\a b -> a b) EndOfProgram) $
-  do p <- many (choice [ try declaration_, definition_, property_ (info ((,) <$> name))])
+  do p <- many (choice [ try declaration_, definition_, data_, property_ (info ((,) <$> name))])
      _ <- eof
      return p
 
@@ -180,9 +197,12 @@ bool_ =
 unit :: Parser ()
 unit = void $ symbol "unit"
 
+nameStart :: Parser Char
+nameStart = choice [lower, digit, dash, underscore]
+
 name :: Parser Name
 name = try $
-  do n <- lexeme $ many1 charAllowedInName
+  do n <- lexeme $ (:) <$> nameStart <*> many charAllowedInName
      when (isReserved n) $ fail $ "Unexpected keyword " ++ n
      return n
 
@@ -210,6 +230,7 @@ reserved =
   , "leaf", "node", "case", "of"
   , "fst", "snd"
   , "let", "in", "rec"
+  , "data"
   ]
 
 -- Parses p and anny trailing whitespace following it.

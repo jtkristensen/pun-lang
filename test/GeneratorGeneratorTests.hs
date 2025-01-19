@@ -13,7 +13,7 @@ newtype Primitive
 
 instance Arbitrary Primitive where
   arbitrary =
-    Primitive <$> oneof (generateGenerator ([], [], []) <$> [Integer', Boolean'])
+    Primitive <$> oneof (generateGenerator [] ([], [], []) <$> [Integer', Boolean'])
 
 newtype TerminatingTerm
     = TerminatingTerm (Term Type, Type)
@@ -22,7 +22,7 @@ newtype TerminatingTerm
 instance Arbitrary TerminatingTerm where
   arbitrary =
     do t    <- aType
-       term <- generateGenerator mempty t
+       term <- generateGenerator mempty mempty t
        return $ TerminatingTerm (term, t)
 
 newtype SubstType = SubstType (Substitution, Type, Term Type, Type)
@@ -33,7 +33,7 @@ instance Arbitrary SubstType where
     do subs  <- generateSubstitution
        t     <- generateType subs []
        let canonT = refine subs t
-       term  <- generateGenerator (subs, [], []) canonT
+       term  <- generateGenerator mempty (subs, [], []) canonT
        return $ SubstType (subs, t, term, canonT)
 
 newtype AcyclicIndices = AcyclicIndices LocalIndices
@@ -52,7 +52,7 @@ newtype AnalyseGenerator = AnalyseGenerator (Term Type, ([String], [String]))
 instance Arbitrary AnalyseGenerator where
   arbitrary =
     do t    <- aType
-       term <- generateGenerator mempty t
+       term <- generateGenerator mempty mempty t
        return $ AnalyseGenerator (term, analyse term)
 
 generateGeneratorTests :: TestTree
@@ -73,7 +73,7 @@ generateGeneratorTests =
         equivalent t typeOfT',
     testProperty "Only valid types are generated from a substitution." $
     \(SubstType (subs, t, _, _)) ->
-      all (`elem` (fst <$> subs)) (indicies t),
+      all (`elem` (fst <$> subs)) (indices t),
     testProperty "generateGenerator generates appropriate type for generated substitution." $
     \(SubstType (_, _, term, canonT)) ->
       let (t', _, cs) = infer term 0
@@ -168,9 +168,9 @@ unifiesWith Boolean' Boolean' = return []
 unifiesWith Unit'    Unit'    = return []
 unifiesWith (Variable' a) (Variable' b) = return [(a, Variable' b)]
 unifiesWith (Variable' a) t             =
-  if a `elem` indicies t then Nothing else return [(a, t)]
+  if a `elem` indices t then Nothing else return [(a, t)]
 unifiesWith t             (Variable' b) =
-  if b `elem` indicies t then Nothing else return [(b, t)]
+  if b `elem` indices t then Nothing else return [(b, t)]
 unifiesWith (t1 :*: t2)  (ta :*: tb) =
   do a1 <-          t1 `unifiesWith` ta
      b2 <- subst a1 t2 `unifiesWith` subst a1 tb
