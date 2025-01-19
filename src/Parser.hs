@@ -89,7 +89,7 @@ simple =
   , info $ Unit  <$ unit
   , info $ name  <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
-  , info $ Constructor <$> constructorName <*> (option [] (brackets (sepBy term_ (symbol ","))))
+  , info $ Constructor <$> constructorName <*> option [] (brackets (sepBy term_ (symbol ",")))
   , parens term_
   ]
 
@@ -122,7 +122,7 @@ caseBranch =
      p <- simple
      _ <- symbol "->"
      r <- term_
-     return $ (p, r)
+     return (p, r)
 
 constructorName :: Parser Name
 constructorName = lexeme $ (:) <$> upper <*> many letter
