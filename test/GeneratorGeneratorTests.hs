@@ -118,8 +118,8 @@ analyse (Rec       n  t  _)     = combine (return n, mempty) (analyse t)
 analyse (Leaf            _)     = (mempty, mempty)
 analyse (Node    l k v r _)     = (analyse k `combine` analyse v) `combine`
                                   (analyse l `combine` analyse r)
-analyse (Case t l (p, n) _)     = (analyse t `combine` analyse l) `combine`
-                                  (analyse p `combine` analyse n)
+-- analyse (Case t l (p, n) _)     = (analyse t `combine` analyse l) `combine`
+--                                   (analyse p `combine` analyse n)
 
 -- Todo, we want to use more complicated types.
 -- Todo, should this actually live in `PropertyChecker`?

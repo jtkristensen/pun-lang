@@ -89,6 +89,7 @@ simple =
   , info $ Unit  <$ unit
   , info $ name  <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
+  , info $ Constructor <$> constructorName <*> option [] (brackets (sepBy term_ (symbol ",")))
   , parens term_
   ]
 
@@ -97,28 +98,31 @@ term_ =
   choice $
     foldr (flip chainl1) simple [leq, add, app] :
    map info
-  [ do _ <- keyword "case"
-       t <- term_
-       _ <- keyword "of"
-       _ <- symbol ";" >> symbol "leaf" >> symbol "->"
-       l <- term_
-       p <- symbol ";" >> simple
-       _ <- symbol "->"
-       r <- term_
-       return $ Case t l (p, r)
+  [do _  <- keyword "case"
+      t  <- term_
+      _  <- keyword "of"
+      cs <- many1 caseBranch
+      return $ Case t cs
   , do If <$> pre "if" term_ <*> pre "then" term_ <*> pre "else" term_
   , pre "fst" (Fst <$> term_)
   , pre "snd" (Snd <$> term_)
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> pre "in" term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
-  , Constructor <$> constructorName <*> option [] (brackets $ term_ `sepBy` symbol ",")
   ]
   where
     lift1 op t1 t2 = op t1 t2 (fst $ annotation t1, snd $ annotation t2)
     leq            = pre "<=" $ return $ lift1 Leq
     add            = pre  "+" $ return $ lift1 Plus
     app            = return $ lift1 Application
+
+caseBranch :: Parser (Pattern Info, Term Info)
+caseBranch =
+  do _ <- symbol ";"
+     p <- simple
+     _ <- symbol "->"
+     r <- term_
+     return (p, r)
 
 constructorName :: Parser Name
 constructorName = lexeme $ (:) <$> upper <*> many letter
@@ -133,7 +137,7 @@ typeConstructor =
 data_ :: Parser (Transformation (Program Info))
 data_ =
   do _  <- keyword "data"
-     d  <- name
+     d  <- constructorName
      _  <- symbol "="
      cs <- typeConstructor `sepBy1` symbol "|"
      _  <- symbol "."

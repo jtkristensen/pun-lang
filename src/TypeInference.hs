@@ -114,21 +114,24 @@ annotate (Node l k v r _) =
      l' `hasType` BST (annotation k') (annotation v')
      l' `hasSameTypeAs` r'
      return $ Node l' k' v' r' (annotation l')
-annotate (Case t0 l (p, n) _) =
-  do tau1 <- hole
-     tau2 <- hole
-     t0'  <- annotate t0
-     t0' `hasType` BST tau1 tau2
-     l'   <- annotate l
-     fvs  <- mapM (\x -> (,) x <$> hole) $ freeVariables p
-     p'   <- local (liftFV fvs) $ annotate p
-     n'   <- local (liftFV fvs) $ annotate n
-     l'  `hasSameTypeAs` n'
-     return $ Case t0' l' (p', n') (annotation l')
+annotate (Case t cs _) =
+  do tau  <- hole
+     t'   <- annotate t
+     t' `hasType` tau
+     cs'  <- mapM annotatePattern cs
+     tau' <- hole
+     mapM_ ((`hasType` tau) . fst) cs'
+     mapM_ ((`hasType` tau') . snd) cs'
+     return $ Case t' cs' (annotation t')
   where
     liftFV :: [(X, Type)] -> (Bindings -> Bindings)
     liftFV [] f = f
-    liftFV ((x, t) : rest) f = bind x t $ liftFV rest f
+    liftFV ((x, t'') : rest) f = bind x t'' $ liftFV rest f
+    annotatePattern (p, n) = do
+      fvs <- mapM (\x -> (,) x <$> hole) $ freeVariables p
+      p'  <- local (liftFV fvs) $ annotate p
+      n'  <- local (liftFV fvs) $ annotate n
+      return (p', n')
 
 solve :: [Constraint] -> Maybe Substitution
 solve [                 ] = return mempty
