@@ -234,7 +234,7 @@ freeVariables (Node l k v r _) =
   <> freeVariables r
 freeVariables (Case t cs _) =
      freeVariables t
-  <> foldr (\(p, t) fvs -> fvs <> freeVariables p <> freeVariables t) mempty cs
+  <> foldr (\(p, t') fvs -> fvs <> freeVariables p <> freeVariables t') mempty cs
 freeVariables (Variable x _) = return x
 freeVariables (If t0 t1 t2 _) =
      freeVariables t0
