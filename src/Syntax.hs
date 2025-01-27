@@ -64,6 +64,7 @@ data Term a =
   | Pair        (T0 a) (T1 a)           a
   | Fst         (T0 a)                  a
   | Snd         (T0 a)                  a
+  | Equal       (T0 a) (T1 a)           a
   | Lambda Name (T0 a)                  a
   | Application        (T1 a) (T2 a)    a
   | Let Name           (T1 a) (T2 a)    a
