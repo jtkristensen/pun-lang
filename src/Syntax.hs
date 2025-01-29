@@ -90,6 +90,7 @@ instance Annotated Term where
   annotations (Application t1 t2 a) = a : ([t1, t2]     >>= annotations)
   annotations (Fst      t0       a) = a : annotations t0
   annotations (Snd      t0       a) = a : annotations t0
+  annotations (Equal    t0 t1    a) = a : ([t0, t1]     >>= annotations)
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
   annotations (Leaf              a) = return a
