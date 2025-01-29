@@ -132,11 +132,12 @@ instance Show (Term a) where
   show (Case t cs         _) = "case " ++ show t ++ " of\n" ++ intercalate "\n" (map (\(x, y) -> "  ; " ++ show x ++  " -> " ++ show y) cs)
   show (Variable n        _) = n
   show (If t0 t1 t2       _) = "if " ++ show t0  ++ " then " ++ show t1 ++ " else " ++ show t2
-  show (Plus t0 t1        _) = putParens (show t0) ++ " + "  ++ putParens (show t1)
-  show (Leq  t0 t1        _) = putParens (show t0) ++ " <= " ++ putParens (show t1)
-  show (Pair t0 t1        _) = putParens $ show t0 ++ ", "   ++ show t1
-  show (Fst  t0           _) = "fst " ++ putParens (show t0)
-  show (Snd  t0           _) = "snd " ++ putParens (show t0)
+  show (Plus  t0 t1       _) = putParens (show t0) ++ " + "  ++ putParens (show t1)
+  show (Leq   t0 t1       _) = putParens (show t0) ++ " <= " ++ putParens (show t1)
+  show (Pair  t0 t1       _) = putParens $ show t0 ++ ", "   ++ show t1
+  show (Fst   t0          _) = "fst " ++ putParens (show t0)
+  show (Snd   t0          _) = "snd " ++ putParens (show t0)
+  show (Equal t0 t1       _) = show t0 ++ " == " ++ show t1
   show (Lambda x t0       _) = putParens $ "\\" ++ x ++ " -> " ++ show t0
   show (Application t0 t1 _) = show t0 ++ " " ++ putParens (show t1)
   show (Let x t0 t1       _) = "let " ++ x ++ " = " ++ show t0 ++ " in " ++ show t1
