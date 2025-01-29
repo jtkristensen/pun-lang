@@ -254,6 +254,7 @@ freeVariables (Pair t0 t1 _) =
   <> freeVariables t1
 freeVariables (Fst t0 _) = freeVariables t0
 freeVariables (Snd t0 _) = freeVariables t0
+freeVariables (Equal t0 t1 _) = freeVariables t0 <> freeVariables t1
 freeVariables (Lambda x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
 freeVariables (Application t0 t1 _) =
      freeVariables t0
