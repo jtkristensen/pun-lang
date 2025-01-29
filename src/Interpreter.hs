@@ -7,10 +7,10 @@ import Control.Monad.Reader
 
 type Runtime a = Reader (Program a)
 
-normalize :: Show a => Program a -> (Term a -> Term a)
+normalize :: (Show a, Eq a) => Program a -> (Term a -> Term a)
 normalize p t = runReader (interpret t) p
 
-interpret :: Show a => Term a -> Runtime a (Term a)
+interpret :: (Show a, Eq a) => Term a -> Runtime a (Term a)
 interpret  t | canonical t = return t
 interpret (Variable x _) =
   do program <- ask
@@ -39,6 +39,10 @@ interpret (Fst p _) =
 interpret (Snd p _) =
   do ts <- interpret p >>= pair
      return $ snd ts
+interpret (Equal t0 t1 a) =
+  do x <- interpret t0
+     y <- interpret t1
+     return $ Boolean (x == y) a
 interpret (Application t1 t2 _) =
   do f <- interpret t1 >>= function
      x <- interpret t2
