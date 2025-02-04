@@ -112,9 +112,10 @@ loadProgram file = parse file >>= typed
 
 -- todo: refactor.
 action :: [String] -> IO Action
-action [           file] = Shell         <$> (parse file >>= typed)
 action ["--check", file] = PropertyCheck <$> (parse file >>= typed)
 action ["--types", file] = TypeCheck     <$> parse file
+action [           file] = Shell         <$> (parse file >>= typed)
+action [ ]               = return $ Shell EndOfProgram
 action _                 = return $ Fail
   "Usage:\n\
      \ pun --check <program>.pun (checks properties)\n\
