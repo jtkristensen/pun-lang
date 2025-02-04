@@ -1,8 +1,8 @@
 module Main (main) where
 
 import Syntax
-import Parser                (parsePunProgram, Info)
-import TypeInference         (inferP)
+import Parser                (parsePunProgram, Info, parseString, term_)
+import TypeInference         (inferP, inferT)
 import Interpreter           (normalize, substitute)
 import GeneratorGenerator    (generateGenerator)
 import Control.Monad         (void)
@@ -81,6 +81,21 @@ shell :: Program Type -> IO ()
 shell _program =
   do -- todo --
     die "future work"
+-- Shell helpers
+readLine :: IO String
+readLine =
+  do putStr "pun> "
+     hFlush stdout
+     getLine
+
+parseLine :: String -> IO (Term Info)
+parseLine input =
+  case parseString term_ input of
+    Left  err -> error $ "Parse error: " ++ show err
+    Right t   -> return t
+
+loadProgram :: String -> IO (Program Type)
+loadProgram file = parse file >>= typed
 
 -- todo: refactor.
 action :: [String] -> IO Action
