@@ -79,8 +79,21 @@ typed = return . inferP . declarationsUpFront
 
 shell :: Program Type -> IO ()
 shell _program =
-  do -- todo --
-    die "future work"
+  do input <- readLine
+     case input of
+       ":q" ->
+         do putStrLn "Quitting pun shell."
+            return ()
+       (':':'l':' ': file) ->
+         do _program <- loadProgram file
+            putStrLn $ "Loaded file " ++ show file
+            shell _program
+       expr ->
+         do parsed <- parseLine expr
+            term   <- return $ inferT parsed
+            print $ normalize _program term
+            shell _program
+
 -- Shell helpers
 readLine :: IO String
 readLine =
