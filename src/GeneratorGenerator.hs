@@ -66,6 +66,10 @@ generateGeneratorSized ds s@(is, bs, ts) Boolean' size           =
     , do t1   <- generateGeneratorSized ds s Integer'  (decrease size)
          t2   <- generateGeneratorSized ds s Integer'  (decrease size)
          return $ Leq t1 t2 Boolean'
+    , do type1 <- generateType is (map snd ts)
+         t1    <- generateGeneratorSized ds s type1 (decrease size)
+         t2    <- generateGeneratorSized ds s type1 (decrease size)
+         return $ Equal t1 t2 Boolean'
     , do t1    <- generateGeneratorSized ds s Boolean' (decrease size)
          type2 <- generateType is (map snd ts)
          t2    <- generateGeneratorSized ds s type2    (decrease size)
