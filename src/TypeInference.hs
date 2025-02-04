@@ -271,6 +271,11 @@ inferP program = refine (bindings $ cs ++ cs') <$> pt
             Nothing  -> f x
     inferP' EndOfProgram = return EndOfProgram
 
+inferT :: Show a => Term a -> Term Type
+inferT t =
+  let (t', _, _) = runERWS (annotate t) EndOfProgram emptyBindings 0
+  in  t'
+
 -- Just here for documentation
 usage :: Term a -> Index -> (Term Type, Index)
 usage t i = (fmap (refine (bindings cs)) t', j)
