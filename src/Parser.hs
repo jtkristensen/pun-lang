@@ -1,8 +1,8 @@
 
 module Parser
   ( Parser, Info, term_, type_, program_, nat_, int_
-  , Source, runParser, parseString, problems, parsePunProgram
-  , Problem
+  , Source, runParser, parseString, problems, parsePunProgram, Problem
+  , parseShellCommand, ShellCommand (..)
   )
 where
 
@@ -61,6 +61,13 @@ parsePunProgram path =
            case problems code of
              [   ] -> return code
              _     -> Left $ problems code
+
+parseShellCommand :: String -> IO (Either Problem ShellCommand)
+parseShellCommand input =
+  return $
+    case runParser (many whitespace >> shellCommand) () "<repl>" input of
+      (Left  err    ) -> Left  $ DoesNotParse err
+      (Right command) -> Right command
 
 -- * Implementation:
 
