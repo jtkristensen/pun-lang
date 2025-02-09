@@ -2,7 +2,7 @@
 module Parser
   ( Parser, Info, term_, type_, program_, nat_, int_
   , Source, runParser, parseString, problems, parsePunProgram, Problem
-  , parseShellCommand, ShellCommand (..)
+  , parseTerm, parseShellCommand, ShellCommand (..)
   )
 where
 
@@ -61,6 +61,12 @@ parsePunProgram path =
            case problems code of
              [   ] -> return code
              _     -> Left $ problems code
+
+parseTerm :: String -> IO (Term Info)
+parseTerm input =
+  case parseString term_ input of
+    Left  err -> error $ "Parse error: " ++ show err
+    Right t   -> return t
 
 parseShellCommand :: String -> IO (Either Problem ShellCommand)
 parseShellCommand input =

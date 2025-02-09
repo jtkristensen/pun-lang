@@ -2,7 +2,7 @@ module Main (main) where
 
 import Syntax
 import Parser
-  ( parsePunProgram, Info, parseString, term_
+  ( parsePunProgram, Info, parseTerm
   , parseShellCommand, ShellCommand(..)
   )
 import TypeInference         (inferP, inferT)
@@ -22,7 +22,7 @@ data Action =
     Shell         (Program Type)
   | PropertyCheck (Program Type)
   | TypeCheck     (Program Info)
-  | Fail  ErrorMessage
+  | Fail          ErrorMessage
 
 main :: IO ()
 main = getArgs >>= run . action
@@ -95,7 +95,7 @@ execute _ (Load path) =
      putStrLn $ "Loaded file " ++ show path ++ "."
      shell prog
 execute program (Evaluate expr) =
-  do parsed <- parseLine expr
+  do parsed <- parseTerm expr
      term   <- return $ inferT parsed
      print $ normalize program term
      shell program
@@ -106,12 +106,6 @@ readLine =
   do putStr "pun> "
      hFlush stdout
      getLine
-
-parseLine :: String -> IO (Term Info)
-parseLine input =
-  case parseString term_ input of
-    Left  err -> error $ "Parse error: " ++ show err
-    Right t   -> return t
 
 loadProgram :: String -> IO (Program Type)
 loadProgram file = parse file >>= typed
