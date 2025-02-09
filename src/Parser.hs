@@ -280,7 +280,7 @@ reserved =
   , "data"
   ]
 
--- Parses p and anny trailing whitespace following it.
+-- Parses p and any trailing whitespace following it.
 lexeme :: Parser a -> Parser a
 lexeme p =
   do a <- p
