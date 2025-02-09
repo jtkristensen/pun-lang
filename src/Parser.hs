@@ -18,6 +18,7 @@ type Source           = String
 type Parser           = Parsec Source ()
 type Info             = (SourcePos, SourcePos)
 type Transformation a = (a -> a)
+type Expression       = String
 
 -- todo, extend these errors to carry sourse positions info.
 data Problem =
@@ -27,6 +28,12 @@ data Problem =
   | DeclaredButNotDefined          F
   | DoesNotParse                   ParseError
   deriving (Eq, Show)
+
+data ShellCommand =
+    Quit
+  | Load     FilePath
+  | Evaluate Expression
+  deriving Show
 
 problems :: Program Info -> [Problem]
 problems p =
@@ -178,7 +185,35 @@ program_ =
      _ <- eof
      return p
 
--- -- * Utility:
+-- * Shell commands
+
+quit :: Parser ShellCommand
+quit =
+  do _ <- symbol ":q"
+     return Quit
+
+load :: Parser ShellCommand
+load =
+  do _        <- symbol ":l"
+     filepath <- many1 anyChar
+     _        <- many whitespace
+     return $ Load filepath
+
+evaluate :: Parser ShellCommand
+evaluate =
+  do expression <- many1 anyChar
+     _          <- many whitespace
+     return $ Evaluate expression
+
+shellCommand :: Parser ShellCommand
+shellCommand =
+  choice
+    [ quit
+    , load
+    , evaluate
+    ]
+
+-- * Utility:
 
 pre :: String -> Parser a -> Parser a
 pre  s p = symbol s >> p
