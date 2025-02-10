@@ -143,7 +143,7 @@ instance Show (Term a) where
   show (Let x t0 t1       _) = "let " ++ x ++ " = " ++ show t0 ++ " in " ++ show t1
   show (Rec x t0          _) = "rec " ++ x ++ " . " ++ show t0
 
-instance (Eq a) => Eq (Term a) where
+instance Eq (Term a) where
   (Number          n _) == (Number          n' _) = n == n'
   (Boolean         b _) == (Boolean         b' _) = b == b'
   (Unit              _) == (Unit               _) = True
