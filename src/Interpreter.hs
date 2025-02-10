@@ -42,8 +42,7 @@ interpret (Snd p _) =
 interpret (Equal t0 t1 a) =
   do x <- interpret t0 >>= nonFunction
      y <- interpret t1 >>= nonFunction
-     let strip = fmap (const ())
-     return $ Boolean (strip x == strip y) a
+     return $ Boolean (void x == void y) a
 interpret (Application t1 t2 _) =
   do f <- interpret t1 >>= function
      x <- interpret t2
