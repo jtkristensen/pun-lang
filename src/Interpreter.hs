@@ -99,6 +99,7 @@ substitute x t v = -- computes t[v/x].
     (Pair t1 t2  a)          -> Pair (f t1) (f t2)                            a
     (Fst  t1     a)          -> Fst  (f t1)                                   a
     (Snd  t1     a)          -> Snd  (f t1)                                   a
+    (Equal t1 t2 a)          -> Equal (f t1) (f t2)                           a
     (Lambda y t1 a) | x /= y -> Lambda y (f t1)                               a
     (Application t1 t2 a)    -> Application (f t1) (f t2)                     a
     (Let y t1 t2 a)          -> Let y (f t1) ((if x == y then id else f) t2)  a
