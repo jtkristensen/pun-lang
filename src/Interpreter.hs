@@ -91,7 +91,7 @@ function (Lambda x t a) =
 function _ = error "expected a function"
 
 nonFunction :: Term a -> Runtime a (Term a)
-nonFunction (Lambda {}) = error "expected a non-function input"
+nonFunction (Lambda {}) = error "expected a non-function"
 nonFunction t           = return t
 
 substitute :: X -> Term a -> (Term a -> Term a)
