@@ -108,6 +108,7 @@ analyse (Variable      n _)     = (mempty, return n)
 analyse (If   cond t1 t2 _)     = combine (combine (analyse cond) (analyse t1)) (analyse t2)
 analyse (Plus      t1 t2 _)     = combine (analyse t1) (analyse t2)
 analyse (Leq       t1 t2 _)     = combine (analyse t1) (analyse t2)
+analyse (Equal     t1 t2 _)     = combine (analyse t1) (analyse t2)
 analyse (Pair      t1 t2 _)     = combine (analyse t1) (analyse t2)
 analyse (Fst       t     _)     = analyse t
 analyse (Snd       t     _)     = analyse t

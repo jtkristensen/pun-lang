@@ -96,7 +96,7 @@ simple =
 term_ :: Parser (Term Info)
 term_ =
   choice $
-    foldr (flip chainl1) simple [leq, add, app] :
+    foldr (flip chainl1) simple [leq, add, app, equal] :
    map info
   [do _  <- keyword "case"
       t  <- term_
@@ -114,6 +114,7 @@ term_ =
     lift1 op t1 t2 = op t1 t2 (fst $ annotation t1, snd $ annotation t2)
     leq            = pre "<=" $ return $ lift1 Leq
     add            = pre  "+" $ return $ lift1 Plus
+    equal          = pre "==" $ return $ lift1 Equal
     app            = return $ lift1 Application
 
 caseBranch :: Parser (Pattern Info, Term Info)
