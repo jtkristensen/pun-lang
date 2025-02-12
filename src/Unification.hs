@@ -6,20 +6,20 @@ import Data.Maybe (isNothing, fromMaybe)
 
 type Unifier a = [(Name, Term a)]
 
-unify :: Show a => Term a -> [(Canonical a, Pattern a)] -> (Unifier a, Term a)
+unify :: Show a => Term a -> [(Pattern a, Term a)] -> (Unifier a, Term a)
 unify _ [] = error "non-exhaustive patterns in case statement"
-unify t ((v, p):cs) = if isPattern p
+unify v ((p, n):ps) =
+  if   isPattern p
   then
-    (case unify' t v of
-      Nothing -> unify t cs
-      Just u -> if names == nub names
-        then (u, p)
-        else error $ "conflicting bindings for " ++ 
-                     intercalate ", " (repeated names)
-        where
-          names = map fst u)
-  else
-    error $ show p ++ " is not a legal pattern for case statements"
+      (case unify' v p of
+        Nothing -> unify v ps
+        Just u  -> if   names == nub names
+                   then (u, n)
+                   else error $ "conflicting bindings for " ++ 
+                                intercalate ", " (repeated names)
+                   where
+                    names = map fst u)
+  else error $ show p ++ " is not a legal pattern for case statements"
 
 unify' :: Canonical a -> Pattern a -> Maybe (Unifier a)
 unify' (Number v   _) (Number  v'   _) | v == v' = return []
