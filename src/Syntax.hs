@@ -101,74 +101,42 @@ swap (a, b) = (b, a)
 putParens :: String -> String
 putParens = ("(" ++) . (++ ")")
 
--- instance Show a => Show (Program a) where
---   show (Data d taus rest) =
---     ("(Data " ++ show d ++ " " ++ show taus ++ show rest ++ ")")
---   show (Declaration x t rest) =
---     ("(Declaration " ++ show x ++ " " ++ "(" ++ show t ++ ")" ++ " " ++ show rest ++ ")")
---   show (Definition x t rest) =
---     "(Definition " ++ show x ++ " " ++ "(" ++ show t ++ ")" ++ " " ++ show rest ++ ")"
---   show (Property p xs t rest) = 
---     "(Property " ++ show p ++ " " ++ show xs ++ " " ++ show t ++ " " ++ show rest ++ ")"
---   show EndOfProgram = "EndOfProgram"
+instance Show a => Show (Program a) where
+  show (Data d taus rest) =
+    "data " ++ d ++ " = " ++ show taus ++ "\n\n" ++ show rest
+  show (Declaration x t rest) =
+    x ++ " :: " ++ show t ++ "\n\n" ++ show rest
+  show (Definition x t rest) =
+    x ++ " = " ++ show t ++ "\n\n" ++ show rest
+  show (Property p xs t rest) =
+    "property " ++ p ++ " " ++ show xs ++ " . " ++ show t ++ "\n\n" ++ show rest
+  show EndOfProgram = ""
 
--- instance Show a => Show (Program a) where
---   show (Data d taus rest) =
---     "Data " ++ d ++ " = " ++ show taus ++ "\n\n" ++ show rest
---   show (Declaration x t rest) =
---     x ++ " :: " ++ show t ++ "\n\n" ++ show rest
---   show (Definition x t rest) =
---     x ++ " = " ++ show t ++ "\n\n" ++ show rest
---   show (Property p xs t rest) =
---     "property " ++ p ++ " " ++ show xs ++ " . " ++ show t ++ "\n\n" ++ show rest
---   show EndOfProgram = ""
+instance Show TypeConstructor where
+  show (TypeConstructor c []) = c
+  show (TypeConstructor c cs) = c ++ " (" ++ intercalate ", " (map show cs) ++ ")"
 
--- instance Show TypeConstructor where
---   show (TypeConstructor c []) = c
---   show (TypeConstructor c cs) = c ++ " (" ++ intercalate ", " (map show cs) ++ ")"
-
--- instance Show TypeConstructor where
---   show (TypeConstructor c []) = show c
---   show (TypeConstructor c ts) =
---     "TypeConstructor " ++ show c ++ " " ++ show ts
-
--- instance Show a => Show (Term a) where
---   show (Number n u) = "(Number " ++ show n ++ " " ++ show u ++ ")"
---   show (Boolean b u) = "(Boolean " ++ show b ++ " " ++ show u ++ ")"
---   show (Unit u) = "(Unit " ++ show u ++ ")"
---   show (Constructor c ts u) = "(Constructor " ++ show c ++ " " ++ show ts ++ " " ++ show u ++ ")"
---   show (Case t cs u) = "(Case " ++ show t ++ " " ++ show cs ++ " " ++ show u ++ ")"
---   show (Variable n u) = "(Variable " ++ show n ++ " " ++ show u ++ ")"
---   show (If t0 t1 t2 u) = "(If " ++ show t0 ++ " " ++ show t1 ++ " " ++ show t2 ++ " " ++ show u ++ ")"
---   show (Plus t0 t1 u) = "(Plus " ++ show t0 ++ " " ++ show t1 ++ " " ++ show u ++ ")"
---   show (Leq t0 t1 u) = "(Leq " ++ show t0 ++ " " ++ show t1 ++ " " ++ show u ++ ")"
---   show (Pair t0 t1 u) = "(Pair " ++ show t0 ++ " " ++ show t1 ++ " " ++ show u ++ ")"
---   show (Fst t0 u) = "(Fst " ++ show t0 ++ " " ++ "()" ++ ")"
---   show (Lambda x t0 u) = "(Lambda " ++ show x ++ " " ++ show t0 ++ " " ++ show u ++ ")"
---   show (Application t0 t1 u) = "(Application " ++ show t0 ++ " " ++ show t1 ++ " " ++ show u ++ ")"
---   show (Let x t0 t1 u) = "(Let " ++ show x ++ " " ++ show t0 ++ " " ++ show t1 ++ " " ++ show u ++ ")"
---   show (Rec x t0 u) = "(Rec " ++ show x ++ " " ++ show t0 ++ " " ++ show u ++ ")"
-
--- instance Show (Term a) where
---   -- todo (minimally bracketed printer + tests) --
---   show (Number  n         _) = show n
---   show (Boolean b         _) = show b
---   show (Unit              _) = "unit"
---   show (Constructor c ts  _) = c ++ " [" ++ intercalate ", " (map show ts) ++ "]"
---   show (Leaf              _) = "leaf"
---   show (Node l k v r      _) = "[node " ++ show l ++ show k ++ show v ++ show r ++ "]"
---   show (Case t cs         _) = "case " ++ show t ++ " of\n" ++ intercalate "\n" (map (\(x, y) -> "  ; " ++ show x ++  " -> " ++ show y) cs)
---   show (Variable n        _) = n
---   show (If t0 t1 t2       _) = "if " ++ show t0  ++ " then " ++ show t1 ++ " else " ++ show t2
---   show (Plus t0 t1        _) = putParens (show t0) ++ " + "  ++ putParens (show t1)
---   show (Leq  t0 t1        _) = putParens (show t0) ++ " <= " ++ putParens (show t1)
---   show (Pair t0 t1        _) = putParens $ show t0 ++ ", "   ++ show t1
---   show (Fst  t0           _) = "fst " ++ putParens (show t0)
---   show (Snd  t0           _) = "snd " ++ putParens (show t0)
---   show (Lambda x t0       _) = putParens $ "\\" ++ x ++ " -> " ++ show t0
---   show (Application t0 t1 _) = show t0 ++ " " ++ putParens (show t1)
---   show (Let x t0 t1       _) = "let " ++ x ++ " = " ++ show t0 ++ " in " ++ show t1
---   show (Rec x t0          _) = "rec " ++ x ++ " . " ++ show t0
+instance Show (Term a) where
+  -- todo (minimally bracketed printer + tests) --
+  show (Number  n         _) = show n
+  show (Boolean b         _) = show b
+  show (Unit              _) = "unit"
+  show (Constructor c ts  _) = c ++ " [" ++ intercalate ", " (map show ts) ++ "]"
+  show (Leaf              _) = "leaf"
+  show (Node l k v r      _) = "[node " ++ show l ++ show k ++ show v ++ show r ++ "]"
+  show (Case t cs         _) = "case " ++ show t ++ " of\n" ++ intercalate "\n" (map (\(x, y) -> "  ; " ++ show x ++  " -> " ++ show y) cs)
+  show (Variable n        _) = n
+  show (If t0 t1 t2       _) = "if " ++ show t0  ++ " then " ++ show t1 ++ " else " ++ show t2
+  show (Plus  t0 t1       _) = putParens (show t0) ++ " + "  ++ putParens (show t1)
+  show (Leq   t0 t1       _) = putParens (show t0) ++ " <= " ++ putParens (show t1)
+  show (Pair  t0 t1       _) = putParens $ show t0 ++ ", "   ++ show t1
+  show (Fst   t0          _) = "fst " ++ putParens (show t0)
+  show (Snd   t0          _) = "snd " ++ putParens (show t0)
+  show (Equal t0 t1       _) = show t0 ++ " == " ++ show t1
+  show (Lambda x t0       _) = putParens $ "\\" ++ x ++ " -> " ++ show t0
+  show (Application t0 t1 _) = show t0 ++ " " ++ putParens (show t1)
+  show (Let x t0 t1       _) = "let " ++ x ++ " = " ++ show t0 ++ " in " ++ show t1
+  show (Rec x t0          _) = "rec " ++ x ++ " . " ++ show t0
 
 canonical :: Term a -> Bool
 canonical (Number  _        _) = True
