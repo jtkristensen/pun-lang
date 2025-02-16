@@ -2,6 +2,8 @@
 
 module Syntax where
 
+import Data.List (intercalate)
+
 -- Abbreviations.
 type Name             = String
 type F                = Name
@@ -31,10 +33,10 @@ data Program a
   | Definition  F          (Term a) (Program a)
   | Property    P [(X, a)] (Term a) (Program a)
   | EndOfProgram
-  deriving (Functor, Eq, Read, Show)
+  deriving (Functor, Eq)
 
 data TypeConstructor = TypeConstructor C [Type]
-  deriving (Eq, Read, Show)
+  deriving (Eq)
 
 data Type
   = Variable' Index
@@ -45,7 +47,7 @@ data Type
   | Type :->: Type
   | Algebraic D
   | BST Key Value
-  deriving (Eq, Show, Read)
+  deriving (Eq, Show)
 
 data Term a =
     Number    Integer                   a
@@ -66,7 +68,7 @@ data Term a =
   | Application        (T1 a) (T2 a)    a
   | Let Name           (T1 a) (T2 a)    a
   | Rec Name    (T0 a)                  a
-  deriving (Functor, Eq, Read, Show)
+  deriving (Functor, Eq)
 
 -- Dealing with annotations.
 class Annotated thing where
@@ -132,7 +134,6 @@ instance Show (Term a) where
   show (Pair  t0 t1       _) = putParens $ show t0 ++ ", "   ++ show t1
   show (Fst   t0          _) = "fst " ++ putParens (show t0)
   show (Snd   t0          _) = "snd " ++ putParens (show t0)
-  show (Equal t0 t1       _) = show t0 ++ " == " ++ show t1
   show (Lambda x t0       _) = putParens $ "\\" ++ x ++ " -> " ++ show t0
   show (Application t0 t1 _) = show t0 ++ " " ++ putParens (show t1)
   show (Let x t0 t1       _) = "let " ++ x ++ " = " ++ show t0 ++ " in " ++ show t1
