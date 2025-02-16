@@ -8,7 +8,6 @@ import Data.Maybe (fromMaybe)
 import Data.Functor ((<&>))
 import Control.Arrow (second)
 import Control.Monad (zipWithM_)
-import Debug.Trace
 
 data Constraint
   = Type :=: Type
