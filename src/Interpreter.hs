@@ -39,6 +39,10 @@ interpret (Fst p _) =
 interpret (Snd p _) =
   do ts <- interpret p >>= pair
      return $ snd ts
+interpret (Equal t0 t1 a) =
+  do x <- interpret t0 >>= nonFunction
+     y <- interpret t1 >>= nonFunction
+     return $ Boolean (void x == void y) a
 interpret (Application t1 t2 _) =
   do f <- interpret t1 >>= function
      x <- interpret t2
@@ -84,16 +88,21 @@ function (Lambda x t a) =
      return $ substitute x t
 function _ = error "expected a function"
 
+nonFunction :: Term a -> Runtime a (Term a)
+nonFunction (Lambda {}) = error "expected a non-function"
+nonFunction t           = return t
+
 substitute :: X -> Term a -> (Term a -> Term a)
 substitute x t v = -- computes t[v/x].
   case t of
     (Variable y  _) | x == y -> v
-    (If t1 t2 t3 a)          -> If   (f t1) (f t2) (f t3)                     a
-    (Plus t1 t2  a)          -> Plus (f t1) (f t2)                            a
-    (Leq  t1 t2  a)          -> Leq  (f t1) (f t2)                            a
-    (Pair t1 t2  a)          -> Pair (f t1) (f t2)                            a
-    (Fst  t1     a)          -> Fst  (f t1)                                   a
-    (Snd  t1     a)          -> Snd  (f t1)                                   a
+    (If t1 t2 t3 a)          -> If    (f t1) (f t2) (f t3)                    a
+    (Plus  t1 t2 a)          -> Plus  (f t1) (f t2)                           a
+    (Leq   t1 t2 a)          -> Leq   (f t1) (f t2)                           a
+    (Equal t1 t2 a)          -> Equal (f t1) (f t2)                           a
+    (Pair  t1 t2 a)          -> Pair  (f t1) (f t2)                           a
+    (Fst   t1    a)          -> Fst   (f t1)                                  a
+    (Snd   t1    a)          -> Snd   (f t1)                                  a
     (Lambda y t1 a) | x /= y -> Lambda y (f t1)                               a
     (Application t1 t2 a)    -> Application (f t1) (f t2)                     a
     (Let y t1 t2 a)          -> Let y (f t1) ((if x == y then id else f) t2)  a

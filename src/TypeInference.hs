@@ -84,6 +84,11 @@ annotate (Snd t0 _) =
      tau2 <- hole
      t0'  `hasType` (tau1 :*: tau2)
      return $ Snd t0' tau2
+annotate (Equal t0 t1 _) =
+  do t0' <- annotate t0
+     t1' <- annotate t1
+     t0' `hasSameTypeAs` t1'
+     return $ Equal t0' t1' Boolean'
 annotate (Lambda x t0 _) =
   do  tau <- hole
       t0' <- local (bind x tau) $ annotate t0

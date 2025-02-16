@@ -18,18 +18,18 @@ generateGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> Gen (T
 generateGenerator ds s t = sized (generateGeneratorSized ds s t)
 
 generateGeneratorSized :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
-generateGeneratorSized _  _           Unit'    _ = return $ Unit Unit'
-generateGeneratorSized ds s           Integer' 0 = generateGeneratorSized ds s Integer' 1
-generateGeneratorSized _  _           Integer' 1 = flip Number  Integer' <$> arbitrary
+generateGeneratorSized _  _              Unit'    _    = return $ Unit Unit'
+generateGeneratorSized ds s              Integer' 0    = generateGeneratorSized ds s Integer' 1
+generateGeneratorSized _  _              Integer' 1    = flip Number  Integer' <$> arbitrary
 generateGeneratorSized ds s@(is, bs, ts) Integer' size =
   frequency $ zip [1..]
     [ flip Number  Integer' <$> arbitrary
-    , do cond <- generateGeneratorSized ds s Boolean'  (decrease size)
-         t1   <- generateGeneratorSized ds s Integer'  (decrease size)
-         t2   <- generateGeneratorSized ds s Integer'  (decrease size)
+    , do cond  <- generateGeneratorSized ds s Boolean'  (decrease size)
+         t1    <- generateGeneratorSized ds s Integer'  (decrease size)
+         t2    <- generateGeneratorSized ds s Integer'  (decrease size)
          return $ If cond t1 t2 Integer'
-    , do t1   <- generateGeneratorSized ds s Integer'  (decrease size)
-         t2   <- generateGeneratorSized ds s Integer'  (decrease size)
+    , do t1    <- generateGeneratorSized ds s Integer'  (decrease size)
+         t2    <- generateGeneratorSized ds s Integer'  (decrease size)
          return $ Plus t1 t2 Integer'
     , do t1    <- generateGeneratorSized ds s Integer' (decrease size)
          type2 <- generateType is (map snd ts)
@@ -59,13 +59,17 @@ generateGeneratorSized _  _          Boolean' 1 = flip Boolean Boolean' <$> arbi
 generateGeneratorSized ds s@(is, bs, ts) Boolean' size           =
   frequency $ zip [1..]
     [ flip Boolean  Boolean' <$> arbitrary
-    , do cond <- generateGeneratorSized ds s Boolean'  (decrease size)
-         t1   <- generateGeneratorSized ds s Boolean'  (decrease size)
-         t2   <- generateGeneratorSized ds s Boolean'  (decrease size)
+    , do cond  <- generateGeneratorSized ds s Boolean'  (decrease size)
+         t1    <- generateGeneratorSized ds s Boolean'  (decrease size)
+         t2    <- generateGeneratorSized ds s Boolean'  (decrease size)
          return $ If cond t1 t2 Boolean'
-    , do t1   <- generateGeneratorSized ds s Integer'  (decrease size)
-         t2   <- generateGeneratorSized ds s Integer'  (decrease size)
+    , do t1    <- generateGeneratorSized ds s Integer'  (decrease size)
+         t2    <- generateGeneratorSized ds s Integer'  (decrease size)
          return $ Leq t1 t2 Boolean'
+    , do type1 <- generateType is (map snd ts)
+         t1    <- generateGeneratorSized ds s type1 (decrease size)
+         t2    <- generateGeneratorSized ds s type1 (decrease size)
+         return $ Equal t1 t2 Boolean'
     , do t1    <- generateGeneratorSized ds s Boolean' (decrease size)
          type2 <- generateType is (map snd ts)
          t2    <- generateGeneratorSized ds s type2    (decrease size)
