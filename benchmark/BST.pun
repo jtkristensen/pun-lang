@@ -1,3 +1,9 @@
+// --------------------------- Helper functions ---------------------------
+
+data Unit = Unit .
+
+data Maybe = Nothing | Just [4] .
+
 equal : integer -> integer -> boolean .
 equal m n =
   if   m <= n
@@ -5,8 +11,7 @@ equal m n =
   else false .
 
 not : boolean -> boolean .
-not b =
-  if b then false else true .
+not b = if b then false else true .
 
 and : boolean -> boolean -> boolean .
 and b1 b2 =
@@ -18,157 +23,260 @@ less m n = and (m <= n) (not (equal m n)) .
 greater : integer -> integer -> boolean .
 greater m n = not (m <= n) .
 
-nil : bst integer integer .
-nil = leaf .
+equalMaybes : (Maybe, Maybe) -> boolean .
+equalMaybes m =
+    case m of
+    ; (Nothing,   Nothing)   -> true
+    ; (Just [v1], Just [v2]) -> equal v1 v2
+    ; (Nothing,   Just [v3]) -> false
+    ; (Just [v4], Nothing)   -> false . 
 
-insert : integer -> integer -> bst integer integer -> bst integer integer .
-insert k1 v1 t =
-  case t of
-  ; leaf             -> [node leaf k1 v1 leaf]
-  ; [node l k2 v2 r] ->
-    if equal k1 k2
-    then [node l k2 v1 r]
-    else if   k1 <= k2
-         then [node (insert k1 v1 l) k2 v2 r]
-         else if   greater k1 k2
-              then [node l k2 v2 (insert k1 v1 r)]
-              else [node (leaf) k1 v1 (leaf)] .
+first : (0, 1) -> 0 .
+first pair =
+    case pair of
+    ; (x, y) -> x .
 
-find : integer -> bst integer integer -> bst unit integer .
-find k t =
+equalPairs : (integer, integer) -> (integer, integer) -> boolean .
+equalPairs p1 p2 = and (equal (fst p1) (fst p2))
+                       (equal (snd p1) (snd p2)) .
+
+compose : (0 -> 1) -> (2 -> 0) -> 2 -> 1 .
+compose f g x = f (g x) .
+
+flip : (0 -> 1 -> 2) -> 1 -> 0 -> 2 .
+flip f a b = f b a .
+
+uncurry : (0 -> 1 -> 2) -> (0, 1) -> 2 .
+uncurry f p = f (fst p) (snd p) .
+
+foldl : (0 -> 1 -> 0) -> 0 -> List -> 0 .
+foldl f acc l = 
+    case l of
+    ; Empty        -> acc
+    ; Cons [x, xs] -> foldl f (f acc x) xs .
+
+// ----------------------- BST and operations -----------------------
+
+data BST     = Leaf     | Node [BST, integer, integer, BST] .
+
+nil : BST .
+nil = Leaf .
+
+insert : integer -> integer -> BST -> BST .
+insert k1 v1 t = 
     case t of
-    ; leaf            -> leaf
-    ; [node l k1 v r] ->
-        if   (equal k k1)
-        then ([node leaf unit v leaf])
-        else if   (greater k k1)
-             then (find k r)
-             else (find k l) .
+    ; Leaf                  -> Node [Leaf, k1, v1, Leaf]
+    ; Node [l2, k2, v2, r2] ->
+        if   less k1 k2
+        then Node [(insert k1 v1 l2), k2, v2, r2]
+        else if greater k1 k2
+             then Node [l2, k2, v2, (insert k1 v1 r2)]
+             else Node [Leaf, k1, v1, Leaf] .
 
-findMin : bst integer integer -> bst unit integer .
-findMin t =
-    case t of
-    ; leaf           -> leaf
-    ; [node l k v r] ->
-        case l of
-        ; leaf               -> [node leaf unit v leaf]
-        ; [node l1 k1 v1 r1] -> findMin l1 .
-
-delete  : integer -> bst integer integer -> bst integer integer .
+delete : integer -> BST -> BST .
 delete k t =
     case t of
-    ; leaf             -> leaf
-    ; [node l k1 v1 r] ->
+    ; Leaf                  -> Leaf
+    ; Node [l1, k1, v1, r1] ->
         if   less k k1
-        then [node (delete k l) k1 v1 r]
+        then Node [(delete k l1), k1, v1, r1]
         else if   greater k k1
-             then [node l k1 v1 (delete k r)]
-             else (union l r) .
+             then Node [l1, k1, v1, (delete k r1)]
+             else (union l1 r1) .
 
-delete1 : integer -> bst integer integer -> bst integer integer.
-delete1 k t =
-    case t of
-    ; leaf             -> leaf
-    ; [node l k1 v1 r] ->
-          case l of
-          ; leaf               -> r
-          ; [node l1 k2 v2 r1] ->
-            case r of
-            ; leaf               -> l
-            ; [node l2 k3 v3 r2] ->
-                case (findMin r) of
-                ; leaf                           -> leaf
-                ; [node leaf minKey minVal leaf] -> [node l minKey minVal (delete minKey r)] .
-
-union : bst integer integer -> bst integer integer -> bst integer integer .
+union : BST -> BST -> BST .
 union t1 t2 =
-  case t1 of
-  ; leaf               -> t2
-  ; [node l1 k1 v1 r1] ->
-    union (delete k1 t1) (insert k1 v1 t2) .
+    case t1 of
+    ; Leaf -> t2
+    ; Node [l1, k1, v1, r1] ->
+        union (delete k1 t1) (insert k1 v1 t2) .
 
-empty : bst (integer, integer) unit.
-empty = leaf .
+find : integer -> BST -> Maybe .
+find k t =
+    case t of
+    ; Leaf                  -> Nothing
+    ; Node [l1, k1, v1, r1] ->
+        if   (equal k k1)
+        then Just [v1]
+        else if   (greater k k1)
+             then (find k r1)
+             else (find k l1) .
 
-cons : 0 -> bst 0 unit -> bst 0 unit.
-cons x xs = [node leaf x unit xs] .
+validify : BST -> BST .
+validify t =
+    case t of
+    ; Leaf              -> Leaf
+    ; Node [l, k, v, r] -> insert k v (union (validify l) (validify r)) .
 
-filter : (0 -> boolean) -> (bst 0 unit -> bst 0 unit).
-filter p list =
-  case list of
-  ; leaf                  -> leaf
-  ; [node leaf x unit xs] ->
-    let rest = filter p xs in
-    if   p x
-    then [node leaf x unit rest]
-    else rest .
+valid : BST -> boolean .
+valid t =
+    case t of
+    ; Leaf              -> true
+    ; Node [l, k, v, r] -> and (and (valid l) (valid r)) (and (lessKeys l) (greaterKeys l)) .
 
-without : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
+lessKeys : BST -> boolean .
+lessKeys t =
+    case t of
+    ; Leaf                  -> true
+    ; Node [l1, k1, v1, r1] ->
+        case l1 of
+            ; Leaf                  -> true
+            ; Node [l2, k2, v2, r2] ->
+                if   (less k2 k1)
+                then (lessKeys l1)
+                else false .
+
+greaterKeys : BST -> boolean .
+greaterKeys t =
+    case t of
+    ; Leaf -> true
+    ; Node [l1, k1, v1, r1] ->
+        case r1 of
+            ; Leaf -> true
+            ; Node [l2, k2, v2, r2] ->
+                if   (greater k2 k1)
+                then (greaterKeys r1)
+                else false .
+
+equalContents : BST -> BST -> boolean .
+equalContents t1 t2 = equalLists (toList t1) (toList t2) .
+
+equalBSTs : BST -> BST -> boolean .
+equalBSTs t1 t2 =
+    case t1 of
+    ; Leaf ->
+        (case t2 of
+        ; Leaf                  -> true
+        ; Node [l1, k1, v1, r1] -> false)
+    ; Node [l2, k2, v2, r2] ->
+        (case t2 of
+        ; Leaf                  -> false
+        ; Node [l3, k3, v3, r3] ->
+            if   (and (equal k3 k2) (equal v2 v3))
+            then true
+            else false) .
+
+// -------------------------- List and operations --------------------------
+
+data List = Empty | Cons [3, List] .
+
+listInsert : (integer, integer) -> List -> List .
+listInsert p list =
+    case list of
+    ; Empty          -> Cons [p, Empty]
+    ; Cons [q, rest] ->
+        if   (fst p) <= (fst q)
+        then Cons [p, (listInsert q rest)]
+        else Cons [q, (listInsert p rest)] .
+
+listDelete : (integer, integer) -> List -> List .
+listDelete p list = 
+    case list of
+    ; Empty         -> Empty
+    ; Cons [q, xs] -> 
+        if   (equalPairs p q)
+        then xs
+        else Cons [q, (listDelete p xs)] .
+
+listUnion : List -> List -> List .
+listUnion l1 l2 =
+    case l1 of
+    ; Empty          -> l2
+    ; Cons [p, rest] ->
+        case l2 of
+        ; Empty           -> listInsert p l2
+        ; Cons [q, rrest] ->
+            if   (equalPairs p q)
+            then listUnion (listDelete p l1) l2
+            else listUnion (listDelete p l1) (listInsert p l2) .
+
+lookup : integer -> List -> Maybe .
+lookup k1 l =
+    case l of
+    ; Empty        -> Nothing
+    ; Cons [(k, v), xs] ->
+        if   (equal k k1)
+        then Just [v]
+        else (lookup k1 xs) .
+
+unionByFst : List -> List -> List .
+unionByFst l1 l2 =
+    case l1 of
+    ; Empty          -> l2
+    ; Cons [p, rest] -> 
+        case l2 of
+        ; Empty -> listInsert p l2
+        ; Cons [q, rrest] ->
+            if   (equal (fst p) (fst q))
+            then unionByFst (listDelete p l1) l2
+            else unionByFst (listDelete p l1) (listInsert p l2) .
+
+toList : BST -> List .
+toList t = 
+    case t of
+    ; Leaf              -> Empty
+    ; Node [l, k, v, r] -> listInsert (k, v) (listUnion (toList l) (toList r)) .
+
+equalLists : List -> List -> boolean .
+equalLists l1 l2 =
+    case l1 of
+    ; Empty ->
+        (case l2 of
+        ; Empty        -> true
+        ; Cons [z, zs] -> false)
+    ; Cons [x, xs] ->
+        (case l2 of
+        ; Empty        -> false
+        ; Cons [y, ys] ->
+            if   equalPairs x y
+            then true
+            else false) .
+
+filter : (0 -> boolean) -> List -> List .
+filter f list =
+    case list of
+    ; Empty        -> Empty
+    ; Cons [x, xs] ->
+        let rest = filter f xs in
+            if   f x
+            then Cons [x, rest]
+            else rest .
+
+without : integer -> List -> List .
 without key list = filter (\p -> not (equal (fst p) key)) list .
 
-model        : bst integer integer -> bst (integer, integer) unit .
-model t =
-  case t of
-  ; leaf           -> empty
-  ; [node l k v r] -> model_insert (k, v) (model_union (model l) (model r)) .
+deleteKey : integer -> List -> List .
+deleteKey key list = without key list .
 
-model_insert : (integer, integer) -> bst (integer, integer) unit -> bst (integer, integer) unit .
-model_insert p xs =
-  case xs of
-  ; leaf                    -> cons p empty
-  ; [node leaf q unit rest] ->
-      if   less (fst p) (fst q)
-      then cons q (model_insert p rest)
-      else cons p (without (fst p) rest) .
+concat : List -> List -> List .
+concat l1 l2 =
+    case l1 of
+    ; Empty        -> l2
+    ; Cons [x, xs] -> Cons [x, (concat xs l2)] .
 
-model_union  : bst (integer, integer) unit -> bst (integer, integer) unit -> bst (integer, integer) unit .
-model_union t1 t2 =
-  case t1 of
-  ; leaf                    -> t2
-  ; [node leaf p unit rest] -> model_insert p (model_union rest t2) .
+insertions : BST -> List .
+insertions t =
+    case t of
+    ; Leaf              -> Empty
+    ; Node [l, k, v, r] -> Cons [(k, v), (concat (insertions l) (insertions r))] .
 
-valid : bst integer integer -> boolean .
-valid t =
-  case t of
-  ; leaf           -> true
-  ; [node l k v r] -> and (and (valid l) (valid r)) (and (lessKeys l) (greaterKeys l)) .
+sort : List -> List .
+sort list =
+    case list of
+    ; Empty        -> Empty 
+    ; Cons [x, xs] -> listInsert x (sort xs) .
 
-lessKeys : bst integer integer -> boolean .
-lessKeys t =
-  case t of
-  ; leaf           -> true
-  ; [node l k v r] ->
-    case l of
-      ; leaf               -> true
-      ; [node l1 k1 v1 r1] ->
-          if   (less k1 k)
-          then (lessKeys l)
-          else false .
+// ============================ BST properties ============================
 
-greaterKeys : bst integer integer -> boolean .
-greaterKeys t =
-  case t of
-  ; leaf           -> true
-  ; [node l k v r] ->
-      case r of
-        ; leaf               -> true
-        ; [node l1 k1 v1 r1] ->
-          if   (greater k1 k)
-          then (greaterKeys r)
-          else false .
+// --------------------------- Validity testing ---------------------------
 
-property nil-valid . valid nil .
+property nil-valid .
+    valid nil .
 
 property insert-valid k v t .
-  if valid t
-  then valid (insert k v t)
-  else true .
-
-validify : bst integer integer -> bst integer integer .
-validify t =
-  case t of
-  ; leaf           -> leaf
-  ; [node l k v r] -> insert k v (union (validify l) (validify r)) .
+ if   valid t
+ then valid (insert k v t)
+ else true .
 
 property delete-valid k v t .
   if   valid t
@@ -176,109 +284,100 @@ property delete-valid k v t .
   else true .
 
 property union-valid t1 t2 .
-  if   and (valid t1) (valid t2)
-  then valid (union t1 t2)
-  else true .
+    if   and (valid t1) (valid t2)
+    then valid (union t1 t2)
+    else true .
 
-// no arbitrary instance, so no need to write this test.
-// property arbitrary-valid t . valid t .
+// ------------------------ Model-based properties ------------------------
 
-find_equal : bst unit integer -> bst unit integer -> boolean .
-find_equal t1 t2 =
-  case t1 of
-    ; leaf ->
-        case t2 of
-        ; leaf -> true
-        ; x    -> false
-    ; [node leaf k1 v1 leaf] ->
-        case t2 of
-        ; leaf                   -> false
-        ; [node leaf k2 v2 leaf] -> equal v1 v2 .
+property nil-model .
+    equalLists (toList nil) Empty .
+
+property insert-model k v t .
+    equalLists (toList (insert k v t))
+               (listInsert (k, v) (deleteKey k (toList t))) .
+
+property delete-model k t .
+    equalLists (toList (delete k t))
+               (deleteKey k (toList t)) .
+
+// FIXME: Fails
+property union-model t t1 .
+    equalLists (toList (union (validify t) (validify t1)))
+               (sort (unionByFst (toList (validify t)) (toList (validify t1)))) .
+
+property find-model k t .
+    equalMaybes ((find k t),
+                (lookup k (toList t))) .
+
+// ---------------------------- Postconditions ----------------------------
+
+property insert-post k1 v1 t1 k2 .
+    equalMaybes (find k2 (insert k1 v1 t1),
+                (if (equal k1 k2) then (Just [v1]) else (find k2 t1))) .
+
+property insert-post-same-key k v t .
+    equalMaybes ((find k (insert k v t)),
+                (if (equal k k) then Just [v] else find k t)) .
+
+property union-post t1 t2 k .
+    equalMaybes ((find k (union t1 t2)),
+                (case find k t1 of
+                ; Just [v] -> Just [v]
+                ; Nothing  -> 
+                    (case find k t2 of
+                    ; Just [v1] -> Just [v1]
+                    ; Nothing   -> Nothing))) .
 
 property find-post-present k v t .
-  find_equal (find k (insert k v t)) ([node leaf unit v leaf]) .
+    equalMaybes ((find k (insert k v t)),
+                 (Just [v])) .
 
-property find-post-absent k t . find_equal (find k (delete k t)) (leaf) .
+property find-post-absent k t .
+    equalMaybes ((find k (delete k t)),
+                Nothing) .
 
-// missing definition of trees_equal
-// property insert-delete-complete k t .
-//   case find k t of
-//   ; leaf            -> trees_equal t (delete k   t)
-//   ; [node l k1 v r] -> trees_equal t (insert k v t) .
+property insert-delete-complete k t .
+    case (find k t) of
+    ; Nothing  -> equalBSTs t (delete k t)
+    ; Just [v] -> equalBSTs t (insert k v t) .
 
-property insert-post k v t k1 .
-  find_equal (find k1 (insert k v t))
-             (if  (equal k k1)
-             then [node leaf unit v leaf]
-             else (find k1 t)) .
+// ------------------------ Metamorphic properties ------------------------
 
-// property insert-post-same-key k v t . insert-post k v t k .
+property insert-insert k1 v1 k2 v2 t .
+    equalContents (insert k1 v1 (insert k2 v2 t))
+                  (if  (equal  k1 k2)
+                  then (insert k1 v1 t)
+                  else (insert k2 v2 (insert k1 v1 t))) .
 
-// // property union-post t1 t2 k . equal_find (find k (union t1 t2))
-// //                                     (case (find k t1) of
-// //                                       ; leaf                  -> leaf
-// //                                         (case (find k t2) of
-// //                                           ; leaf                   -> leaf
-// //                                           ; [node leaf k1 v1 leaf] -> [node leaf k1 v1 leaf]
-// //                                         )
-// //                                       ; [node leaf k2 v leaf] -> [node leaf k2 v leaf]
-// //                                     ) .
+property insert-delete k1 v1 k2 t .
+    equalContents (insert k1 v1 (delete k2 t))
+                  (if  (equal  k1 k2)
+                  then (insert k1 v1 t)
+                  else (delete k2 (insert k1 v1 t))) .
 
-// // equalModels : bst integer integer -> bst integer integer -> unit .
-// // equalModels t1 t2 = unit .
+property insert-union k v t t1 .
+    equalContents (insert k v (union t t1))
+                  (union (insert k v t) t1) .
 
-// // property insert-insert k1 v1 k2 v2 t .
-// //   equalModels (insert k1 v1 (insert k2 v2 t))
-// //               (if (equal k1 k2)
-// //               then (insert k1 v1 t)
-// //               else (insert k2 v2 (insert k1 v1 t))) .
+// -------------------------- Inductive testing --------------------------
 
-// // property insert-delete k1 v1 k2 t .
-// //   equalModels (insert k1 v1 (delete k2 t))
-// //               (if (equal k1 k2)
-// //               then (insert k1 v1 t)
-// //               else (delete k2 (insert k1 v1 t))) .
+property union-nil t .
+    equalBSTs (union nil t)
+              (t) .
 
-// // property insert-union k1 v1 t1 t2 .
-// //   equalModels (insert k1 v1 (union t1 t2))
-// //               (union (insert k1 v1 t1) t2) .
+property union-insert t t1 k v .
+    equalContents (union (insert k v t) t1)
+                  (insert k v (union t t1)) .
 
-// // setEqual : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
-// // setEqual t1 t2 =
-// //   if   subset t1 t2
-// //   then subset t2 t1
-// //   else false .
+property insert-complete t .
+    equalBSTs (validify t)
+              (foldl (flip (uncurry insert)) nil (insertions (validify t))) .
 
-// // subset : bst (integer, integer) unit -> bst (integer, integer) unit -> boolean .
-// // subset t1 t2 =
-// //   case t1 of
-// //   ; leaf                    -> true
-// //   ; [node leaf p unit rest] ->
-// //     case find p t2 of
-// //     ; leaf -> false
-// //     ; x    -> subset rest t2 .
+property insert-complete-for-delete k t .
+    equalBSTs (delete k (validify t))
+              (foldl (flip (uncurry insert)) nil (insertions (delete k (validify t)))) .
 
-
-// // insertions : bst (integer, integer) unit -> bst (integer, integer) unit .
-// // insertions t =
-// //   case t of
-// //   ; leaf           -> empty
-// //   ; [node l k v r] ->
-// //     [node (insertions l) (k, v) unit (insertions r)] .
-
-// // delete_key : integer -> bst (integer, integer) unit -> bst (integer, integer) unit .
-// // delete_key k t = filter (not k) t .
-
-// // property nil-model . equalModels (model nil) (empty) .
-
-// // property insert-model k v t .
-// //   equalModels (model (insert k v t))
-// //               (model_insert (k, v) (delete_key k (model t))) .
-
-// // property delete-model k v t .
-// //   equalModels (model (delete k t))
-// //               (model (delete_key k (model t))) .
-
-// // property find-model k v .
-// //   find_equal (find k t)
-// //              (find k (model t)) .
+property insert-complete-for-union t t1 .
+    equalBSTs (union (validify t) (validify t1))
+              (foldl (flip (uncurry insert)) nil (insertions (union (validify t) (validify t1)))) .
