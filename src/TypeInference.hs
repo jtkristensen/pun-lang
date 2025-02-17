@@ -227,8 +227,14 @@ refine s o = refine' s o
 
 type GlobalEnv = X -> Maybe Type
 
+defaultVariablesToInt :: (Type -> Type)
+defaultVariablesToInt (Variable' _) = Integer'
+defaultVariablesToInt (t0 :*: t1)   = defaultVariablesToInt t0 :*: defaultVariablesToInt t1
+defaultVariablesToInt (t0 :->: t1)  = defaultVariablesToInt t0 :->: defaultVariablesToInt t1
+defaultVariablesToInt t             = t
+
 inferP :: (Show a) => Program a -> Program Type
-inferP program = refine (bindings $ cs ++ cs') <$> pt
+inferP program = defaultVariablesToInt <$> (refine (bindings $ cs ++ cs') <$> pt)
   where
     (pt, _, cs) = runERWS program' program emptyBindings 0
     cs'         = [ t' :=: annotation t''
