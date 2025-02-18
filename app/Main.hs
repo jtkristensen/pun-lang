@@ -1,10 +1,7 @@
 module Main (main) where
 
 import Syntax
-import Parser
-  ( parsePunProgram, Info, parseTerm
-  , parseShellCommand, ShellCommand(..)
-  )
+import Parser                (parsePunProgram, Info , parseShellCommand)
 import TypeInference         (inferP, inferT)
 import Interpreter           (normalize, substitute)
 import GeneratorGenerator    (generateGenerator)
@@ -88,15 +85,14 @@ shell program =
        (Left  err    ) -> die $ show err
        (Right command) -> execute program command
 
-execute :: Program Type -> ShellCommand -> IO ()
+execute :: Program Type -> (ShellCommand Info) -> IO ()
 execute _ Quit        = putStrLn "Quitting pun shell." >> return ()
 execute _ (Load path) =
   do prog <- loadProgram path
      putStrLn $ "Loaded file " ++ show path ++ "."
      shell prog
 execute program (Evaluate expr) =
-  do parsed <- parseTerm expr
-     term   <- return $ inferT parsed
+  do term <- return $ inferT expr
      print $ normalize program term
      shell program
 
