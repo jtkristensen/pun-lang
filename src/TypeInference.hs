@@ -165,9 +165,9 @@ class HasSubstitution thing where
 
 instance HasSubstitution Type where
   substitute t i (Variable' j) | i == j = t
-  substitute t i (t0 :*: t1)            = substitute t i t0 :*: substitute t i t1
-  substitute t i (t0 :->: t1)           = substitute t i t0 :->: substitute t i t1
-  substitute t i (BST    k v)           = BST (substitute t i k) (substitute t i v)
+  substitute t i (t0  :*:  t1)          = substitute t i t0 :*: substitute t i t1
+  substitute t i (t0  :->: t1)          = substitute t i t0 :->: substitute t i t1
+  substitute t i (BST     k v)          = BST (substitute t i k) (substitute t i v)
   substitute _ _ t0                     = t0
 
 instance HasSubstitution Constraint where
