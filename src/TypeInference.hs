@@ -4,7 +4,6 @@ module TypeInference where
 
 import Syntax
 import Environment
-import Data.Maybe (fromMaybe)
 import Data.Functor ((<&>))
 import Control.Arrow (second)
 import Control.Monad (zipWithM_)
@@ -173,6 +172,11 @@ instance HasSubstitution Type where
 instance HasSubstitution Constraint where
   substitute t i (t0 :=: t1) = substitute t i t0 :=: substitute t i t1
 
+fillTypeHoles :: Substitution -> Substitution
+fillTypeHoles ((i, Variable' j) : rest) = (i, Integer') : (j, Integer') : fillTypeHoles rest
+fillTypeHoles (realizedType     : rest) = realizedType  : fillTypeHoles rest
+fillTypeHoles [                       ] = [ ]
+
 -- Utility functions.
 indexes :: Type -> [Index]
 indexes (Variable' i) = return i
@@ -209,7 +213,9 @@ alphaDef i (TypeConstructor c cs) = second (TypeConstructor c)
 
 -- TODO: Better error handling {^o^}!
 bindings :: [Constraint] -> Substitution
-bindings = fromMaybe (error "type error") . solve
+bindings constraints = case solve constraints of
+  Just cs -> fillTypeHoles cs
+  Nothing -> error "type error"
 
 refine :: Substitution -> (Type -> Type)
 refine s o = refine' s o
