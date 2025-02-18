@@ -29,7 +29,7 @@ equalMaybes m =
     ; (Nothing,   Nothing)   -> true
     ; (Just [v1], Just [v2]) -> equal v1 v2
     ; (Nothing,   Just [v3]) -> false
-    ; (Just [v4], Nothing)   -> false . 
+    ; (Just [v4], Nothing)   -> false .
 
 first : (0, 1) -> 0 .
 first pair =
@@ -50,7 +50,7 @@ uncurry : (0 -> 1 -> 2) -> (0, 1) -> 2 .
 uncurry f p = f (fst p) (snd p) .
 
 foldl : (0 -> 1 -> 0) -> 0 -> List -> 0 .
-foldl f acc l = 
+foldl f acc l =
     case l of
     ; Empty        -> acc
     ; Cons [x, xs] -> foldl f (f acc x) xs .
@@ -63,7 +63,7 @@ nil : BST .
 nil = Leaf .
 
 insert : integer -> integer -> BST -> BST .
-insert k1 v1 t = 
+insert k1 v1 t =
     case t of
     ; Leaf                  -> Node [Leaf, k1, v1, Leaf]
     ; Node [l2, k2, v2, r2] ->
@@ -170,10 +170,10 @@ listInsert p list =
         else Cons [q, (listInsert p rest)] .
 
 listDelete : (integer, integer) -> List -> List .
-listDelete p list = 
+listDelete p list =
     case list of
     ; Empty         -> Empty
-    ; Cons [q, xs] -> 
+    ; Cons [q, xs] ->
         if   (equalPairs p q)
         then xs
         else Cons [q, (listDelete p xs)] .
@@ -203,7 +203,7 @@ unionByFst : List -> List -> List .
 unionByFst l1 l2 =
     case l1 of
     ; Empty          -> l2
-    ; Cons [p, rest] -> 
+    ; Cons [p, rest] ->
         case l2 of
         ; Empty -> listInsert p l2
         ; Cons [q, rrest] ->
@@ -212,7 +212,7 @@ unionByFst l1 l2 =
             else unionByFst (listDelete p l1) (listInsert p l2) .
 
 toList : BST -> List .
-toList t = 
+toList t =
     case t of
     ; Leaf              -> Empty
     ; Node [l, k, v, r] -> listInsert (k, v) (listUnion (toList l) (toList r)) .
@@ -263,7 +263,7 @@ insertions t =
 sort : List -> List .
 sort list =
     case list of
-    ; Empty        -> Empty 
+    ; Empty        -> Empty
     ; Cons [x, xs] -> listInsert x (sort xs) .
 
 // ============================ BST properties ============================
@@ -324,7 +324,7 @@ property union-post t1 t2 k .
     equalMaybes ((find k (union t1 t2)),
                 (case find k t1 of
                 ; Just [v] -> Just [v]
-                ; Nothing  -> 
+                ; Nothing  ->
                     (case find k t2 of
                     ; Just [v1] -> Just [v1]
                     ; Nothing   -> Nothing))) .
