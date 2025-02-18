@@ -18,7 +18,6 @@ type Source           = String
 type Parser           = Parsec Source ()
 type Info             = (SourcePos, SourcePos)
 type Transformation a = (a -> a)
-type Expression       = String
 
 -- todo, extend these errors to carry sourse positions info.
 data Problem =
@@ -62,7 +61,7 @@ parseTerm input =
     Left  err -> error $ "Parse error: " ++ show err
     Right t   -> return t
 
-parseShellCommand :: String -> IO (Either Problem ShellCommand)
+parseShellCommand :: String -> IO (Either Problem (ShellCommand Info))
 parseShellCommand input =
   return $
     case runParser (many whitespace >> shellCommand) () "<repl>" input of
@@ -194,25 +193,25 @@ program_ =
 
 -- * Shell commands
 
-quit :: Parser ShellCommand
+quit :: Parser (ShellCommand Info)
 quit =
   do _ <- symbol ":q"
      return Quit
 
-load :: Parser ShellCommand
+load :: Parser (ShellCommand Info)
 load =
   do _        <- symbol ":l"
      filepath <- many1 anyChar
      _        <- many whitespace
      return $ Load filepath
 
-evaluate :: Parser ShellCommand
+evaluate :: Parser (ShellCommand Info)
 evaluate =
-  do expression <- many1 anyChar
+  do expression <- term_
      _          <- many whitespace
      return $ Evaluate expression
 
-shellCommand :: Parser ShellCommand
+shellCommand :: Parser (ShellCommand Info)
 shellCommand =
   choice
     [ quit
