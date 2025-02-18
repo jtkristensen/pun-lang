@@ -96,7 +96,7 @@ simple =
 term_ :: Parser (Term Info)
 term_ =
   choice $
-    foldr (flip chainl1) simple [leq, add, app, equal] :
+    foldr (flip chainl1) simple [equal, leq, add, app] :
    map info
   [do _  <- keyword "case"
       t  <- term_
