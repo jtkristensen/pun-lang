@@ -71,6 +71,13 @@ data Term a =
   | Rec Name    (T0 a)                  a
   deriving (Functor)
 
+-- Shell commands
+data ShellCommand =
+    Quit
+  | Load     FilePath
+  | Evaluate Expression
+  deriving Show
+
 -- Dealing with annotations.
 class Annotated thing where
   annotation  :: thing a -> a

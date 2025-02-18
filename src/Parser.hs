@@ -2,7 +2,7 @@
 module Parser
   ( Parser, Info, term_, type_, program_, nat_, int_
   , Source, runParser, parseString, problems, parsePunProgram, Problem
-  , parseTerm, parseShellCommand, ShellCommand (..)
+  , parseTerm, parseShellCommand
   )
 where
 
@@ -28,12 +28,6 @@ data Problem =
   | DeclaredButNotDefined          F
   | DoesNotParse                   ParseError
   deriving (Eq, Show)
-
-data ShellCommand =
-    Quit
-  | Load     FilePath
-  | Evaluate Expression
-  deriving Show
 
 problems :: Program Info -> [Problem]
 problems p =
