@@ -96,6 +96,7 @@ simple =
 term_ :: Parser (Term Info)
 term_ =
   choice $
+    -- should we make "==" non-assoc?
     foldr (flip chainl1) simple [equal, leq, add, app] :
    map info
   [do _  <- keyword "case"
