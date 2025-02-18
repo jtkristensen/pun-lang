@@ -72,10 +72,10 @@ data Term a =
   deriving (Functor)
 
 -- Shell commands
-data ShellCommand =
+data ShellCommand a =
     Quit
   | Load     FilePath
-  | Evaluate Expression
+  | Evaluate (Term a)
   deriving Show
 
 -- Dealing with annotations.
