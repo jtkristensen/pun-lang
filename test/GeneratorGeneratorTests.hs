@@ -66,9 +66,8 @@ generateGeneratorTests =
         _          -> True,
     testProperty "generateGenerator t has type Term t forall t." $ whenFail (print "hello") $
     \(TerminatingTerm (term, t)) ->
-      let (t', _, cs) = infer term 0
-          subs        = bindings cs
-          typeOfT'    = annotation (refine subs <$> t')
+      let typedTerm = inferT term
+          typeOfT'  = annotation typedTerm
       in
         equivalent t typeOfT',
     testProperty "Only valid types are generated from a substitution." $
@@ -76,9 +75,8 @@ generateGeneratorTests =
       all (`elem` (fst <$> subs)) (indices t),
     testProperty "generateGenerator generates appropriate type for generated substitution." $
     \(SubstType (_, _, term, canonT)) ->
-      let (t', _, cs) = infer term 0
-          subs'       = bindings cs
-          typeOfT'    = annotation (refine subs' <$> t')
+      let typedTerm = inferT term
+          typeOfT'  = annotation typedTerm
       in
         equivalent canonT typeOfT',
     testProperty "Resolve resolves 'chains' of variables" $
