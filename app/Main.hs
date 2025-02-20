@@ -1,8 +1,8 @@
 module Main (main) where
 
 import Syntax
-import Parser                (parsePunProgram, Info)
-import TypeInference         (inferP)
+import Parser                (parsePunProgram, Info , parseShellCommand)
+import TypeInference         (inferP, inferT)
 import Interpreter           (normalize, substitute)
 import GeneratorGenerator    (generateGenerator)
 import Control.Monad         (void)
@@ -19,7 +19,7 @@ data Action =
     Shell         (Program Type)
   | PropertyCheck (Program Type)
   | TypeCheck     (Program Info)
-  | Fail  ErrorMessage
+  | Fail          ErrorMessage
 
 main :: IO ()
 main = getArgs >>= run . action
@@ -78,15 +78,40 @@ typed :: Program Info -> IO (Program Type)
 typed = return . inferP . declarationsUpFront
 
 shell :: Program Type -> IO ()
-shell _program =
-  do -- todo --
-    die "future work"
+shell program =
+  do input  <- readLine
+     result <- parseShellCommand input
+     case result of
+       (Left  err    ) -> die $ show err
+       (Right command) -> execute program command
+
+execute :: Program Type -> (ShellCommand Info) -> IO ()
+execute _ Quit        = putStrLn "Quitting pun shell." >> return ()
+execute _ (Load path) =
+  do prog <- loadProgram path
+     putStrLn $ "Loaded file " ++ show path ++ "."
+     shell prog
+execute program (Evaluate expr) =
+  do term <- return $ inferT expr
+     print $ normalize program term
+     shell program
+
+-- Shell helpers
+readLine :: IO String
+readLine =
+  do putStr "pun> "
+     hFlush stdout
+     getLine
+
+loadProgram :: String -> IO (Program Type)
+loadProgram file = parse file >>= typed
 
 -- todo: refactor.
 action :: [String] -> IO Action
-action [           file] = Shell         <$> (parse file >>= typed)
 action ["--check", file] = PropertyCheck <$> (parse file >>= typed)
 action ["--types", file] = TypeCheck     <$> parse file
+action [           file] = Shell         <$> (parse file >>= typed)
+action [ ]               = return $ Shell EndOfProgram
 action _                 = return $ Fail
   "Usage:\n\
      \ pun --check <program>.pun (checks properties)\n\

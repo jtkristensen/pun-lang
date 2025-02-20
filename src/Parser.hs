@@ -1,8 +1,8 @@
 
 module Parser
   ( Parser, Info, term_, type_, program_, nat_, int_
-  , Source, runParser, parseString, problems, parsePunProgram
-  , Problem
+  , Source, runParser, parseString, problems, parsePunProgram, Problem
+  , parseTerm, parseShellCommand
   )
 where
 
@@ -54,6 +54,19 @@ parsePunProgram path =
            case problems code of
              [   ] -> return code
              _     -> Left $ problems code
+
+parseTerm :: String -> IO (Term Info)
+parseTerm input =
+  case parseString term_ input of
+    Left  err -> error $ "Parse error: " ++ show err
+    Right t   -> return t
+
+parseShellCommand :: String -> IO (Either Problem (ShellCommand Info))
+parseShellCommand input =
+  return $
+    case runParser (many whitespace >> shellCommand) () "<repl>" input of
+      (Left  err    ) -> Left  $ DoesNotParse err
+      (Right command) -> Right command
 
 -- * Implementation:
 
@@ -178,7 +191,35 @@ program_ =
      _ <- eof
      return p
 
--- -- * Utility:
+-- * Shell commands
+
+quit :: Parser (ShellCommand Info)
+quit =
+  do _ <- symbol ":q"
+     return Quit
+
+load :: Parser (ShellCommand Info)
+load =
+  do _        <- symbol ":l"
+     filepath <- many1 anyChar
+     _        <- many whitespace
+     return $ Load filepath
+
+evaluate :: Parser (ShellCommand Info)
+evaluate =
+  do expression <- term_
+     _          <- many whitespace
+     return $ Evaluate expression
+
+shellCommand :: Parser (ShellCommand Info)
+shellCommand =
+  choice
+    [ quit
+    , load
+    , evaluate
+    ]
+
+-- * Utility:
 
 pre :: String -> Parser a -> Parser a
 pre  s p = symbol s >> p
@@ -238,7 +279,7 @@ reserved =
   , "data"
   ]
 
--- Parses p and anny trailing whitespace following it.
+-- Parses p and any trailing whitespace following it.
 lexeme :: Parser a -> Parser a
 lexeme p =
   do a <- p
