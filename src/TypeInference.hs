@@ -126,7 +126,7 @@ annotate (Case t cs _) =
      tau' <- hole
      mapM_ ((`hasType` tau) . fst) cs'
      mapM_ ((`hasType` tau') . snd) cs'
-     return $ Case t' cs' (annotation t')
+     return $ Case t' cs' tau'
   where
     liftFV :: [(X, Type)] -> (Bindings -> Bindings)
     liftFV [] f = f
@@ -233,7 +233,7 @@ refine s o = refine' s o
 
 type GlobalEnv = X -> Maybe Type
 
-inferP :: Program a -> Program Type
+inferP :: (Show a) => Program a -> Program Type
 inferP program = refine (bindings $ cs ++ cs') <$> pt
   where
     (pt, _, cs) = runERWS program' program emptyBindings 0

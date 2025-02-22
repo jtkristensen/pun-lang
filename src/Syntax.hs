@@ -36,7 +36,7 @@ data Program a
   deriving (Functor, Eq)
 
 data TypeConstructor = TypeConstructor C [Type]
-  deriving Eq
+  deriving (Eq)
 
 data Type
   = Variable' Index
@@ -104,7 +104,6 @@ instance Annotated Term where
   annotations (Node      l k v r a) = a : ([l, k, v, r]  >>= annotations)
   annotations (Case  t cs        a) = a : (t:concatMap (\(p, r) -> [p, r]) cs >>= annotations)
   annotation  term                  = head $ annotations term
-
 
 -- Utility functions
 swap :: (a, b) -> (b, a)

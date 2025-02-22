@@ -63,10 +63,9 @@ interpret (Node l k v r a) =
 interpret (Constructor c ts a) =
   do ts' <- mapM interpret ts
      return $ Constructor c ts' a
-interpret (Case t cs _) =
-  do t'  <- interpret t
-     let cs' = unify t' cs
-     interpret $ uncurry substituteWithUnifier cs'
+interpret (Case t cs _) = do
+  v <- interpret t
+  interpret $ substituteWithUnifier (unify v cs)
 interpret _ = error "expected a non-canonical term!"
 
 -- utility -- (todo : better error messages).
@@ -109,14 +108,15 @@ substitute x t v = -- computes t[v/x].
     (Let y t1 t2 a)          -> Let y (f t1) ((if x == y then id else f) t2)  a
     (Rec y t1    a) | x /= y -> Rec y (f t1)                                  a
     (Node l k u r a)         -> Node (f l) (f k) (f u) (f r)                  a
-    -- (Case t0 l (p, n) a)     ->
-    --   Case (f t0) (f l) (p, (if x `elem` freeVariables p then id else f) n) a
+    (Constructor c ts a)     -> Constructor c (map f ts)                      a
+    (Case t0 cs   a)         ->
+      Case (f t0) (map (\(p, n) -> (p, (if x `elem` freeVariables p then id else f) n)) cs) a
     _                        -> t
   where
     f = flip (substitute x) v
 
-substituteWithUnifier :: Unifier a -> Term a -> Term a
-substituteWithUnifier xs t =
+substituteWithUnifier :: (Unifier a, Term a) -> Term a
+substituteWithUnifier (xs, t) =
   foldr (\(x, v) t' -> substitute x t' v) t xs
 
 -- Todo : can be avoided by renaming toplevel stuff, or by extending the

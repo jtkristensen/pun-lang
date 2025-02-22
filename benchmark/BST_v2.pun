@@ -1,0 +1,95 @@
+equal : integer -> integer -> boolean .
+equal m n =
+  if   m <= n
+  then n <= m
+  else false .
+
+not : boolean -> boolean .
+not b = if b then false else true .
+
+and : boolean -> boolean -> boolean .
+and b1 b2 =
+  if b1 then b2 else false .
+
+less : integer -> integer -> boolean .
+less m n = and (m <= n) (not (equal m n)) .
+
+greater : integer -> integer -> boolean .
+greater m n = not (m <= n) .
+
+data BST = Leaf | Node [BST, integer, BST] .
+
+nil : BST .
+nil = Leaf .
+
+insert : integer -> BST -> BST .
+insert v1 t =
+    case t of
+    ; Leaf -> Node [Leaf, v1, Leaf]
+    ; Node [l, v2, r] ->
+      if   equal v1 v2
+      then Node [l, v1, r]
+      else if   v1 <= v2
+           then Node [(insert v1 l), v2, r]
+           else Node [Leaf, v1, Leaf] .
+
+// delete : integer -> BST -> BST .
+// delete v1 t =
+//     case t of
+//     ; Leaf            -> Leaf
+//     ; Node [l, v2, r] ->
+//         if   less v1 v2
+//         then Node [(delete v1 l), v1, r]
+//         else if   greater v1 v2
+//              then Node [l, v1, (delete v1 r)]
+//              else (union l r) .
+
+// union : BST -> BST -> BST .
+// union t1 t2 =
+//     case t1 of
+//     ; Leaf            -> t2
+//     ; Node [l, v1, r] ->
+//         union (delete v1 t1) (insert v1 t2) .
+
+// validify : BST -> BST .
+// validify t =
+//     case t of
+//     ; Leaf           -> Leaf
+//     ; Node [l, v, r] ->
+//         insert v (union (validify l) (validify r)) .
+
+valid : BST -> boolean .
+valid t =
+    case t of
+    ; Leaf           -> true
+    ; Node [l, v, r] -> and (and (valid l) (valid r)) (and (lessValues l) (greaterValues l)) .
+
+lessValues : BST -> boolean .
+lessValues t =
+    case t of
+    ; Leaf              -> true
+    ; Node [l1, v1, r1] ->
+        case l1 of
+            ; Leaf              -> true
+            ; Node [l2, v2, r2] ->
+                if   (less v2 v1)
+                then (lessValues l1)
+                else false .
+
+greaterValues : BST -> boolean .
+greaterValues t =
+    case t of
+    ; Leaf              -> true
+    ; Node [l1, v1, r1] ->
+        case r1 of
+        ; Leaf              -> true
+        ; Node [l2, v2, r2] ->
+            if   (greater v2 v1)
+            then (greaterValues r1)
+            else false .
+
+// TODO type inference not satisfied with this property
+// property insert-valid v t .
+//   if   valid t
+//   then valid (insert v t)
+//   else true .
