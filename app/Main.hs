@@ -12,6 +12,8 @@ import System.Exit           (die)
 import System.Environment    (getArgs)
 import System.IO             (hFlush, stdout)
 import Test.Tasty.QuickCheck (generate)
+import Shrink
+import Debug.Trace
 
 type ErrorMessage = String
 
@@ -52,20 +54,19 @@ check program = void $ mapM check1 (properties program)
         eval      = normalize program
         iter 0    = putStrLn " ok"
         iter n    =
-          do parts <- generate genParts
-             test  <- term <$> return (body, parts)
+          do generatedArguments <- generate genParts
+             test  <- term <$> return (body, generatedArguments)
              case eval test of
                Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
                _              ->
                  do putStrLn "x failed:"
                     putStr "shrinking> " >> hFlush stdout
-                    counterexample <- smaller parts
+                    counterexample <- smaller generatedArguments
                     print counterexample
                     putStrLn $ "after " ++ show (numberOfTests - n) ++ " tests."
-        smaller parts =
-          -- TODO: better shrink (and message)
-          do putStr ""
-             term <$> return (body, map (second eval) parts)
+        smaller generatedArguments = do
+          (shrinkedArguments, _) <- generate (runShrink (shrink generatedArguments) program body (map (second eval) generatedArguments))
+          term <$> return (body, shrinkedArguments)
 
 parse :: String -> IO (Program Info)
 parse file =
