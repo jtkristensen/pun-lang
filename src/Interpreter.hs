@@ -53,13 +53,6 @@ interpret (Let x t0 t1 a) =
 interpret (Rec x t0 a) =
   do notAtTopLevel (x, a)
      interpret (substitute x t0 (Rec x t0 a))
-interpret (Leaf a) = return $ Leaf a
-interpret (Node l k v r a) =
-  do l' <- interpret l
-     k' <- interpret k
-     v' <- interpret v
-     r' <- interpret r
-     return $ Node l' k' v' r' a
 interpret (Constructor c ts a) =
   do ts' <- mapM interpret ts
      return $ Constructor c ts' a
@@ -107,7 +100,6 @@ substitute x t v = -- computes t[v/x].
     (Application t1 t2 a)    -> Application (f t1) (f t2)                     a
     (Let y t1 t2 a)          -> Let y (f t1) ((if x == y then id else f) t2)  a
     (Rec y t1    a) | x /= y -> Rec y (f t1)                                  a
-    (Node l k u r a)         -> Node (f l) (f k) (f u) (f r)                  a
     (Constructor c ts a)     -> Constructor c (map f ts)                      a
     (Case t0 cs   a)         ->
       Case (f t0) (map (\(p, n) -> (p, (if x `elem` freeVariables p then id else f) n)) cs) a
