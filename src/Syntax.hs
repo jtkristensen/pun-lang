@@ -46,7 +46,6 @@ data Type
   | Type :*: Type
   | Type :->: Type
   | Algebraic D
-  | BST Key Value
   deriving (Eq, Show)
 
 data Term a =
