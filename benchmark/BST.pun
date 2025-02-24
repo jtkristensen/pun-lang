@@ -4,12 +4,6 @@ data Unit = Unit .
 
 data Maybe = Nothing | Just [4] .
 
-equal : integer -> integer -> boolean .
-equal m n =
-  if   m <= n
-  then n <= m
-  else false .
-
 not : boolean -> boolean .
 not b = if b then false else true .
 
@@ -18,7 +12,7 @@ and b1 b2 =
   if b1 then b2 else false .
 
 less : integer -> integer -> boolean .
-less m n = and (m <= n) (not (equal m n)) .
+less m n = and (m <= n) (not (m == n)) .
 
 greater : integer -> integer -> boolean .
 greater m n = not (m <= n) .
@@ -84,7 +78,7 @@ find k t =
     case t of
     ; Leaf                  -> Nothing
     ; Node [l1, k1, v1, r1] ->
-        if   (equal k k1)
+        if   (k == k1)
         then Just [v1]
         else if   (greater k k1)
              then (find k r1)
@@ -124,41 +118,41 @@ equalContents t1 t2 = (toList t1) == (toList t2) .
 data List = Empty | Cons [(integer, integer), List] .
 
 listInsert : (integer, integer) -> List -> List .
-listInsert p list =
+listInsert x list =
     case list of
-    ; Empty          -> Cons [p, Empty]
-    ; Cons [q, rest] ->
-        if   (fst p) <= (fst q)
-        then Cons [p, (listInsert q rest)]
-        else Cons [q, (listInsert p rest)] .
+    ; Empty          -> Cons [x, Empty]
+    ; Cons [y, ys] ->
+        if   (fst x) <= (fst y)
+        then Cons [x, (listInsert y ys)]
+        else Cons [y, (listInsert x ys)] .
 
 listDelete : (integer, integer) -> List -> List .
-listDelete p list =
+listDelete x list =
     case list of
     ; Empty         -> Empty
-    ; Cons [q, xs] ->
-        if   (p == q)
-        then xs
-        else Cons [q, (listDelete p xs)] .
+    ; Cons [y, ys] ->
+        if   (x == y)
+        then ys
+        else Cons [y, (listDelete x ys)] .
 
 listUnion : List -> List -> List .
 listUnion l1 l2 =
     case l1 of
     ; Empty          -> l2
-    ; Cons [p, rest] ->
+    ; Cons [x, xs] ->
         case l2 of
-        ; Empty           -> listInsert p l2
-        ; Cons [q, rrest] ->
-            if   (p == q)
-            then listUnion (listDelete p l1) l2
-            else listUnion (listDelete p l1) (listInsert p l2) .
+        ; Empty           -> listInsert x l2
+        ; Cons [y, ys] ->
+            if   (x == y)
+            then listUnion (listDelete x l1) l2
+            else listUnion (listDelete x l1) (listInsert x l2) .
 
 lookup : integer -> List -> Maybe .
 lookup k1 l =
     case l of
     ; Empty        -> Nothing
     ; Cons [(k, v), xs] ->
-        if   (equal k k1)
+        if   (k == k1)
         then Just [v]
         else (lookup k1 xs) .
 
@@ -192,7 +186,7 @@ filter f list =
             else rest .
 
 without : integer -> List -> List .
-without key list = filter (\p -> not (equal (fst p) key)) list .
+without key list = filter (\p -> not ((fst p) == key)) list .
 
 deleteKey : integer -> List -> List .
 deleteKey key list = without key list .
@@ -266,12 +260,12 @@ property find-model k t .
 
 property insert-post k1 v1 t1 k2 .
     if   valid t1
-    then (find k2 (insert k1 v1 t1)) == (if (equal k1 k2) then (Just [v1]) else (find k2 t1))
+    then (find k2 (insert k1 v1 t1)) == (if (k1 == k2) then (Just [v1]) else (find k2 t1))
     else true .
 
 property insert-post-same-key k v t .
     if   valid t
-    then (find k (insert k v t)) == (if (equal k k) then Just [v] else find k t)
+    then (find k (insert k v t)) == (if (k == k) then Just [v] else find k t)
     else true .
 
 property union-post t1 t2 k .
@@ -307,7 +301,7 @@ property insert-delete-complete k t .
 property insert-insert k1 v1 k2 v2 t .
     if   valid t
     then (equalContents (insert k1 v1 (insert k2 v2 t))
-                        (if  (equal  k1 k2)
+                        (if  (k1 == k2)
                         then (insert k1 v1 t)
                         else (insert k2 v2 (insert k1 v1 t))))
     else true .
@@ -315,7 +309,7 @@ property insert-insert k1 v1 k2 v2 t .
 property insert-delete k1 v1 k2 t .
     if valid t
     then (equalContents (insert k1 v1 (delete k2 t))
-                        (if  (equal  k1 k2)
+                        (if  (k1 == k2)
                         then (insert k1 v1 t)
                         else (delete k2 (insert k1 v1 t))))
     else true .
