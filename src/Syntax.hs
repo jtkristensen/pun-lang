@@ -52,9 +52,7 @@ data Term a =
     Number    Integer                   a
   | Boolean   Bool                      a
   | Unit                                a
-  | Leaf                                a
   | Constructor C [Term a]              a
-  | Node (Left a) (K a) (V a) (Right a) a
   | Case (T0 a) [(Pattern a, Term a)]   a
   | Variable  Name                      a
   | If          (T0 a) (T1 a) (T2 a)    a
