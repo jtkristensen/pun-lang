@@ -114,9 +114,6 @@ analyse (Lambda    n  t  _)     = combine (return n, mempty) (analyse t)
 analyse (Application t1 t2 _)   = combine (analyse t1) (analyse t2)
 analyse (Let     n t1 t2 _)     = combine (return n, mempty) (combine (analyse t1) (analyse t2))
 analyse (Rec       n  t  _)     = combine (return n, mempty) (analyse t)
-analyse (Leaf            _)     = (mempty, mempty)
-analyse (Node    l k v r _)     = (analyse k `combine` analyse v) `combine`
-                                  (analyse l `combine` analyse r)
 -- analyse (Case t l (p, n) _)     = (analyse t `combine` analyse l) `combine`
 --                                   (analyse p `combine` analyse n)
 
@@ -191,7 +188,6 @@ subst s (Variable' a) =
     _   -> error "internal error about unification"
 subst s (t1 :*:  t2) = subst s t1 :*:  subst s t2
 subst s (t1 :->: t2) = subst s t1 :->: subst s t2
-subst s (BST  t1 t2) = BST (subst s t1) (subst s t2)
 
 equivalent :: Type -> Type -> Bool
 equivalent t1 t2 =

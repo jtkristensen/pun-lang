@@ -46,16 +46,13 @@ data Type
   | Type :*: Type
   | Type :->: Type
   | Algebraic D
-  | BST Key Value
   deriving (Eq, Show)
 
 data Term a =
     Number    Integer                   a
   | Boolean   Bool                      a
   | Unit                                a
-  | Leaf                                a
   | Constructor C [Term a]              a
-  | Node (Left a) (K a) (V a) (Right a) a
   | Case (T0 a) [(Pattern a, Term a)]   a
   | Variable  Name                      a
   | If          (T0 a) (T1 a) (T2 a)    a
@@ -100,8 +97,6 @@ instance Annotated Term where
   annotations (Equal    t0 t1    a) = a : ([t0, t1]     >>= annotations)
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
-  annotations (Leaf              a) = return a
-  annotations (Node      l k v r a) = a : ([l, k, v, r]  >>= annotations)
   annotations (Case  t cs        a) = a : (t:concatMap (\(p, r) -> [p, r]) cs >>= annotations)
   annotation  term                  = head $ annotations term
 
@@ -133,8 +128,6 @@ instance Show (Term a) where
   show (Boolean b         _) = show b
   show (Unit              _) = "unit"
   show (Constructor c ts  _) = c ++ " [" ++ intercalate ", " (map show ts) ++ "]"
-  show (Leaf              _) = "leaf"
-  show (Node l k v r      _) = "[node " ++ show l ++ show k ++ show v ++ show r ++ "]"
   show (Case t cs         _) = "case " ++ show t ++ " of\n" ++ intercalate "\n" (map (\(x, y) -> "  ; " ++ show x ++  " -> " ++ show y) cs)
   show (Variable n        _) = n
   show (If t0 t1 t2       _) = "if " ++ show t0  ++ " then " ++ show t1 ++ " else " ++ show t2
@@ -166,10 +159,6 @@ instance Eq (Term a) where
   (Fst            t0 _) == (Fst            t0' _) = t0 == t0'
   (Snd            t0 _) == (Snd            t0' _) = t0 == t0'
   (Lambda      x  t  _) == (Lambda     x'  t'  _) = x  == x'  && t  == t'
-  (Leaf              _) == (Leaf               _) = True
-  (Node     l k v r  _) == (Node   l' k' v' r' _) = and (zipWith (==)
-                                                         [l,  k,  v,  r]
-                                                         [l', k', v', r'])
   (Let       x t0 t1 _) == (Let      y t0' t1' _) = x == y   &&
                                                   t0 == t0' &&
                                                   t1 == t1'
@@ -187,8 +176,6 @@ canonical (Unit             _) = True
 canonical (Constructor _ ts _) = all canonical ts
 canonical (Pair    t1 t2    _) = canonical t1 && canonical t2
 canonical (Lambda  {}        ) = True
-canonical (Leaf             _) = True
-canonical (Node   l k v r   _) = all canonical [l, k, v, r]
 canonical _                    = False
 
 dataDeclarations :: Program a -> DataDeclarations
@@ -246,7 +233,6 @@ indices  Boolean'     = []
 indices  Unit'        = []
 indices (t1 :*:   t2) = indices t1 <> indices t2
 indices (t1 :->:  t2) = indices t1 <> indices t2
-indices (BST   t1 t2) = indices t1 <> indices t2
 indices (Algebraic _) = []
 
 instance Semigroup (Program a) where
@@ -264,14 +250,8 @@ freeVariables :: Term a -> [Name]
 freeVariables (Number  _ _) = mempty
 freeVariables (Boolean _ _) = mempty
 freeVariables (Unit      _) = mempty
-freeVariables (Leaf      _) = mempty
 freeVariables (Constructor _ ts _) =
   foldr (\t fvs -> fvs <> freeVariables t) mempty ts
-freeVariables (Node l k v r _) =
-     freeVariables l
-  <> freeVariables k
-  <> freeVariables v
-  <> freeVariables r
 freeVariables (Case t cs _) =
      freeVariables t
   <> foldr (\(p, t') fvs -> fvs <> freeVariables p <> freeVariables t') mempty cs

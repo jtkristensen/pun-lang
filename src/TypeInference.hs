@@ -106,18 +106,6 @@ annotate (Rec f t0 _) =
   do tau <- hole
      t0' <- local (bind f tau) $ annotate t0
      return $ Rec f t0' $ annotation t0'
-annotate (Leaf _) =
-  do tau1 <- hole
-  --    tau2 <- hole
-     Leaf . BST tau1 <$> hole
-annotate (Node l k v r _) =
-  do l' <- annotate l
-     k' <- annotate k
-     v' <- annotate v
-     r' <- annotate r
-     l' `hasType` BST (annotation k') (annotation v')
-     l' `hasSameTypeAs` r'
-     return $ Node l' k' v' r' (annotation l')
 annotate (Case t cs _) =
   do tau  <- hole
      t'   <- annotate t
@@ -147,7 +135,6 @@ solve (constraint : rest) =
     (Algebraic d) :=: (Algebraic c) | c == d -> solve rest
     (t0 :*:  t1)  :=: (t2 :*:  t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (t0 :->: t1)  :=: (t2 :->: t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
-    (BST    k v)  :=: (BST  k' v')  -> solve $ (k  :=: k') : (v  :=: v') : rest
     (Variable' i) :=: t1            ->
       if   i `elem` indexes t1
       then (if Variable' i /= t1 then Nothing else solve rest)
@@ -166,7 +153,6 @@ instance HasSubstitution Type where
   substitute t i (Variable' j) | i == j = t
   substitute t i (t0  :*:  t1)          = substitute t i t0 :*: substitute t i t1
   substitute t i (t0  :->: t1)          = substitute t i t0 :->: substitute t i t1
-  substitute t i (BST     k v)          = BST (substitute t i k) (substitute t i v)
   substitute _ _ t0                     = t0
 
 instance HasSubstitution Constraint where
@@ -182,7 +168,6 @@ indexes :: Type -> [Index]
 indexes (Variable' i) = return i
 indexes (t0 :*:  t1)  = indexes t0 ++ indexes t1
 indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
-indexes (BST    k v)  = indexes k  ++ indexes v
 indexes _             = mempty
 
 emptyBindings :: Bindings
@@ -201,7 +186,6 @@ alpha i t = (if null (indices t) then i else i + maximum (indices t) + 1, increm
         increment (Variable' j)   = Variable' (i + j)
         increment (t1  :*: t2 )   = increment t1 :*: increment t2
         increment (t1 :->: t2 )   = increment t1 :->: increment t2
-        increment (BST key value) = BST (increment key) (increment value)
 
 alphaADT :: Index -> [TypeConstructor] -> (Index, [TypeConstructor])
 alphaADT i = foldr (\c (j, k) -> second (: k) (alphaDef j c)) (i, [])
@@ -229,7 +213,6 @@ refine s o = refine' s o
     refine' _            (Algebraic d)          = Algebraic d
     refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
-    refine' s'           (BST    k v)           = BST (refine s' k) (refine s' v)
 
 type GlobalEnv = X -> Maybe Type
 

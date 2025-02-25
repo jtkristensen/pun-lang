@@ -87,7 +87,6 @@ type_ =
       [ Unit'     <$  unit
       , Integer'  <$  symbol "integer"
       , Boolean'  <$  symbol "boolean"
-      , symbol "bst" >> BST <$> type' <*> type'
       , Variable' <$> nat_
       , parens type_
       , Algebraic <$> constructorName
@@ -98,7 +97,6 @@ simple =
   choice
   [ info $ int_  <&> Number
   , info $ bool_ <&> Boolean
-  , info $ Leaf  <$ symbol "leaf"
   , info $ Unit  <$ unit
   , info $ name  <&> Variable
   , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
@@ -274,7 +272,7 @@ reserved :: [Name]
 reserved =
   [ "property"
   , "if", "then", "else"
-  , "leaf", "node", "case", "of"
+  , "case", "of"
   , "fst", "snd"
   , "let", "in", "rec"
   , "data"

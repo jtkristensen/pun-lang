@@ -105,14 +105,6 @@ generateGeneratorSized ds (is, bs, ts) (type1 :->: type2) size =
   do x  <- generateName ts
      t0 <- generateGeneratorSized ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) type2 (decrease size)
      return $ Lambda x t0 (type1 :->: type2)
-generateGeneratorSized ds s bst@(BST type1 type2) size =
-  oneof [ do k <- generateGeneratorSized ds s type1 (decrease size)
-             v <- generateGeneratorSized ds s type2 (decrease size)
-             l <- generateGeneratorSized ds s bst   (decrease size)
-             r <- generateGeneratorSized ds s bst   (decrease size)
-             return $ Node l k v r bst
-        , return $ Leaf (BST type1 type2)
-        ]
 generateGeneratorSized ds s (Algebraic d) size =
   oneof (map ctrGen (constructors ds d))
   where

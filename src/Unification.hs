@@ -29,12 +29,6 @@ unify' (Constructor c vs _) (Constructor c' vs' _)
   | c == c' && length vs == length vs'
   = validateUnifiers $ zipWith unify' vs vs'
 unify' (Pair t0 t1 _) (Pair t0' t1' _) = unify' t0 t0' `mappend` unify' t1 t1'
-unify' (Leaf       _) (Leaf         _) = return []
-unify' (Node l1 k1 v1 r1 _) (Node l2 k2 v2 r2 _) =
-  (unify' l1 l2  `mappend`
-   unify' k1 k2) `mappend`
-  (unify' v1 v2  `mappend`
-   unify' r1 r2)
 unify' _ _ = Nothing
 
 validateUnifiers :: [Maybe (Unifier a)] -> Maybe (Unifier a)
@@ -44,7 +38,6 @@ validateUnifiers us
 
 isPattern :: Term a -> Bool
 isPattern (Variable       _ _) = True
-isPattern (Node     l k v r _) = all isPattern [l, k, v, r]
 isPattern (Pair       t1 t2 _) = all isPattern [t1, t2]
 isPattern (Constructor _ ts _) = all isPattern ts
 isPattern t                    = canonical t
