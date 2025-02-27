@@ -50,12 +50,13 @@ check program = void $ mapM check1 (properties program)
         genParts  = mapM strengthen $ second (generateGenerator dataDecls config) <$> args
         term      = uncurry $ foldr (\(x, v) t -> substitute x t v)
         eval      = normalize program
+        putDot n  = if n `mod` 100 == 0 then putStr "." else pure ()
         iter 0    = putStrLn " ok"
         iter n    =
           do parts <- generate genParts
              test  <- term <$> return (body, parts)
              case eval test of
-               Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
+               Boolean True _ -> putDot n >> hFlush stdout >> iter (n - 1)
                _              ->
                  do putStrLn "x failed:"
                     putStr "shrinking> " >> hFlush stdout
