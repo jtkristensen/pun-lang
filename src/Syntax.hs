@@ -43,7 +43,6 @@ data Type
   | Integer'
   | Boolean'
   | Unit'
-  | Type :*: Type
   | Type :->: Type
   | Algebraic D
   deriving (Eq, Show)
@@ -59,9 +58,6 @@ data Term a =
   | Plus        (T0 a) (T1 a)           a
   | Leq         (T0 a) (T1 a)           a
   | Equal       (T0 a) (T1 a)           a
-  | Pair        (T0 a) (T1 a)           a
-  | Fst         (T0 a)                  a
-  | Snd         (T0 a)                  a
   | Lambda Name (T0 a)                  a
   | Application        (T1 a) (T2 a)    a
   | Let Name           (T1 a) (T2 a)    a
@@ -89,11 +85,8 @@ instance Annotated Term where
   annotations (If       t0 t1 t2 a) = a : ([t0, t1, t2] >>= annotations)
   annotations (Plus     t0 t1    a) = a : ([t0, t1]     >>= annotations)
   annotations (Leq      t0 t1    a) = a : ([t0, t1]     >>= annotations)
-  annotations (Pair     t0 t1    a) = a : ([t0, t1]     >>= annotations)
   annotations (Let    _    t1 t2 a) = a : ([t1, t2]     >>= annotations)
   annotations (Application t1 t2 a) = a : ([t1, t2]     >>= annotations)
-  annotations (Fst      t0       a) = a : annotations t0
-  annotations (Snd      t0       a) = a : annotations t0
   annotations (Equal    t0 t1    a) = a : ([t0, t1]     >>= annotations)
   annotations (Lambda _ t0       a) = a : annotations t0
   annotations (Rec    _ t0       a) = a : annotations t0
@@ -133,9 +126,6 @@ instance Show (Term a) where
   show (If t0 t1 t2       _) = "if " ++ show t0  ++ " then " ++ show t1 ++ " else " ++ show t2
   show (Plus  t0 t1       _) = putParens (show t0) ++ " + "  ++ putParens (show t1)
   show (Leq   t0 t1       _) = putParens (show t0) ++ " <= " ++ putParens (show t1)
-  show (Pair  t0 t1       _) = putParens $ show t0 ++ ", "   ++ show t1
-  show (Fst   t0          _) = "fst " ++ putParens (show t0)
-  show (Snd   t0          _) = "snd " ++ putParens (show t0)
   show (Equal t0 t1       _) = show t0 ++ " == " ++ show t1
   show (Lambda x t0       _) = putParens $ "\\" ++ x ++ " -> " ++ show t0
   show (Application t0 t1 _) = show t0 ++ " " ++ putParens (show t1)
@@ -155,9 +145,6 @@ instance Eq (Term a) where
   (Plus        t0 t1 _) == (Plus       t0' t1' _) = t0 == t0' && t1 == t1'
   (Leq         t0 t1 _) == (Leq        t0' t1' _) = t0 == t0' && t1 == t1'
   (Equal       t0 t1 _) == (Equal      t0' t1' _) = t0 == t0' && t1 == t1'
-  (Pair        t1 t2 _) == (Pair       t1' t2' _) = t1 == t1' && t2 == t2'
-  (Fst            t0 _) == (Fst            t0' _) = t0 == t0'
-  (Snd            t0 _) == (Snd            t0' _) = t0 == t0'
   (Lambda      x  t  _) == (Lambda     x'  t'  _) = x  == x'  && t  == t'
   (Let       x t0 t1 _) == (Let      y t0' t1' _) = x == y   &&
                                                   t0 == t0' &&
@@ -174,7 +161,6 @@ canonical (Number  _        _) = True
 canonical (Boolean _        _) = True
 canonical (Unit             _) = True
 canonical (Constructor _ ts _) = all canonical ts
-canonical (Pair    t1 t2    _) = canonical t1 && canonical t2
 canonical (Lambda  {}        ) = True
 canonical _                    = False
 
@@ -231,7 +217,6 @@ indices (Variable' a) = [a]
 indices  Integer'     = []
 indices  Boolean'     = []
 indices  Unit'        = []
-indices (t1 :*:   t2) = indices t1 <> indices t2
 indices (t1 :->:  t2) = indices t1 <> indices t2
 indices (Algebraic _) = []
 
@@ -266,11 +251,6 @@ freeVariables (Plus t0 t1 _) =
 freeVariables (Leq t0 t1 _) =
      freeVariables t0
   <> freeVariables t1
-freeVariables (Pair t0 t1 _) =
-     freeVariables t0
-  <> freeVariables t1
-freeVariables (Fst t0 _) = freeVariables t0
-freeVariables (Snd t0 _) = freeVariables t0
 freeVariables (Equal t0 t1 _) = freeVariables t0 <> freeVariables t1
 freeVariables (Lambda x t0 _) = [ y | y <- freeVariables t0 , x /= y ]
 freeVariables (Application t0 t1 _) =

@@ -77,12 +77,7 @@ type_ =
   , type'
   ]
   where
-    type'  =
-      choice
-      [ try $ parens $ type'' >>= \t1 -> symbol  "," >> (t1  :*:) <$> type_
-      , type''
-      ]
-    type'' =
+    type' =
       choice
       [ Unit'     <$  unit
       , Integer'  <$  symbol "integer"
@@ -99,7 +94,6 @@ simple =
   , info $ bool_ <&> Boolean
   , info $ Unit  <$ unit
   , info $ name  <&> Variable
-  , info $ try $ parens $ Pair <$> term_ <*> pre "," term_
   , info $ Constructor <$> constructorName <*> option [] (brackets (sepBy term_ (symbol ",")))
   , parens term_
   ]
@@ -116,8 +110,6 @@ term_ =
       cs <- many1 caseBranch
       return $ Case t cs
   , do If <$> pre "if" term_ <*> pre "then" term_ <*> pre "else" term_
-  , pre "fst" (Fst <$> term_)
-  , pre "snd" (Snd <$> term_)
   , pre "\\" $ Lambda <$> name <*> pre "->" term_
   , pre "let" $ Let <$> name <*> pre "=" term_ <*> pre "in" term_
   , pre "rec" $ Rec <$> name <*> pre "." term_
@@ -273,7 +265,6 @@ reserved =
   [ "property"
   , "if", "then", "else"
   , "case", "of"
-  , "fst", "snd"
   , "let", "in", "rec"
   , "data"
   ]

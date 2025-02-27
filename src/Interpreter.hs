@@ -29,16 +29,6 @@ interpret (Leq  t1 t2 a) =
   do m <- interpret t1 >>= number
      n <- interpret t2 >>= number
      return $ Boolean (m <= n) a
-interpret (Pair t1 t2 a) =
-  do v1 <- interpret t1
-     v2 <- interpret t2
-     return $ Pair v1 v2 a
-interpret (Fst p _) =
-  do ts <- interpret p >>= pair
-     return $ fst ts
-interpret (Snd p _) =
-  do ts <- interpret p >>= pair
-     return $ snd ts
 interpret (Equal t0 t1 a) =
   do x <- interpret t0 >>= nonFunction
      y <- interpret t1 >>= nonFunction
@@ -71,10 +61,6 @@ number :: Show a => Term a -> Runtime a Integer
 number (Number n _) = return n
 number t            = error $ "expected an integer, but got a " ++ show t
 
-pair :: Term a -> Runtime a (Term a, Term a)
-pair (Pair t1 t2 _) = return (t1, t2)
-pair _              = error "expected a pair"
-
 function :: Term a -> Runtime a (Term a -> Term a)
 function (Lambda x t a) =
   do notAtTopLevel (x, a)
@@ -93,9 +79,6 @@ substitute x t v = -- computes t[v/x].
     (Plus  t1 t2 a)          -> Plus  (f t1) (f t2)                           a
     (Leq   t1 t2 a)          -> Leq   (f t1) (f t2)                           a
     (Equal t1 t2 a)          -> Equal (f t1) (f t2)                           a
-    (Pair  t1 t2 a)          -> Pair  (f t1) (f t2)                           a
-    (Fst   t1    a)          -> Fst   (f t1)                                  a
-    (Snd   t1    a)          -> Snd   (f t1)                                  a
     (Lambda y t1 a) | x /= y -> Lambda y (f t1)                               a
     (Application t1 t2 a)    -> Application (f t1) (f t2)                     a
     (Let y t1 t2 a)          -> Let y (f t1) ((if x == y then id else f) t2)  a
