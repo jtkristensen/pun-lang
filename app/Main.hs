@@ -33,7 +33,7 @@ run a = a >>= \what ->
     (Shell         program) -> shell program
 
 numberOfTests :: Integer
-numberOfTests = 50
+numberOfTests = 10000
 
 strengthen :: Monad m => (a, m b) -> m (a, b)
 strengthen (a, mb) = mb <&> (,) a
