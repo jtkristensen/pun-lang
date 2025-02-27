@@ -35,43 +35,26 @@ generateCanonicalGenerator ds (is, bs, ts) (type1 :->: type2) size =
 generateCanonicalGenerator ds s tau size = generateTermGenerator ds s tau size
 
 generateTermGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
-generateTermGenerator _  _              Unit'    _    = return $ Unit Unit'
-generateTermGenerator ds s              Integer' 0    = generateTermGenerator ds s Integer' 1
-generateTermGenerator _  _              Integer' 1    = flip Number  Integer' <$> arbitrary
-generateTermGenerator ds s@(is, bs, ts) Integer' size =
+generateTermGenerator _  _            Unit'    _    = return $ Unit Unit'
+generateTermGenerator ds s            Integer' 0    = generateTermGenerator ds s Integer' 1
+generateTermGenerator _  _            Integer' 1    = flip Number  Integer' <$> arbitrary
+generateTermGenerator ds s@(_, bs, _) Integer' size =
   frequency $ zip [1..]
     [ flip Number  Integer' <$> arbitrary
-    , do cond  <- generateTermGenerator ds s Boolean'  (decrease size)
-         t1    <- generateTermGenerator ds s Integer'  (decrease size)
-         t2    <- generateTermGenerator ds s Integer'  (decrease size)
-         return $ If cond t1 t2 Integer'
     , do t1    <- generateTermGenerator ds s Integer'  (decrease size)
          t2    <- generateTermGenerator ds s Integer'  (decrease size)
          return $ Plus t1 t2 Integer'
-    , do argType <- generateType is (map snd ts)
-         f       <- generateTermGenerator ds s (argType :->: Integer') (decrease size)
-         arg     <- generateTermGenerator ds s argType (decrease size)
-         return $ Application f arg Integer'
-    , do x     <- generateName ts
-         type1 <- generateType is (map snd bs)
-         t1    <- generateTermGenerator ds s type1 (decrease size)
-         t2    <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) Integer' (decrease size)
-         return $ Let x t1 t2 Integer'
-    , do x     <- generateName ts
-         -- this is the trivially terminating recursive term, because x does not occur !
-         t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Integer' (decrease size)
-         return $ Rec x t1 Integer'
-         ]
+    , generateIf          ds s Integer' size
+    , generateApplication ds s Integer' size
+    , generateLet         ds s Integer' size
+    , generateRec         ds s Integer' size
+    ]
     ++ ((\a -> (15, return a)) . flip Variable Integer' <$> [ n | (n, t) <- bs , t == Integer' ])
-generateTermGenerator ds s          Boolean' 0 = generateTermGenerator ds s Boolean' 1
-generateTermGenerator _  _          Boolean' 1 = flip Boolean Boolean' <$> arbitrary
-generateTermGenerator ds s@(is, bs, ts) Boolean' size           =
+generateTermGenerator ds s              Boolean' 0    = generateTermGenerator ds s Boolean' 1
+generateTermGenerator _  _              Boolean' 1    = flip Boolean Boolean' <$> arbitrary
+generateTermGenerator ds s@(is, bs, ts) Boolean' size =
   frequency $ zip [1..]
     [ flip Boolean  Boolean' <$> arbitrary
-    , do cond  <- generateTermGenerator ds s Boolean'  (decrease size)
-         t1    <- generateTermGenerator ds s Boolean'  (decrease size)
-         t2    <- generateTermGenerator ds s Boolean'  (decrease size)
-         return $ If cond t1 t2 Boolean'
     , do t1    <- generateTermGenerator ds s Integer'  (decrease size)
          t2    <- generateTermGenerator ds s Integer'  (decrease size)
          return $ Leq t1 t2 Boolean'
@@ -79,20 +62,11 @@ generateTermGenerator ds s@(is, bs, ts) Boolean' size           =
          t1    <- generateTermGenerator ds s type1 (decrease size)
          t2    <- generateTermGenerator ds s type1 (decrease size)
          return $ Equal t1 t2 Boolean'
-    , do argType <- generateType is (map snd ts)
-         f       <- generateTermGenerator ds s (argType :->: Boolean') (decrease size)
-         arg     <- generateTermGenerator ds s argType (decrease size)
-         return $ Application f arg Boolean'
-    , do x     <- generateName ts
-         type1 <- generateType is (map snd bs)
-         t1    <- generateTermGenerator ds s type1 (decrease size)
-         t2    <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) Boolean' (decrease size)
-         return $ Let x t1 t2 Boolean'
-    , do x     <- generateName ts
-         -- this is the trivially terminating recursive term, because x does not occur !
-         t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Boolean' (decrease size)
-         return $ Rec x t1 Boolean'
-         ]
+    , generateIf          ds s Boolean' size
+    , generateApplication ds s Boolean' size
+    , generateLet         ds s Boolean' size
+    , generateRec         ds s Boolean' size
+    ]
     ++ ((\a -> (15, return a)) . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
 generateTermGenerator ds s@(is, _, _) (Variable' index) size   =
   generateTermGenerator ds s (resolve index is) (decrease size)
@@ -107,6 +81,35 @@ generateTermGenerator ds s (Algebraic d) size =
     ctrGen (TypeConstructor c types) =
       do ts <- mapM (\tau -> generateTermGenerator ds s tau (decrease size)) types
          return $ Constructor c ts (Algebraic d)
+
+generateIf :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateIf ds s tau size =
+  do cond  <- generateTermGenerator ds s Boolean' (decrease size)
+     t1    <- generateTermGenerator ds s tau      (decrease size)
+     t2    <- generateTermGenerator ds s tau      (decrease size)
+     return $ If cond t1 t2 tau
+
+generateApplication :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateApplication ds s@(is, _, ts) tau size =
+  do argType <- generateType is (map snd ts)
+     f       <- generateTermGenerator ds s (argType :->: tau) (decrease size)
+     arg     <- generateTermGenerator ds s argType (decrease size)
+     return $ Application f arg tau
+
+generateLet :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateLet ds s@(is, bs, ts) tau size =
+  do x     <- generateName ts
+     type1 <- generateType is (map snd bs)
+     t1    <- generateTermGenerator ds s type1 (decrease size)
+     t2    <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) tau (decrease size)
+     return $ Let x t1 t2 Integer'
+
+generateRec :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateRec ds (is, bs, ts) tau size =
+  do x     <- generateName ts
+     -- this is the trivially terminating recursive term, because x does not occur !
+     t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) tau (decrease size)
+     return $ Rec x t1 tau
 
 resolve :: Index -> LocalIndices -> Type
 resolve i is =
