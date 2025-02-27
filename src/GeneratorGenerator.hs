@@ -108,6 +108,30 @@ generateTermGenerator ds s (Algebraic d) size =
       do ts <- mapM (\tau -> generateTermGenerator ds s tau (decrease size)) types
          return $ Constructor c ts (Algebraic d)
 
+generateIf :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateIf ds s tau size = do cond  <- generateTermGenerator ds s Boolean' (decrease size)
+                              t1    <- generateTermGenerator ds s tau      (decrease size)
+                              t2    <- generateTermGenerator ds s tau      (decrease size)
+                              return $ If cond t1 t2 tau
+
+generateApplication :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateApplication ds s tau size = do argType <- generateType is (map snd ts)
+                                       f       <- generateTermGenerator ds s (argType :->: tau) (decrease size)
+                                       arg     <- generateTermGenerator ds s argType (decrease size)
+                                       return $ Application f arg tau
+
+generateLet :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateLet ds s tau size = do x  <- generateName (snd s)
+                               t0 <- generateTermGenerator ds s tau (decrease size)
+                               t1 <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) tau (decrease size)
+                               return $ Let x t0 t1 tau
+
+generateRec :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateRec ds s tau size = do x     <- generateName ts
+                               -- this is the trivially terminating recursive term, because x does not occur !
+                               t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) tau (decrease size)
+                               return $ Rec x t1 tau
+
 resolve :: Index -> LocalIndices -> Type
 resolve i is =
   case lookup i is of
