@@ -35,6 +35,7 @@ generateCanonicalGenerator ds (is, bs, ts) (type1 :->: type2) size =
   do x  <- generateName ts
      t0 <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) type2 (decrease size)
      return $ Lambda x t0 (type1 :->: type2)
+-- This remaining case is Variable'
 generateCanonicalGenerator ds s tau size = generateTermGenerator ds s tau size
 
 generateTermGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
