@@ -39,11 +39,19 @@ from within the repository.
 
 # Artifact
 
-To reproduce the result the paper currently submitted to IFL, run
+To reproduce the results the paper currently submitted to RC 2025, first install `pun` and use the `--check` flag to check all the properties in a given file.
+
+For the smaller examples inlined in the text, run
 
 ```bash
-pun --check examples/ifl1.pun
-pun --check examples/ifl2.pun
+pun --check examples/rc1.pun
+pun --check examples/rc2.pun
+```
+
+For the benchmark, demonstrating pun on the binary search tree properties defined in Hughes's *How to Specify It!* (2019), run
+
+```bash
+pun --check benchmark/BST.pun
 ```
 
 # Getting started.
