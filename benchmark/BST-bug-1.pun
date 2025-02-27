@@ -1,0 +1,501 @@
+// --------------------------- Helper functions ---------------------------
+
+data Unit = Unit .
+
+data Maybe = Nothing | Just [4] .
+
+not : boolean -> boolean .
+not b = if b then false else true .
+
+and : boolean -> boolean -> boolean .
+and b1 b2 =
+  if b1 then b2 else false .
+
+less : integer -> integer -> boolean .
+less m n = and (m <= n) (not (m == n)) .
+
+greater : integer -> integer -> boolean .
+greater m n = not (m <= n) .
+
+first : (0, 1) -> 0 .
+first pair =
+    case pair of
+    ; (x, y) -> x .
+
+compose : (0 -> 1) -> (2 -> 0) -> 2 -> 1 .
+compose f g x = f (g x) .
+
+flip : (0 -> 1 -> 2) -> 1 -> 0 -> 2 .
+flip f a b = f b a .
+
+uncurry : (0 -> 1 -> 2) -> (0, 1) -> 2 .
+uncurry f p = f (fst p) (snd p) .
+
+foldl : (0 -> 1 -> 0) -> 0 -> List -> 0 .
+foldl f acc l =
+    case l of
+    ; Empty        -> acc
+    ; Cons [x, xs] -> foldl f (f acc x) xs .
+
+foldr : (6 -> 7 -> 7) -> 7 -> List -> 7 .
+foldr f acc l =
+    case l of
+    ; Empty        -> acc
+    ; Cons [x, xs] -> f x (foldr f acc xs) .
+
+// ----------------------- BST and operations -----------------------
+
+data BST = Leaf | Node [BST, integer, integer, BST] .
+
+nil : BST .
+nil = Leaf .
+
+// insert discards the existing tree, returning a single-node tree just
+// containing the newly inserted value
+insert : integer -> integer -> BST -> BST .
+insert k1 v1 t = Node [Leaf, k1, v1, Leaf] .
+
+delete : integer -> BST -> BST .
+delete k t =
+    case t of
+    ; Leaf                  -> Leaf
+    ; Node [l1, k1, v1, r1] ->
+        if   less k k1
+        then Node [(delete k l1), k1, v1, r1]
+        else if   greater k k1
+             then Node [l1, k1, v1, (delete k r1)]
+             else (union l1 r1) .
+
+union : BST -> BST -> BST .
+union t1 t2 =
+    case t1 of
+    ; Leaf -> t2
+    ; Node [l1, k1, v1, r1] ->
+        union (delete k1 t1) (insert k1 v1 t2) .
+
+find : integer -> BST -> Maybe .
+find k t =
+    case t of
+    ; Leaf                  -> Nothing
+    ; Node [l1, k1, v1, r1] ->
+        if   (k == k1)
+        then Just [v1]
+        else if   (greater k k1)
+             then (find k r1)
+             else (find k l1) .
+
+valid : BST -> boolean .
+valid t =
+    case t of
+    ; Leaf              -> true
+    ; Node [l, k, v, r] ->
+        (and (and (valid l) (valid r))
+             (and (greaterKeys r k) (lesserKeys l k))) .
+
+greaterKeys : BST -> integer -> boolean .
+greaterKeys t k =
+    case t of
+    ; Leaf               -> true
+    ; Node [l, k1, v, r] ->
+        (if   (greater k1 k)
+         then (and (greaterKeys r k) (greaterKeys l k))
+         else false) .
+
+lesserKeys : BST -> integer -> boolean .
+lesserKeys t k =
+    case t of
+    ; Leaf               -> true
+    ; Node [l, k1, v, r] ->
+        (if   (less k1 k)
+         then (and (lesserKeys l k) (lesserKeys r k))
+         else false) .
+
+equalContents : BST -> BST -> boolean .
+equalContents t1 t2 = (toList t1) == (toList t2) .
+
+// -------------------------- List and operations --------------------------
+
+data List = Empty | Cons [(integer, integer), List] .
+
+listInsert : (integer, integer) -> List -> List .
+listInsert x list =
+    case list of
+    ; Empty          -> Cons [x, Empty]
+    ; Cons [y, ys] ->
+        if   (fst x) <= (fst y)
+        then Cons [x, (listInsert y ys)]
+        else Cons [y, (listInsert x ys)] .
+
+listDelete : (integer, integer) -> List -> List .
+listDelete x list =
+    case list of
+    ; Empty         -> Empty
+    ; Cons [y, ys] ->
+        if   (x == y)
+        then ys
+        else Cons [y, (listDelete x ys)] .
+
+listUnion : List -> List -> List .
+listUnion l1 l2 =
+    case l1 of
+    ; Empty          -> l2
+    ; Cons [x, xs] ->
+        case l2 of
+        ; Empty           -> listInsert x l2
+        ; Cons [y, ys] ->
+            if   (x == y)
+            then listUnion (listDelete x l1) l2
+            else listUnion (listDelete x l1) (listInsert x l2) .
+
+lookup : integer -> List -> Maybe .
+lookup k1 l =
+    case l of
+    ; Empty             -> Nothing
+    ; Cons [(k, v), xs] ->
+        (if   (k == k1)
+         then Just [v]
+         else (lookup k1 xs)) .
+
+unionByFst : List -> List -> List .
+unionByFst l1 l2 =
+    case l1 of
+    ; Empty          -> l2
+    ; Cons [p, rest] ->
+        unionByFst (listDelete p l1) (listInsert p l2) .
+
+toList : BST -> List .
+toList t =
+    case t of
+    ; Leaf              -> Empty
+    ; Node [l, k, v, r] -> append (toList l) (Cons [(k, v), (toList r)]) .
+
+append : List -> List -> List .
+append xs ys =
+    case xs of
+    ; Empty -> ys
+    ; Cons [x, rest] -> Cons [x, (append rest ys)] .
+
+filter : (0 -> boolean) -> List -> List .
+filter f list =
+    case list of
+    ; Empty        -> Empty
+    ; Cons [x, xs] ->
+        let rest = filter f xs in
+            if   f x
+            then Cons [x, rest]
+            else rest .
+
+without : integer -> List -> List .
+without key list = filter (\p -> not ((fst p) == key)) list .
+
+deleteKey : integer -> List -> List .
+deleteKey key list = without key list .
+
+concat : List -> List -> List .
+concat l1 l2 =
+    case l1 of
+    ; Empty        -> l2
+    ; Cons [x, xs] -> Cons [x, (concat xs l2)] .
+
+insertions : BST -> List .
+insertions t =
+    case t of
+    ; Leaf              -> Empty
+    ; Node [l, k, v, r] -> Cons [(k, v), (concat (insertions l) (insertions r))] .
+
+sort : List -> List .
+sort list =
+    case list of
+    ; Empty        -> Empty
+    ; Cons [x, xs] -> listInsert x (sort xs) .
+
+tree : List -> BST .
+tree xs = foldr (uncurry insert) nil xs .
+
+shuffle : List -> List .
+shuffle xs =
+    case xs of
+    ; Empty                    -> Empty
+    ; Cons [y, (Cons [z, zs])] ->
+        Cons [z, (Cons [y, shuffle zs])]
+    ; Cons [p, ps]             -> Cons [p, ps] .
+
+elem : integer -> List -> boolean .
+elem n l = 
+    case l of
+    ; Empty        -> false
+    ; Cons [x, xs] -> 
+        (if  ((fst x) == n)
+         then true
+         else (elem n xs)) .
+
+removeDuplicates : List -> List .
+removeDuplicates l = 
+    case l of
+    ; Empty        -> Empty
+    ; Cons [x, xs] ->
+        (if  (elem (fst x) xs)
+        then (removeDuplicates xs)
+        else (Cons [x, (removeDuplicates xs)])) .
+
+equivs : List -> (BST, BST) .
+equivs xs =
+    let ys = (removeDuplicates xs) in 
+        (tree ys, tree (shuffle ys)) .
+
+// ============================ BST properties ============================
+
+// --------------------------- Validity testing ---------------------------
+
+property nil-valid .
+    valid nil .
+
+property insert-valid k v t .
+    if   valid t
+    then valid (insert k v t)
+    else true .
+
+property delete-valid k v t .
+    if   valid t
+    then valid (delete k t)
+    else true .
+
+property union-valid t1 t2 .
+    if   and (valid t1) (valid t2)
+    then valid (union t1 t2)
+    else true .
+
+// ------------------------ Model-based properties ------------------------
+
+property nil-model .
+    (toList nil) == Empty .
+
+property insert-model k v t .
+    if   valid t
+    then (toList (insert k v t)) == (listInsert (k, v) (deleteKey k (toList t)))
+    else true .
+
+property delete-model k t .
+    if   valid t
+    then (toList (delete k t)) == (deleteKey k (toList t))
+    else true .
+
+property union-model t1 t2 .
+    if   (and (valid t1) (valid t2))
+    then (toList (union t1 t2)) == (sort (unionByFst (toList t1) (toList t2)))
+    else true .
+
+property find-model k t .
+    if   valid t
+    then (find k t) == (lookup k (toList t))
+    else true .
+
+// ---------------------------- Postconditions ----------------------------
+
+property insert-post k1 v1 t1 k2 .
+    if   valid t1
+    then (find k2 (insert k1 v1 t1)) == (if (k1 == k2) then (Just [v1]) else (find k2 t1))
+    else true .
+
+property insert-post-same-key k v t .
+    if   valid t
+    then (find k (insert k v t)) == (if (k == k) then Just [v] else find k t)
+    else true .
+
+property union-post t1 t2 k .
+    if   (and (valid t1) (valid t2))
+    then ((find k (union t1 t2)) == 
+          (case find k t1 of
+           ; Just [v] -> Just [v]
+           ; Nothing  ->
+                (case find k t2 of
+                ; Just [v1] -> Just [v1]
+                ; Nothing   -> Nothing)))
+    else true .
+
+property find-post-present k v t .
+    if   valid t
+    then (find k (insert k v t)) == (Just [v])
+    else true .
+
+property find-post-absent k t .
+    if   valid t
+    then (find k (delete k t)) == Nothing
+    else true .
+
+property insert-delete-complete k t .
+    if valid t
+    then (case (find k t) of
+          ; Nothing  -> t == (delete k t)
+          ; Just [v] -> t == (insert k v t))
+    else true .
+
+// ------------------------ Metamorphic properties ------------------------
+
+property insert-insert-weak k1 v1 k2 v2 t .
+    if   (and (valid t) (not (k1 == k2)))
+    then (equalContents (insert k1 v1 (insert k2 v2 t))
+                        (insert k2 v2 (insert k1 v1 t)))
+    else true .
+
+property insert-insert k1 v1 k2 v2 t .
+    if   valid t
+    then (equalContents (insert k1 v1 (insert k2 v2 t))
+                        (if  (k1 == k2)
+                        then (insert k1 v1 t)
+                        else (insert k2 v2 (insert k1 v1 t))))
+    else true .
+
+property insert-delete-weak k1 v1 k2 t .
+    if   (and (valid t) (not (k1 == k2)))
+    then (equalContents (insert k1 v1 (delete k2 t))
+                        (delete k2 (insert k1 v1 t)))
+    else true .
+
+property insert-delete k1 v1 k2 t .
+    if valid t
+    then (equalContents (insert k1 v1 (delete k2 t))
+                        (if  (k1 == k2)
+                        then (insert k1 v1 t)
+                        else (delete k2 (insert k1 v1 t))))
+    else true .
+
+property insert-union k v t t1 .
+    if  (and (valid t) (valid t1))
+    then (equalContents (insert k v (union t t1))
+                        (union (insert k v t) t1))
+    else true .
+
+property delete-nil k .
+    (delete k nil) == (nil) .
+
+property delete-insert-weak k k1 v1 t .
+    if   (and (valid t) (not (k == k1)))
+    then (equalContents (delete k (insert k1 v1 t))
+                        (insert k1 v1 (delete k t)))
+    else true .
+
+property delete-insert k k1 v1 t .
+    if   valid t
+    then (equalContents (delete k (insert k1 v1 t))
+                        (if  (k == k1)
+                        then (delete k t)
+                        else (insert k1 v1 (delete k t))))
+    else true .
+
+property delete-delete k k1 t .
+    if   valid t
+    then (equalContents (delete k (delete k1 t))
+                        (delete k1 (delete k t)))
+    else true .
+
+property delete-union k t t1 .
+    if   (and (valid t) (valid t1))
+    then (equalContents (delete k (union t t1))
+                        (union (delete k t) (delete k t1)))
+    else true .
+
+property union-nil-1 t .
+    if   valid t
+    then ((union nil t) == t)
+    else true .
+
+property union-nil-2 t .
+    if   valid t
+    then ((union t nil) == t)
+    else true .
+
+property union-delete-insert t t1 k v .
+    if   (and (valid t) (valid t1))
+    then (equalContents (union (delete k t) (insert k v t1))
+                       (insert k v (union t t1)))
+    else true .
+
+property union-union-idem t .
+    if   valid t
+    then (equalContents (union t t) (t))
+    else true .
+
+property union-union-assoc t1 t2 t3 .
+    if   (and (and (valid t1) (valid t2)) (valid t3))
+    then (equalContents (union (union t1 t2) t3)
+                        (union t1 (union t2 t3)))
+    else true .
+
+property find-nil k .
+    find k nil == Nothing .
+
+property find-insert k k1 v1 t .
+    if   valid t
+    then ((find k (insert k1 v1 t)) ==
+          (if k == k1
+           then Just [v1]
+           else find k t))
+    else true .
+
+property find-delete k k1 t .
+    if   valid t
+    then ((find k (delete k1 t)) ==
+          (if   k == k1
+           then Nothing
+           else find k t))
+    else true .
+
+property find-union k t t1 .
+    if   (and (valid t) (valid t1))
+    then ((find k (union t t1)) ==
+          (case (find k t) of
+           ; Nothing  -> find k t1
+           ; Just [v] -> Just [v]))
+    else true .
+
+// -------------------------- Inductive testing --------------------------
+
+property union-nil t .
+    (union nil t) == t .
+
+property union-insert t t1 k v .
+    if   (and (valid t) (valid t1))
+    then (equalContents (union (insert k v t) t1)
+                        (insert k v (union t t1)))
+    else true .
+
+property insert-complete t .
+    if   (valid t)
+    then t ==
+         (foldl (flip (uncurry insert)) nil (insertions t))
+    else true .
+
+property insert-complete-for-delete k t .
+    if   (valid t)
+    then (delete k t) ==
+         (foldl (flip (uncurry insert)) nil (insertions (delete k t)))
+    else true .
+
+property insert-complete-for-union t1 t2 .
+    if   (and (valid t1) (valid t2))
+    then (union t1 t2) ==
+         (foldl (flip (uncurry insert)) nil (insertions (union t1 t2)))
+    else true .
+
+// --------------------- Preservation of equivalence ---------------------
+
+property insert-preserves-equiv k v xs .
+    let t = (equivs xs) in
+        (equalContents (insert k v (fst t)) (insert k v (snd t))) .
+
+property delete-preserves-equiv k xs .
+    let t = (equivs xs) in
+        (equalContents (delete k (fst t)) (delete k (snd t))) .
+
+property union-preserves-equiv xs .
+    let t = (equivs xs) in
+        (equalContents (union (fst t) (snd t)) (union (snd t) (fst t))) .
+
+property find-preserves-equiv k xs .
+    let t = (equivs xs) in
+        (find k (fst t) == find k (snd t)) .
+
+property equivs xs .
+    let t = (equivs xs) in
+        (equalContents (fst t) (snd t)) .
