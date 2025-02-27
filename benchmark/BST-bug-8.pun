@@ -17,18 +17,25 @@ less m n = and (m <= n) (not (m == n)) .
 greater : integer -> integer -> boolean .
 greater m n = not (m <= n) .
 
-first : (0, 1) -> 0 .
-first pair =
-    case pair of
-    ; (x, y) -> x .
-
 compose : (0 -> 1) -> (2 -> 0) -> 2 -> 1 .
 compose f g x = f (g x) .
 
 flip : (0 -> 1 -> 2) -> 1 -> 0 -> 2 .
 flip f a b = f b a .
 
-uncurry : (0 -> 1 -> 2) -> (0, 1) -> 2 .
+data IntIntPair = IIP [integer, integer] .
+
+fst : IntIntPair -> integer .
+fst p =
+  case p of
+    ; IIP [x, y] -> x .
+
+snd : IntIntPair -> integer .
+snd p =
+  case p of
+    ; IIP [x, y] -> y .
+
+uncurry : (integer -> integer -> 2) -> IntIntPair -> 2 .
 uncurry f p = f (fst p) (snd p) .
 
 foldl : (0 -> 1 -> 0) -> 0 -> List -> 0 .
@@ -42,6 +49,7 @@ foldr f acc l =
     case l of
     ; Empty        -> acc
     ; Cons [x, xs] -> f x (foldr f acc xs) .
+
 
 // ----------------------- BST and operations -----------------------
 
@@ -125,9 +133,9 @@ equalContents t1 t2 = (toList t1) == (toList t2) .
 
 // -------------------------- List and operations --------------------------
 
-data List = Empty | Cons [(integer, integer), List] .
+data List = Empty | Cons [IntIntPair, List] .
 
-listInsert : (integer, integer) -> List -> List .
+listInsert : IntIntPair -> List -> List .
 listInsert x list =
     case list of
     ; Empty          -> Cons [x, Empty]
@@ -136,7 +144,7 @@ listInsert x list =
         then Cons [x, (listInsert y ys)]
         else Cons [y, (listInsert x ys)] .
 
-listDelete : (integer, integer) -> List -> List .
+listDelete : IntIntPair -> List -> List .
 listDelete x list =
     case list of
     ; Empty         -> Empty
@@ -161,7 +169,7 @@ lookup : integer -> List -> Maybe .
 lookup k1 l =
     case l of
     ; Empty             -> Nothing
-    ; Cons [(k, v), xs] ->
+    ; Cons [IIP [k, v], xs] ->
         (if   (k == k1)
          then Just [v]
          else (lookup k1 xs)) .
@@ -177,7 +185,7 @@ toList : BST -> List .
 toList t =
     case t of
     ; Leaf              -> Empty
-    ; Node [l, k, v, r] -> append (toList l) (Cons [(k, v), (toList r)]) .
+    ; Node [l, k, v, r] -> append (toList l) (Cons [IIP [k, v], (toList r)]) .
 
 append : List -> List -> List .
 append xs ys =
@@ -211,7 +219,7 @@ insertions : BST -> List .
 insertions t =
     case t of
     ; Leaf              -> Empty
-    ; Node [l, k, v, r] -> Cons [(k, v), (concat (insertions l) (insertions r))] .
+    ; Node [l, k, v, r] -> Cons [IIP[k, v], (concat (insertions l) (insertions r))] .
 
 sort : List -> List .
 sort list =
@@ -231,16 +239,16 @@ shuffle xs =
     ; Cons [p, ps]             -> Cons [p, ps] .
 
 elem : integer -> List -> boolean .
-elem n l = 
+elem n l =
     case l of
     ; Empty        -> false
-    ; Cons [x, xs] -> 
+    ; Cons [x, xs] ->
         (if  ((fst x) == n)
          then true
          else (elem n xs)) .
 
 removeDuplicates : List -> List .
-removeDuplicates l = 
+removeDuplicates l =
     case l of
     ; Empty        -> Empty
     ; Cons [x, xs] ->
@@ -248,10 +256,10 @@ removeDuplicates l =
         then (removeDuplicates xs)
         else (Cons [x, (removeDuplicates xs)])) .
 
-equivs : List -> (BST, BST) .
-equivs xs =
-    let ys = (removeDuplicates xs) in 
-        (tree ys, tree (shuffle ys)) .
+data BSTBSTPair = BBP [BST, BST].
+
+equivs : List -> BSTBSTPair .
+equivs xs = let ys = (removeDuplicates xs) in BBP [tree ys, tree (shuffle ys)] .
 
 // ============================ BST properties ============================
 
@@ -282,7 +290,7 @@ property nil-model .
 
 property insert-model k v t .
     if   valid t
-    then (toList (insert k v t)) == (listInsert (k, v) (deleteKey k (toList t)))
+    then (toList (insert k v t)) == (listInsert (IIP [k, v]) (deleteKey k (toList t)))
     else true .
 
 property delete-model k t .
@@ -314,7 +322,7 @@ property insert-post-same-key k v t .
 
 property union-post t1 t2 k .
     if   (and (valid t1) (valid t2))
-    then ((find k (union t1 t2)) == 
+    then ((find k (union t1 t2)) ==
           (case find k t1 of
            ; Just [v] -> Just [v]
            ; Nothing  ->
@@ -470,42 +478,50 @@ property union-insert t t1 k v .
                         (insert k v (union t t1)))
     else true .
 
+flip2 : (10 -> 11 -> 12) -> (11 -> 10 -> 12) .
+flip2 f x y = f y x .
+
 property insert-complete t .
     if   (valid t)
     then t ==
-         (foldl (flip (uncurry insert)) nil (insertions t))
+         (foldl (flip2 (uncurry insert)) nil (insertions t))
     else true .
 
 property insert-complete-for-delete k t .
     if   (valid t)
     then (delete k t) ==
-         (foldl (flip (uncurry insert)) nil (insertions (delete k t)))
+         (foldl (flip2 (uncurry insert)) nil (insertions (delete k t)))
     else true .
 
 property insert-complete-for-union t1 t2 .
     if   (and (valid t1) (valid t2))
     then (union t1 t2) ==
-         (foldl (flip (uncurry insert)) nil (insertions (union t1 t2)))
+         (foldl (flip2 (uncurry insert)) nil (insertions (union t1 t2)))
     else true .
 
 // --------------------- Preservation of equivalence ---------------------
 
 property insert-preserves-equiv k v xs .
-    let t = (equivs xs) in
-        (equalContents (insert k v (fst t)) (insert k v (snd t))) .
+    case (equivs xs) of
+      ; BBP [fstt, sndt] ->
+        (equalContents (insert k v (fstt)) (insert k v (sndt))) .
 
 property delete-preserves-equiv k xs .
-    let t = (equivs xs) in
-        (equalContents (delete k (fst t)) (delete k (snd t))) .
+    case (equivs xs) of
+      ; BBP [fstt, sndt] ->
+        (equalContents (delete k (fstt)) (delete k (sndt))) .
 
 property union-preserves-equiv xs .
-    let t = (equivs xs) in
-        (equalContents (union (fst t) (snd t)) (union (snd t) (fst t))) .
+    case (equivs xs) of
+      ; BBP [fstt, sndt] ->
+        (equalContents (union (fstt) (sndt)) (union (sndt) (fstt))) .
 
 property find-preserves-equiv k xs .
-    let t = (equivs xs) in
-        (find k (fst t) == find k (snd t)) .
+    case (equivs xs) of
+      ; BBP [fstt, sndt] ->
+        (find k (fstt) == find k (sndt)) .
 
 property equivs xs .
-    let t = (equivs xs) in
-        (equalContents (fst t) (snd t)) .
+    case (equivs xs) of
+      ; BBP [fstt, sndt] ->
+        (equalContents (fstt) (sndt)) .
