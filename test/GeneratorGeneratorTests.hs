@@ -58,10 +58,9 @@ instance Arbitrary AnalyseGenerator where
 generateGeneratorTests :: TestTree
 generateGeneratorTests =
   testGroup "`generateGenerator` tests :"
-  [ testProperty "Pairs and Functions are not primitives" $
+  [ testProperty "Functions are not primitives" $
     \(Primitive value) ->
       case value of
-        Pair    {} -> False
         Lambda  {} -> False
         _          -> True,
     testProperty "generateGenerator t has type Term t forall t." $ whenFail (print "hello") $
@@ -107,9 +106,6 @@ analyse (If   cond t1 t2 _)     = combine (combine (analyse cond) (analyse t1)) 
 analyse (Plus      t1 t2 _)     = combine (analyse t1) (analyse t2)
 analyse (Leq       t1 t2 _)     = combine (analyse t1) (analyse t2)
 analyse (Equal     t1 t2 _)     = combine (analyse t1) (analyse t2)
-analyse (Pair      t1 t2 _)     = combine (analyse t1) (analyse t2)
-analyse (Fst       t     _)     = analyse t
-analyse (Snd       t     _)     = analyse t
 analyse (Lambda    n  t  _)     = combine (return n, mempty) (analyse t)
 analyse (Application t1 t2 _)   = combine (analyse t1) (analyse t2)
 analyse (Let     n t1 t2 _)     = combine (return n, mempty) (combine (analyse t1) (analyse t2))
@@ -125,7 +121,6 @@ aType =
   oneof
     [ return Integer'
     , return Boolean'
-    , ( :*:  ) <$> aType <*> aType
     , ( :->: ) <$> aType <*> aType
     -- What do we do about variable here ??
     ]
@@ -151,7 +146,6 @@ newType i size =
   oneof
     [ return Integer'
     , return Boolean'
-    , ( :*:  ) <$> newType (i + 1) size <*> newType (i + 2) size
     , ( :->: ) <$> newType (i + 1) size <*> newType (i + 2) size
     ]
 
@@ -167,10 +161,6 @@ unifiesWith (Variable' a) t             =
   if a `elem` indices t then Nothing else return [(a, t)]
 unifiesWith t             (Variable' b) =
   if b `elem` indices t then Nothing else return [(b, t)]
-unifiesWith (t1 :*: t2)  (ta :*: tb) =
-  do a1 <-          t1 `unifiesWith` ta
-     b2 <- subst a1 t2 `unifiesWith` subst a1 tb
-     return $ a1 <> b2
 unifiesWith (t1 :->: t2)  (ta :->: tb) =
   do a1 <-          t1 `unifiesWith` ta
      b2 <- subst a1 t2 `unifiesWith` subst a1 tb
@@ -186,7 +176,6 @@ subst s (Variable' a) =
     [ ] -> Variable' a
     [t] -> t
     _   -> error "internal error about unification"
-subst s (t1 :*:  t2) = subst s t1 :*:  subst s t2
 subst s (t1 :->: t2) = subst s t1 :->: subst s t2
 
 equivalent :: Type -> Type -> Bool
