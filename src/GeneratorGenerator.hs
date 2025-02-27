@@ -15,7 +15,7 @@ decrease :: Int -> Int
 decrease size = size `div` 2
 
 generateGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> Gen (Term Type))
-generateGenerator ds s t = sized (generateGeneratorSized ds s t)
+generateGenerator ds s t = sized (generateCanonicalGenerator ds s t)
 
 generateCanonicalGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
 generateCanonicalGenerator _ _ Unit'          _    = return $ Unit Unit'
