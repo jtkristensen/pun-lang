@@ -21,7 +21,6 @@ generateGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> Gen (T
 generateGenerator ds s t = sized (generateCanonicalGenerator ds s t)
 
 generateCanonicalGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
-generateCanonicalGenerator _ _ Unit'          _    = return $ Unit Unit'
 generateCanonicalGenerator _ _ Integer'       _    = flip Number  Integer' <$> arbitrary
 generateCanonicalGenerator _ _ Boolean'       _    = flip Boolean Boolean' <$> arbitrary
 generateCanonicalGenerator ds s (Algebraic d) size =
@@ -47,7 +46,6 @@ generateCanonicalGenerator ds s (Variable' _) size = generateTermGenerator ds s 
 
 generateTermGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
 generateTermGenerator ds s              t        0    = generateCanonicalGenerator ds s t 0
-generateTermGenerator _  _              Unit'    _    = return $ Unit Unit'
 generateTermGenerator ds s@(is, bs, ts) Integer' size =
   frequency $ zip [1..]
     [ flip Number  Integer' <$> arbitrary
@@ -139,7 +137,6 @@ generateType is bindingTypes =
   oneof $
     [ return Integer'
     , return Boolean'
-    -- , return Unit'
     , do type1 <- generateType is bindingTypes
          type2 <- generateType is bindingTypes
          return $ type1 :->: type2
