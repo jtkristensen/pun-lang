@@ -17,6 +17,26 @@ decrease size = size `div` 2
 generateGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> Gen (Term Type))
 generateGenerator ds s t = sized (generateGeneratorSized ds s t)
 
+generateCanonicalGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateCanonicalGenerator _ _ Unit'          _    = return $ Unit Unit'
+generateCanonicalGenerator _ _ Integer'       _    = flip Number  Integer' <$> arbitrary
+generateCanonicalGenerator _ _ Boolean'       _    = flip Boolean Boolean' <$> arbitrary
+generateCanonicalGenerator ds s t@(type1 :*: type2) size =
+  do t1 <- generateCanonicalGenerator ds s type1 (decrease size)
+     t2 <- generateCanonicalGenerator ds s type2 (decrease size)
+     return $ Pair t1 t2 t
+generateCanonicalGenerator ds s (Algebraic d) size =
+  oneof (map ctrGen (constructors ds d))
+  where
+    ctrGen (TypeConstructor c types) =
+      do ts <- mapM (\tau -> generateCanonicalGenerator ds s tau (decrease size)) types
+         return $ Constructor c ts (Algebraic d)
+generateCanonicalGenerator ds (is, bs, ts) (type1 :->: type2) size =
+  do x  <- generateName ts
+     t0 <- generateGeneratorSized ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) type2 (decrease size)
+     return $ Lambda x t0 (type1 :->: type2)
+generateCanonicalGenerator ds s tau size = generateGeneratorSized ds s tau size
+
 generateGeneratorSized :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
 generateGeneratorSized _  _              Unit'    _    = return $ Unit Unit'
 generateGeneratorSized ds s              Integer' 0    = generateGeneratorSized ds s Integer' 1
