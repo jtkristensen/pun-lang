@@ -70,11 +70,6 @@ typeParserTests_positive =
   , ("integer -> boolean", Integer' :->: Boolean')
   , ("integer -> integer -> integer", Integer' :->: (Integer' :->: Integer'))
   , ("(integer -> integer) -> integer", (Integer' :->: Integer') :->: Integer')
-  , ("(boolean,boolean)", Boolean' :*: Boolean')
-  , ("(boolean ,boolean)", Boolean' :*: Boolean')
-  , ("(boolean, boolean)", Boolean' :*: Boolean')
-  , ("( boolean,boolean)", Boolean' :*: Boolean')
-  , ("(boolean,boolean )", Boolean' :*: Boolean')
   ]
 
 typeParserTests_negative :: [TestTree]

@@ -67,22 +67,6 @@ annotate (Leq t0 t1 _) =
      t0' `hasType` Integer'
      t1' `hasType` Integer'
      return $ Leq t0' t1' Boolean'
-annotate (Pair t0 t1 _) =
-  do t0' <- annotate t0
-     t1' <- annotate t1
-     return $ Pair t0' t1' (annotation t0' :*: annotation t1')
-annotate (Fst t0 _) =
-  do t0'  <- annotate t0
-     tau1 <- hole
-     tau2 <- hole
-     t0'  `hasType` (tau1 :*: tau2)
-     return $ Fst t0' tau1
-annotate (Snd t0 _) =
-  do t0'  <- annotate t0
-     tau1 <- hole
-     tau2 <- hole
-     t0'  `hasType` (tau1 :*: tau2)
-     return $ Snd t0' tau2
 annotate (Equal t0 t1 _) =
   do t0' <- annotate t0
      t1' <- annotate t1
@@ -133,7 +117,6 @@ solve (constraint : rest) =
     Boolean'      :=: Boolean'      -> solve rest
     Unit'         :=: Unit'         -> solve rest
     (Algebraic d) :=: (Algebraic c) | c == d -> solve rest
-    (t0 :*:  t1)  :=: (t2 :*:  t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (t0 :->: t1)  :=: (t2 :->: t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (Variable' i) :=: t1            ->
       if   i `elem` indexes t1
@@ -151,7 +134,6 @@ class HasSubstitution thing where
 
 instance HasSubstitution Type where
   substitute t i (Variable' j) | i == j = t
-  substitute t i (t0  :*:  t1)          = substitute t i t0 :*: substitute t i t1
   substitute t i (t0  :->: t1)          = substitute t i t0 :->: substitute t i t1
   substitute _ _ t0                     = t0
 
@@ -166,7 +148,6 @@ fillTypeHoles [                       ] = [ ]
 -- Utility functions.
 indexes :: Type -> [Index]
 indexes (Variable' i) = return i
-indexes (t0 :*:  t1)  = indexes t0 ++ indexes t1
 indexes (t0 :->: t1)  = indexes t0 ++ indexes t1
 indexes _             = mempty
 
@@ -184,7 +165,6 @@ alpha i t = (if null (indices t) then i else i + maximum (indices t) + 1, increm
         increment Unit'           = Unit'
         increment (Algebraic d)   = Algebraic d
         increment (Variable' j)   = Variable' (i + j)
-        increment (t1  :*: t2 )   = increment t1 :*: increment t2
         increment (t1 :->: t2 )   = increment t1 :->: increment t2
 
 alphaADT :: Index -> [TypeConstructor] -> (Index, [TypeConstructor])
@@ -211,7 +191,6 @@ refine s o = refine' s o
     refine' _            Boolean'               = Boolean'
     refine' _            Unit'                  = Unit'
     refine' _            (Algebraic d)          = Algebraic d
-    refine' s'           (t0 :*: t1)            = refine' s' t0 :*:  refine' s' t1
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
 
 type GlobalEnv = X -> Maybe Type

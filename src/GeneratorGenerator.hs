@@ -21,10 +21,6 @@ generateCanonicalGenerator :: DataDeclarations -> ProgramConfiguration -> (Type 
 generateCanonicalGenerator _ _ Unit'          _    = return $ Unit Unit'
 generateCanonicalGenerator _ _ Integer'       _    = flip Number  Integer' <$> arbitrary
 generateCanonicalGenerator _ _ Boolean'       _    = flip Boolean Boolean' <$> arbitrary
-generateCanonicalGenerator ds s t@(type1 :*: type2) size =
-  do t1 <- generateCanonicalGenerator ds s type1 (decrease size)
-     t2 <- generateCanonicalGenerator ds s type2 (decrease size)
-     return $ Pair t1 t2 t
 generateCanonicalGenerator ds s (Algebraic d) size =
   oneof (map ctrGen (constructors ds d))
   where
@@ -52,14 +48,6 @@ generateTermGenerator ds s@(is, bs, ts) Integer' size =
     , do t1    <- generateTermGenerator ds s Integer'  (decrease size)
          t2    <- generateTermGenerator ds s Integer'  (decrease size)
          return $ Plus t1 t2 Integer'
-    , do t1    <- generateTermGenerator ds s Integer' (decrease size)
-         type2 <- generateType is (map snd ts)
-         t2    <- generateTermGenerator ds s type2    (decrease size)
-         return $ Fst (Pair t1 t2 $ Integer' :*: type2) Integer'
-    , do type1 <- generateType is (map snd ts)
-         t1    <- generateTermGenerator ds s type1    (decrease size)
-         t2    <- generateTermGenerator ds s Integer' (decrease size)
-         return $ Snd (Pair t1 t2 $ type1 :*: Integer') Integer'
     , do argType <- generateType is (map snd ts)
          f       <- generateTermGenerator ds s (argType :->: Integer') (decrease size)
          arg     <- generateTermGenerator ds s argType (decrease size)
@@ -91,14 +79,6 @@ generateTermGenerator ds s@(is, bs, ts) Boolean' size           =
          t1    <- generateTermGenerator ds s type1 (decrease size)
          t2    <- generateTermGenerator ds s type1 (decrease size)
          return $ Equal t1 t2 Boolean'
-    , do t1    <- generateTermGenerator ds s Boolean' (decrease size)
-         type2 <- generateType is (map snd ts)
-         t2    <- generateTermGenerator ds s type2    (decrease size)
-         return $ Fst (Pair t1 t2 $ Boolean' :*: type2) Boolean'
-    , do type1 <- generateType is (map snd ts)
-         t1    <- generateTermGenerator ds s type1    (decrease size)
-         t2    <- generateTermGenerator ds s Boolean' (decrease size)
-         return $ Snd (Pair t1 t2 $ type1 :*: Boolean') Boolean'
     , do argType <- generateType is (map snd ts)
          f       <- generateTermGenerator ds s (argType :->: Boolean') (decrease size)
          arg     <- generateTermGenerator ds s argType (decrease size)
@@ -116,11 +96,6 @@ generateTermGenerator ds s@(is, bs, ts) Boolean' size           =
     ++ ((\a -> (15, return a)) . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
 generateTermGenerator ds s@(is, _, _) (Variable' index) size   =
   generateTermGenerator ds s (resolve index is) (decrease size)
--- Todo, generate more interesting things here!
-generateTermGenerator ds s t@(type1 :*: type2) size =
-  do t1 <- generateTermGenerator ds s type1 (decrease size)
-     t2 <- generateTermGenerator ds s type2 (decrease size)
-     return $ Pair t1 t2 t
 -- Todo, generate more interesting things here!
 generateTermGenerator ds (is, bs, ts) (type1 :->: type2) size =
   do x  <- generateName ts
@@ -159,9 +134,6 @@ generateType is bindingTypes =
     [ return Integer'
     , return Boolean'
     -- , return Unit'
-    , do type1 <- generateType is bindingTypes
-         type2 <- generateType is bindingTypes
-         return $ type1 :*: type2
     , do type1 <- generateType is bindingTypes
          type2 <- generateType is bindingTypes
          return $ type1 :->: type2
