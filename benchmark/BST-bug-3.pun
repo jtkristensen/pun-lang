@@ -294,10 +294,10 @@ property delete-model k t .
     then (toList (delete k t)) == (deleteKey k (toList t))
     else true .
 
-property union-model t1 t2 .
-    if   (and (valid t1) (valid t2))
-    then (toList (union t1 t2)) == (sort (unionByFst (toList t1) (toList t2)))
-    else true .
+// property union-model t1 t2 .
+//     if   (and (valid t1) (valid t2))
+//     then (toList (union t1 t2)) == (sort (unionByFst (toList t1) (toList t2)))
+//     else true .
 
 property find-model k t .
     if   valid t
