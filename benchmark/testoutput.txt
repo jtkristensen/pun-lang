@@ -2,55 +2,1230 @@ BST-bug-1.pun
 testing:nil-valid> .................................................. ok
 testing:insert-valid> .................................................. ok
 testing:delete-valid> .................................................. ok
-testing:union-valid> .................................................. ok
-testing:nil-model> .................................................. ok
-testing:insert-model> .x failed:
-shrinking> if valid (Node [Leaf [], -23, -24, Leaf []]) then toList (insert (26) (-29) (Node [Leaf [], -23, -24, Leaf []])) == listInsert (IIP [26, -29]) (deleteKey (26) (toList (Node [Leaf [], -23, -24, Leaf []]))) else True
-after 6 tests.
-testing:delete-model> .................................................. ok
-testing:union-model> .x failed:
-shrinking> if and (valid (Node [Leaf [], -3, -15, Node [Leaf [], 21, 22, Leaf []]])) (valid (Leaf [])) then toList (union (Node [Leaf [], -3, -15, Node [Leaf [], 21, 22, Leaf []]]) (Leaf [])) == sort (unionByFst (toList (Node [Leaf [], -3, -15, Node [Leaf [], 21, 22, Leaf []]])) (toList (Leaf []))) else True
-after 2 tests.
-testing:find-model> .................................................. ok
-testing:insert-post> ...............x failed:
-shrinking> if valid (Node [Node [Leaf [], 5, -28, Leaf []], 13, 9, Leaf []]) then find (5) (insert (-19) (-17) (Node [Node [Leaf [], 5, -28, Leaf []], 13, 9, Leaf []])) == if -19 == 5 then Just [-17] else find (5) (Node [Node [Leaf [], 5, -28, Leaf []], 13, 9, Leaf []]) else True
-after 283 tests.
-testing:insert-post-same-key> ...............................................BST-bug-2.pun
+testing:union-valid> ....................................BST-bug-2.pun
 testing:nil-valid> .................................................. ok
 testing:insert-valid> ...........x failed:
-shrinking> if valid (Node [Leaf [], -6, -10, Leaf []]) then valid (insert (-6) (-6) (Node [Leaf [], -6, -10, Leaf []])) else True
-after 207 tests.
+shrinking> if valid (Node [Leaf [], 6, -17, Leaf []]) then valid (insert (6) (16) (Node [Leaf [], 6, -17, Leaf []])) else True
+after 208 tests.
 testing:delete-valid> .................................................. ok
-testing:union-valid> .............x failed:
-shrinking> if and (valid (Node [Leaf [], -25, 21, Leaf []])) (valid (Node [Node [Leaf [], -25, -26, Leaf []], -15, 18, Node [Leaf [], -5, 14, Leaf []]])) then valid (union (Node [Leaf [], -25, 21, Leaf []]) (Node [Node [Leaf [], -25, -26, Leaf []], -15, 18, Node [Leaf [], -5, 14, Leaf []]])) else True
-after 249 tests.
+testing:union-valid> .................................................. ok
 testing:nil-model> .................................................. ok
-testing:insert-model> ...x failed:
-shrinking> if valid (Node [Node [Leaf [], -22, -24, Leaf []], 22, 15, Leaf []]) then toList (insert (22) (-13) (Node [Node [Leaf [], -22, -24, Leaf []], 22, 15, Leaf []])) == listInsert (IIP [22, -13]) (deleteKey (22) (toList (Node [Node [Leaf [], -22, -24, Leaf []], 22, 15, Leaf []]))) else True
-after 58 tests.
+testing:insert-model> ..x failed:
+shrinking> if valid (Node [Leaf [], 21, -8, Leaf []]) then toList (insert (21) (15) (Node [Leaf [], 21, -8, Leaf []])) == listInsert (IIP [21, 15]) (deleteKey (21) (toList (Node [Leaf [], 21, -8, Leaf []]))) else True
+after 29 tests.
 testing:delete-model> .................................................. ok
 testing:union-model> .................................................. ok
 testing:find-model> .................................................. ok
 testing:insert-post> .................................................. ok
-testing:insert-post-same-key> ........x failed:
-shrinking> if valid (Node [Leaf [], 30, 20, Leaf []]) then find (30) (insert (30) (6) (Node [Leaf [], 30, 20, Leaf []])) == if 30 == 30 then Just [6] else find (30) (Node [Leaf [], 30, 20, Leaf []]) else True
-after 146 tests.
-testing:union-post> .....................................BST-bug-3.pun
+testing:insert-post-same-key> ...x failed:
+shrinking> if valid (Node [Leaf [], 1, -13, Leaf []]) then find (1) (insert (1) (-23) (Node [Leaf [], 1, -13, Leaf []])) == if 1 == 1 then Just [-23] else find (1) (Node [Leaf [], 1, -13, Leaf []]) else True
+after 55 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> .x failed:
+shrinking> if valid (Node [Leaf [], -4, 30, Node [Leaf [], 30, -13, Leaf []]]) then find (30) (insert (30) (-15) (Node [Leaf [], -4, 30, Node [Leaf [], 30, -13, Leaf []]])) == Just [-15] else True
+after 6 tests.
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> ..x failed:
+shrinking> if valid (Node [Leaf [], -27, -1, Node [Leaf [], -8, -4, Leaf []]]) then case find (-8) (Node [Leaf [], -27, -1, Node [Leaf [], -8, -4, Leaf []]]) of
+  ; Nothing [] -> Node [Leaf [], -27, -1, Node [Leaf [], -8, -4, Leaf []]] == delete (-8) (Node [Leaf [], -27, -1, Node [Leaf [], -8, -4, Leaf []]])
+  ; Just [v] -> Node [Leaf [], -27, -1, Node [Leaf [], -8, -4, Leaf []]] == insert (-8) (v) (Node [Leaf [], -27, -1, Node [Leaf [], -8, -4, Leaf []]]) else True
+after 39 tests.
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> ......x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (25) (-21) (insert (25) (4) (Leaf []))) (if 25 == 25 then insert (25) (-21) (Leaf []) else insert (25) (4) (insert (25) (-21) (Leaf []))) else True
+after 112 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> ...............................x failed:
+shrinking> if valid (Node [Node [Node [Leaf [], 9, -3, Leaf []], 13, -30, Leaf []], 17, 26, Leaf []]) then equalContents (insert (9) (-22) (delete (9) (Node [Node [Node [Leaf [], 9, -3, Leaf []], 13, -30, Leaf []], 17, 26, Leaf []]))) (if 9 == 9 then insert (9) (-22) (Node [Node [Node [Leaf [], 9, -3, Leaf []], 13, -30, Leaf []], 17, 26, Leaf []]) else delete (9) (insert (9) (-22) (Node [Node [Node [Leaf [], 9, -3, Leaf []], 13, -30, Leaf []], 17, 26, Leaf []]))) else True
+after 617 tests.
+testing:insert-union> .................................................. ok
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> .................................................. ok
+testing:union-nil-1> .................................................. ok
+testing:union-nil-2> .................................................. ok
+testing:union-delete-insert> .....x failed:
+shrinking> if and (valid (Node [Leaf [], 28, 10, Leaf []])) (valid (Leaf [])) then equalContents (union (delete (28) (Node [Leaf [], 28, 10, Leaf []])) (insert (28) (25) (Leaf []))) (insert (28) (25) (union (Node [Leaf [], 28, 10, Leaf []]) (Leaf []))) else True
+after 100 tests.
+testing:union-union-idem> .x failed:
+shrinking> if valid (Node [Leaf [], 22, 3, Leaf []]) then equalContents (union (Node [Leaf [], 22, 3, Leaf []]) (Node [Leaf [], 22, 3, Leaf []])) (Node [Leaf [], 22, 3, Leaf []]) else True
+after 3 tests.
+testing:union-union-assoc> .................................................. ok
+testing:find-nil> .................................................. ok
+testing:find-insert> .................................................. ok
+testing:find-delete> .................................................. ok
+testing:find-union> .................................................. ok
+testing:union-nil> .................................................. ok
+testing:union-insert> .................................................. ok
+testing:insert-complete> .................................................. ok
+testing:insert-complete-for-delete> .................................................. ok
+testing:insert-complete-for-union> .................................................. ok
+testing:insert-preserves-equiv> .................................................. ok
+testing:delete-preserves-equiv> .................................................. ok
+testing:union-preserves-equiv> .................................................. ok
+testing:find-preserves-equiv> .................................................. ok
+testing:equivs> .................................................. ok
+BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .....x failed:
+shrinking> if valid (Node [Leaf [], -24, -16, Leaf []]) then toList (insert (-24) (30) (Node [Leaf [], -24, -16, Leaf []])) == listInsert (IIP [-24, 30]) (deleteKey (-24) (toList (Node [Leaf [], -24, -16, Leaf []]))) else True
+after 85 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .................................x failed:
+shrinking> if and (valid (Node [Leaf [], -1, 26, Node [Leaf [], 28, 23, Leaf []]])) (valid (Node [Leaf [], -1, 30, Leaf []])) then toList (union (Node [Leaf [], -1, 26, Node [Leaf [], 28, 23, Leaf []]]) (Node [Leaf [], -1, 30, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -1, 26, Node [Leaf [], 28, 23, Leaf []]])) (toList (Node [Leaf [], -1, 30, Leaf []]))) else True
+after 641 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> ..............x failed:
+shrinking> if valid (Node [Leaf [], 16, 14, Leaf []]) then find (16) (insert (16) (1) (Node [Leaf [], 16, 14, Leaf []])) == if 16 == 16 then Just [1] else find (16) (Node [Leaf [], 16, 14, Leaf []]) else True
+after 268 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> ...................x failed:
+shrinking> if valid (Node [Leaf [], 3, 18, Node [Node [Leaf [], 7, 8, Leaf []], 25, -23, Leaf []]]) then find (3) (insert (3) (-14) (Node [Leaf [], 3, 18, Node [Node [Leaf [], 7, 8, Leaf []], 25, -23, Leaf []]])) == Just [-14] else True
+after 370 tests.
+testing:find-post-absent> ...........................................BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> ..................................................BST-bug-5.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> ...x failed:
+shrinking> if valid (Node [Leaf [], -27, -16, Node [Leaf [], -22, 7, Leaf []]]) then toList (delete (-22) (Node [Leaf [], -27, -16, Node [Leaf [], -22, 7, Leaf []]])) == deleteKey (-22) (toList (Node [Leaf [], -27, -16, Node [Leaf [], -22, 7, Leaf []]])) else True
+after 41 tests.
+testing:union-model> ......................................x failed:
+shrinking> if and (valid (Node [Leaf [], 12, -4, Leaf []])) (valid (Node [Leaf [], 12, 9, Node [Leaf [], 27, 13, Leaf []]])) then toList (union (Node [Leaf [], 12, -4, Leaf []]) (Node [Leaf [], 12, 9, Node [Leaf [], 27, 13, Leaf []]])) == sort (unionByFst (toList (Node [Leaf [], 12, -4, Leaf []])) (toList (Node [Leaf [], 12, 9, Node [Leaf [], 27, 13, Leaf []]]))) else True
+after 751 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> ..........................BST-bug-6.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .....x failed:
+shrinking> if and (valid (Node [Leaf [], -18, 22, Node [Leaf [], 22, 16, Leaf []]])) (valid (Node [Leaf [], 5, -12, Leaf []])) then valid (union (Node [Leaf [], -18, 22, Node [Leaf [], 22, 16, Leaf []]]) (Node [Leaf [], 5, -12, Leaf []])) else True
+after 81 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> ..x failed:
+shrinking> if and (valid (Node [Leaf [], -6, -11, Leaf []])) (valid (Node [Leaf [], -22, 21, Leaf []])) then toList (union (Node [Leaf [], -6, -11, Leaf []]) (Node [Leaf [], -22, 21, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -6, -11, Leaf []])) (toList (Node [Leaf [], -22, 21, Leaf []]))) else True
+after 27 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .....x failed:
+shrinking> if and (valid (Node [Leaf [], -1, 5, Leaf []])) (valid (Node [Leaf [], -5, -25, Leaf []])) then find (-5) (union (Node [Leaf [], -1, 5, Leaf []]) (Node [Leaf [], -5, -25, Leaf []])) == case find (-5) (Node [Leaf [], -1, 5, Leaf []]) of
+  ; Just [v] -> Just [v]
+  ; Nothing [] -> case find (-5) (Node [Leaf [], -5, -25, Leaf []]) of
+  ; Just [v1] -> Just [v1]
+  ; Nothing [] -> Nothing [] else True
+after 86 tests.
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .............................................BST-bug-7.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .......................x failed:
+shrinking> if and (valid (Node [Node [Leaf [], -16, 23, Leaf []], -13, -13, Node [Leaf [], 29, -18, Leaf []]])) (valid (Node [Node [Leaf [], -9, 9, Leaf []], 17, 16, Leaf []])) then valid (union (Node [Node [Leaf [], -16, 23, Leaf []], -13, -13, Node [Leaf [], 29, -18, Leaf []]]) (Node [Node [Leaf [], -9, 9, Leaf []], 17, 16, Leaf []])) else True
+after 452 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> .x failed:
+shrinking> if and (valid (Node [Leaf [], -27, 29, Leaf []])) (valid (Node [Leaf [], -7, -2, Leaf []])) then toList (union (Node [Leaf [], -27, 29, Leaf []]) (Node [Leaf [], -7, -2, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -27, 29, Leaf []])) (toList (Node [Leaf [], -7, -2, Leaf []]))) else True
+after 5 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> ..................x failed:
+shrinking> if and (valid (Node [Leaf [], -17, -10, Leaf []])) (valid (Node [Leaf [], 3, -6, Node [Leaf [], 29, 21, Leaf []]])) then find (-17) (union (Node [Leaf [], -17, -10, Leaf []]) (Node [Leaf [], 3, -6, Node [Leaf [], 29, 21, Leaf []]])) == case find (-17) (Node [Leaf [], -17, -10, Leaf []]) of
+  ; Just [v] -> Just [v]
+  ; Nothing [] -> case find (-17) (Node [Leaf [], 3, -6, Node [Leaf [], 29, 21, Leaf []]]) of
+  ; Just [v1] -> Just [v1]
+  ; Nothing [] -> Nothing [] else True
+after 346 tests.
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .................................................. ok
+testing:insert-delete-weak> .............x failed:
+shrinking> if and (valid (Node [Node [Leaf [], -3, -4, Leaf []], 15, 4, Leaf []])) (not (-17 == -3)) then equalContents (insert (-17) (-18) (delete (-3) (Node [Node [Leaf [], -3, -4, Leaf []], 15, 4, Leaf []]))) (delete (-3) (insert (-17) (-18) (Node [Node [Leaf [], -3, -4, Leaf []], 15, 4, Leaf []]))) else True
+after 256 tests.
+testing:insert-delete> ...........x failed:
+shrinking> if valid (Node [Leaf [], -22, -2, Leaf []]) then equalContents (insert (-28) (13) (delete (-22) (Node [Leaf [], -22, -2, Leaf []]))) (if -28 == -22 then insert (-28) (13) (Node [Leaf [], -22, -2, Leaf []]) else delete (-22) (insert (-28) (13) (Node [Leaf [], -22, -2, Leaf []]))) else True
+after 205 tests.
+testing:insert-union> .x failed:
+shrinking> if and (valid (Leaf [])) (valid (Leaf [])) then equalContents (insert (-23) (11) (union (Leaf []) (Leaf []))) (union (insert (-23) (11) (Leaf [])) (Leaf [])) else True
+after 3 tests.
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> ......x failed:
+shrinking> if and (valid (Node [Leaf [], -17, 23, Leaf []])) (not (-17 == -28)) then equalContents (delete (-17) (insert (-28) (19) (Node [Leaf [], -17, 23, Leaf []]))) (insert (-28) (19) (delete (-17) (Node [Leaf [], -17, 23, Leaf []]))) else True
+after 109 tests.
+testing:delete-insert> .................x failed:
+shrinking> if valid (Node [Leaf [], 3, 28, Leaf []]) then equalContents (delete (3) (insert (-5) (22) (Node [Leaf [], 3, 28, Leaf []]))) (if 3 == -5 then delete (3) (Node [Leaf [], 3, 28, Leaf []]) else insert (-5) (22) (delete (3) (Node [Leaf [], 3, 28, Leaf []]))) else True
+after 339 tests.
+testing:delete-delete> .................................................. ok
+testing:delete-union> .................x failed:
+shrinking> if and (valid (Node [Node [Leaf [], -10, 29, Leaf []], -9, 24, Leaf []])) (valid (Node [Leaf [], 15, -3, Leaf []])) then equalContents (delete (-10) (union (Node [Node [Leaf [], -10, 29, Leaf []], -9, 24, Leaf []]) (Node [Leaf [], 15, -3, Leaf []]))) (union (delete (-10) (Node [Node [Leaf [], -10, 29, Leaf []], -9, 24, Leaf []])) (delete (-10) (Node [Leaf [], 15, -3, Leaf []]))) else True
+after 327 tests.
+testing:union-nil-1> .................................................. ok
+testing:union-nil-2> .x failed:
+shrinking> if valid (Node [Leaf [], -9, 5, Node [Leaf [], 13, -3, Leaf []]]) then union (Node [Leaf [], -9, 5, Node [Leaf [], 13, -3, Leaf []]]) (nil) == Node [Leaf [], -9, 5, Node [Leaf [], 13, -3, Leaf []]] else True
+after 2 tests.
+testing:union-delete-insert> ..x failed:
+shrinking> if and (valid (Node [Leaf [], -16, 6, Node [Leaf [], 1, -5, Leaf []]])) (valid (Node [Leaf [], 6, -12, Leaf []])) then equalContents (union (delete (-13) (Node [Leaf [], -16, 6, Node [Leaf [], 1, -5, Leaf []]])) (insert (-13) (1) (Node [Leaf [], 6, -12, Leaf []]))) (insert (-13) (1) (union (Node [Leaf [], -16, 6, Node [Leaf [], 1, -5, Leaf []]]) (Node [Leaf [], 6, -12, Leaf []]))) else True
+after 36 tests.
+testing:union-union-idem> ..........x failed:
+shrinking> if valid (Node [Node [Leaf [], -19, -16, Node [Leaf [], 7, 16, Leaf []]], 8, 11, Node [Leaf [], 27, 29, Leaf []]]) then equalContents (union (Node [Node [Leaf [], -19, -16, Node [Leaf [], 7, 16, Leaf []]], 8, 11, Node [Leaf [], 27, 29, Leaf []]]) (Node [Node [Leaf [], -19, -16, Node [Leaf [], 7, 16, Leaf []]], 8, 11, Node [Leaf [], 27, 29, Leaf []]])) (Node [Node [Leaf [], -19, -16, Node [Leaf [], 7, 16, Leaf []]], 8, 11, Node [Leaf [], 27, 29, Leaf []]]) else True
+after 189 tests.
+testing:union-union-assoc> .x failed:
+shrinking> if and (and (valid (Node [Leaf [], -21, 7, Node [Leaf [], -1, 10, Node [Leaf [], 8, -1, Leaf []]]])) (valid (Leaf []))) (valid (Node [Leaf [], -6, -24, Node [Leaf [], 18, -3, Leaf []]])) then equalContents (union (union (Node [Leaf [], -21, 7, Node [Leaf [], -1, 10, Node [Leaf [], 8, -1, Leaf []]]]) (Leaf [])) (Node [Leaf [], -6, -24, Node [Leaf [], 18, -3, Leaf []]])) (union (Node [Leaf [], -21, 7, Node [Leaf [], -1, 10, Node [Leaf [], 8, -1, Leaf []]]]) (union (Leaf []) (Node [Leaf [], -6, -24, Node [Leaf [], 18, -3, Leaf []]]))) else True
+after 1 tests.
+testing:find-nil> .................................................. ok
+testing:find-insert> .................................................. ok
+testing:find-delete> .................................................. ok
+testing:find-union> .x failed:
+shrinking> if and (valid (Node [Leaf [], -5, 3, Node [Leaf [], 2, -9, Leaf []]])) (valid (Leaf [])) then find (2) (union (Node [Leaf [], -5, 3, Node [Leaf [], 2, -9, Leaf []]]) (Leaf [])) == case find (2) (Node [Leaf [], -5, 3, Node [Leaf [], 2, -9, Leaf []]]) of
+  ; Nothing [] -> find (2) (Leaf [])
+  ; Just [v] -> Just [v] else True
+after 9 tests.
+testing:union-nil> .................................................. ok
+testing:union-insert> x failed:
+shrinking> if and (valid (Node [Leaf [], -1, 29, Leaf []])) (valid (Leaf [])) then equalContents (union (insert (-4) (-19) (Node [Leaf [], -1, 29, Leaf []])) (Leaf [])) (insert (-4) (-19) (union (Node [Leaf [], -1, 29, Leaf []]) (Leaf []))) else True
+after 0 tests.
+testing:insert-complete> .................................................. ok
+testing:insert-complete-for-delete> .................................................. ok
+testing:insert-complete-for-union> .x failed:
+shrinking> if and (valid (Node [Leaf [], -25, -9, Node [Leaf [], -6, 30, Leaf []]])) (valid (Node [Node [Leaf [], 5, 17, Leaf []], 25, -30, Leaf []])) then union (Node [Leaf [], -25, -9, Node [Leaf [], -6, 30, Leaf []]]) (Node [Node [Leaf [], 5, 17, Leaf []], 25, -30, Leaf []]) == foldl (flip2 (uncurry (insert))) (nil) (insertions (union (Node [Leaf [], -25, -9, Node [Leaf [], -6, 30, Leaf []]]) (Node [Node [Leaf [], 5, 17, Leaf []], 25, -30, Leaf []]))) else True
+after 14 tests.
+testing:insert-preserves-equiv> .................................................. ok
+testing:delete-preserves-equiv> ..............x failed:
+shrinking> case equivs (Cons [IIP [14, 6], Cons [IIP [-23, 19], Cons [IIP [-28, 19], Cons [IIP [7, 21], Empty []]]]]) of
+  ; BBP [fstt, sndt] -> equalContents (delete (7) (fstt)) (delete (7) (sndt))
+after 271 tests.
+testing:union-preserves-equiv> .x failed:
+shrinking> case equivs (Cons [IIP [-11, 20], Cons [IIP [-3, 25], Empty []]]) of
+  ; BBP [fstt, sndt] -> equalContents (union (fstt) (sndt)) (union (sndt) (fstt))
+after 2 tests.
+testing:find-preserves-equiv> .................................................. ok
+testing:equivs> .................................................. ok
+BST-bug-8.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> ...................x failed:
+shrinking> if and (valid (Node [Node [Leaf [], -12, -26, Node [Leaf [], -7, -4, Node [Leaf [], 9, -9, Leaf []]]], 19, -29, Leaf []])) (valid (Node [Leaf [], 9, 9, Leaf []])) then toList (union (Node [Node [Leaf [], -12, -26, Node [Leaf [], -7, -4, Node [Leaf [], 9, -9, Leaf []]]], 19, -29, Leaf []]) (Node [Leaf [], 9, 9, Leaf []])) == sort (unionByFst (toList (Node [Node [Leaf [], -12, -26, Node [Leaf [], -7, -4, Node [Leaf [], 9, -9, Leaf []]]], 19, -29, Leaf []])) (toList (Node [Leaf [], 9, 9, Leaf []]))) else True
+after 374 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> ...................................BST-bug-1.pun
 testing:nil-valid> .................................................. ok
 testing:insert-valid> .................................................. ok
 testing:delete-valid> .................................................. ok
 testing:union-valid> .................................................. ok
 testing:nil-model> .................................................. ok
 testing:insert-model> .x failed:
-shrinking> if valid (Node [Node [Leaf [], 7, -18, Leaf []], 17, -24, Node [Leaf [], 27, 6, Leaf []]]) then toList (insert (7) (-8) (Node [Node [Leaf [], 7, -18, Leaf []], 17, -24, Node [Leaf [], 27, 6, Leaf []]])) == listInsert (IIP [7, -8]) (deleteKey (7) (toList (Node [Node [Leaf [], 7, -18, Leaf []], 17, -24, Node [Leaf [], 27, 6, Leaf []]]))) else True
-after 16 tests.
+shrinking> if valid (Node [Leaf [], -19, -9, Leaf []]) then toList (insert (12) (10) (Node [Leaf [], -19, -9, Leaf []])) == listInsert (IIP [12, 10]) (deleteKey (12) (toList (Node [Leaf [], -19, -9, Leaf []]))) else True
+after 3 tests.
 testing:delete-model> .................................................. ok
-testing:union-model> .........x failed:
-shrinking> if and (valid (Node [Node [Leaf [], 6, -16, Leaf []], 12, 18, Leaf []])) (valid (Node [Leaf [], 6, -1, Leaf []])) then toList (union (Node [Node [Leaf [], 6, -16, Leaf []], 12, 18, Leaf []]) (Node [Leaf [], 6, -1, Leaf []])) == sort (unionByFst (toList (Node [Node [Leaf [], 6, -16, Leaf []], 12, 18, Leaf []])) (toList (Node [Leaf [], 6, -1, Leaf []]))) else True
-after 178 tests.
+testing:union-model> .x failed:
+shrinking> if and (valid (Node [Node [Leaf [], -20, 30, Leaf []], -1, -26, Node [Leaf [], 8, -1, Node [Leaf [], 21, -1, Leaf []]]])) (valid (Leaf [])) then toList (union (Node [Node [Leaf [], -20, 30, Leaf []], -1, -26, Node [Leaf [], 8, -1, Node [Leaf [], 21, -1, Leaf []]]]) (Leaf [])) == sort (unionByFst (toList (Node [Node [Leaf [], -20, 30, Leaf []], -1, -26, Node [Leaf [], 8, -1, Node [Leaf [], 21, -1, Leaf []]]])) (toList (Leaf []))) else True
+after 9 tests.
 testing:find-model> .................................................. ok
-testing:insert-post> ..............BST-bug-4.pun
+testing:insert-post> ..x failed:
+shrinking> if valid (Node [Leaf [], -11, 19, Leaf []]) then find (-11) (insert (-5) (22) (Node [Leaf [], -11, 19, Leaf []])) == if -5 == -11 then Just [22] else find (-11) (Node [Leaf [], -11, 19, Leaf []]) else True
+after 22 tests.
+testing:insert-post-same-key> ..................BST-bug-2.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .....................x failed:
+shrinking> if valid (Node [Leaf [], -13, -8, Node [Leaf [], -2, -23, Leaf []]]) then valid (insert (-13) (24) (Node [Leaf [], -13, -8, Node [Leaf [], -2, -23, Leaf []]])) else True
+after 408 tests.
+testing:delete-valid> .................................................. ok
+testing:union-valid> ..................................................BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ....BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> ..................................................BST-bug-5.pun
 testing:nil-valid> .................................................. ok
 testing:insert-valid> .................................................. ok
 testing:delete-valid> .................................................. ok
-testing:union-valid> .
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .........................BST-bug-6.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> ....x failed:
+shrinking> if and (valid (Node [Leaf [], -17, 16, Leaf []])) (valid (Node [Leaf [], -19, -9, Leaf []])) then valid (union (Node [Leaf [], -17, 16, Leaf []]) (Node [Leaf [], -19, -9, Leaf []])) else True
+after 73 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> .........x failed:
+shrinking> if and (valid (Node [Leaf [], 22, -20, Leaf []])) (valid (Node [Leaf [], 19, -11, Leaf []])) then toList (union (Node [Leaf [], 22, -20, Leaf []]) (Node [Leaf [], 19, -11, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], 22, -20, Leaf []])) (toList (Node [Leaf [], 19, -11, Leaf []]))) else True
+after 164 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .......................................x failed:
+shrinking> if and (valid (Node [Leaf [], 18, -28, Leaf []])) (valid (Node [Leaf [], -28, 30, Node [Leaf [], -2, 23, Node [Leaf [], 13, -9, Leaf []]]])) then find (-28) (union (Node [Leaf [], 18, -28, Leaf []]) (Node [Leaf [], -28, 30, Node [Leaf [], -2, 23, Node [Leaf [], 13, -9, Leaf []]]])) == case find (-28) (Node [Leaf [], 18, -28, Leaf []]) of
+  ; Just [v] -> Just [v]
+  ; Nothing [] -> case find (-28) (Node [Leaf [], -28, 30, Node [Leaf [], -2, 23, Node [Leaf [], 13, -9, Leaf []]]]) of
+  ; Just [v1] -> Just [v1]
+  ; Nothing [] -> Nothing [] else True
+after 768 tests.
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .................................................. ok
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .x failed:
+shrinking> if and (valid (Leaf [])) (valid (Node [Leaf [], -8, 19, Leaf []])) then equalContents (insert (7) (-15) (union (Leaf []) (Node [Leaf [], -8, 19, Leaf []]))) (union (insert (7) (-15) (Leaf [])) (Node [Leaf [], -8, 19, Leaf []])) else True
+after 12 tests.
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> .................................................. ok
+testing:union-nil-1> ..........................BST-bug-7.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .BST-bug-8.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> ............BST-bug-1.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .x failed:
+shrinking> if valid (Node [Leaf [], 12, -15, Leaf []]) then toList (insert (6) (22) (Node [Leaf [], 12, -15, Leaf []])) == listInsert (IIP [6, 22]) (deleteKey (6) (toList (Node [Leaf [], 12, -15, Leaf []]))) else True
+after 2 tests.
+testing:delete-model> ......................................x failed:
+shrinking> if valid (Node [Node [Leaf [], -22, -23, Node [Leaf [], 1, -25, Leaf []]], 17, 14, Leaf []]) then toList (delete (17) (Node [Node [Leaf [], -22, -23, Node [Leaf [], 1, -25, Leaf []]], 17, 14, Leaf []])) == deleteKey (17) (toList (Node [Node [Leaf [], -22, -23, Node [Leaf [], 1, -25, Leaf []]], 17, 14, Leaf []])) else True
+after 760 tests.
+testing:union-model> ..x failed:
+shrinking> if and (valid (Node [Leaf [], -24, 0, Leaf []])) (valid (Node [Leaf [], -29, 30, Node [Leaf [], -10, 25, Leaf []]])) then toList (union (Node [Leaf [], -24, 0, Leaf []]) (Node [Leaf [], -29, 30, Node [Leaf [], -10, 25, Leaf []]])) == sort (unionByFst (toList (Node [Leaf [], -24, 0, Leaf []])) (toList (Node [Leaf [], -29, 30, Node [Leaf [], -10, 25, Leaf []]]))) else True
+after 24 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> ............x failed:
+shrinking> if valid (Node [Leaf [], -20, -28, Node [Leaf [], -14, -2, Leaf []]]) then find (-14) (insert (24) (0) (Node [Leaf [], -20, -28, Node [Leaf [], -14, -2, Leaf []]])) == if 24 == -14 then Just [0] else find (-14) (Node [Leaf [], -20, -28, Node [Leaf [], -14, -2, Leaf []]]) else True
+after 226 tests.
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .x failed:
+shrinking> if valid (Node [Node [Leaf [], -26, -28, Leaf []], 5, 6, Node [Leaf [], 30, -27, Leaf []]]) then case find (30) (Node [Node [Leaf [], -26, -28, Leaf []], 5, 6, Node [Leaf [], 30, -27, Leaf []]]) of
+  ; Nothing [] -> Node [Node [Leaf [], -26, -28, Leaf []], 5, 6, Node [Leaf [], 30, -27, Leaf []]] == delete (30) (Node [Node [Leaf [], -26, -28, Leaf []], 5, 6, Node [Leaf [], 30, -27, Leaf []]])
+  ; Just [v] -> Node [Node [Leaf [], -26, -28, Leaf []], 5, 6, Node [Leaf [], 30, -27, Leaf []]] == insert (30) (v) (Node [Node [Leaf [], -26, -28, Leaf []], 5, 6, Node [Leaf [], 30, -27, Leaf []]]) else True
+after 18 tests.
+testing:insert-insert-weak> x failed:
+shrinking> if and (valid (Leaf [])) (not (21 == -16)) then equalContents (insert (21) (-3) (insert (-16) (-27) (Leaf []))) (insert (-16) (-27) (insert (21) (-3) (Leaf []))) else True
+after 0 tests.
+testing:insert-insert> .x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (-30) (-22) (insert (19) (29) (Leaf []))) (if -30 == 19 then insert (-30) (-22) (Leaf []) else insert (19) (29) (insert (-30) (-22) (Leaf []))) else True
+after 2 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .................................................. ok
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> .................................................. ok
+testing:union-nil-1> .................................................. ok
+testing:union-nil-2> .x failed:
+shrinking> if valid (Node [Leaf [], -17, -23, Node [Leaf [], 10, 26, Leaf []]]) then union (Node [Leaf [], -17, -23, Node [Leaf [], 10, 26, Leaf []]]) (nil) == Node [Leaf [], -17, -23, Node [Leaf [], 10, 26, Leaf []]] else True
+after 9 tests.
+testing:union-delete-insert> .x failed:
+shrinking> if and (valid (Node [Leaf [], -7, -10, Node [Leaf [], -3, -24, Leaf []]])) (valid (Node [Leaf [], -27, 25, Node [Leaf [], -5, 7, Node [Leaf [], 16, 5, Leaf []]]])) then equalContents (union (delete (28) (Node [Leaf [], -7, -10, Node [Leaf [], -3, -24, Leaf []]])) (insert (28) (-25) (Node [Leaf [], -27, 25, Node [Leaf [], -5, 7, Node [Leaf [], 16, 5, Leaf []]]]))) (insert (28) (-25) (union (Node [Leaf [], -7, -10, Node [Leaf [], -3, -24, Leaf []]]) (Node [Leaf [], -27, 25, Node [Leaf [], -5, 7, Node [Leaf [], 16, 5, Leaf []]]]))) else True
+after 9 tests.
+testing:union-union-idem> .x failed:
+shrinking> if valid (Node [Node [Leaf [], -29, 25, Leaf []], -17, 26, Leaf []]) then equalContents (union (Node [Node [Leaf [], -29, 25, Leaf []], -17, 26, Leaf []]) (Node [Node [Leaf [], -29, 25, Leaf []], -17, 26, Leaf []])) (Node [Node [Leaf [], -29, 25, Leaf []], -17, 26, Leaf []]) else True
+after 2 tests.
+testing:union-union-assoc> .................................................. ok
+testing:find-nil> .................................................. ok
+testing:find-insert> ............................x failed:
+shrinking> if valid (Node [Leaf [], 12, -24, Leaf []]) then find (12) (insert (1) (-6) (Node [Leaf [], 12, -24, Leaf []])) == if 12 == 1 then Just [-6] else find (12) (Node [Leaf [], 12, -24, Leaf []]) else True
+after 542 tests.
+testing:find-delete> .................................................. ok
+testing:find-union> ...............x failed:
+shrinking> if and (valid (Node [Leaf [], 7, -14, Leaf []])) (valid (Node [Leaf [], 4, 9, Leaf []])) then find (4) (union (Node [Leaf [], 7, -14, Leaf []]) (Node [Leaf [], 4, 9, Leaf []])) == case find (4) (Node [Leaf [], 7, -14, Leaf []]) of
+  ; Nothing [] -> find (4) (Node [Leaf [], 4, 9, Leaf []])
+  ; Just [v] -> Just [v] else True
+after 297 tests.
+testing:union-nil> .................................................. ok
+testing:union-insert> .................................................. ok
+testing:insert-complete> .x failed:
+shrinking> if valid (Node [Node [Node [Leaf [], -26, -23, Leaf []], -13, 12, Leaf []], 19, 15, Leaf []]) then Node [Node [Node [Leaf [], -26, -23, Leaf []], -13, 12, Leaf []], 19, 15, Leaf []] == foldl (flip2 (uncurry (insert))) (nil) (insertions (Node [Node [Node [Leaf [], -26, -23, Leaf []], -13, 12, Leaf []], 19, 15, Leaf []])) else True
+after 12 tests.
+testing:insert-complete-for-delete> ..x failed:
+shrinking> if valid (Node [Node [Leaf [], -6, 14, Leaf []], 18, 11, Node [Leaf [], 27, 2, Leaf []]]) then delete (15) (Node [Node [Leaf [], -6, 14, Leaf []], 18, 11, Node [Leaf [], 27, 2, Leaf []]]) == foldl (flip2 (uncurry (insert))) (nil) (insertions (delete (15) (Node [Node [Leaf [], -6, 14, Leaf []], 18, 11, Node [Leaf [], 27, 2, Leaf []]]))) else True
+after 29 tests.
+testing:insert-complete-for-union> ......BST-bug-2.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ...................x failed:
+shrinking> if valid (Node [Leaf [], -28, -11, Leaf []]) then valid (insert (-28) (11) (Node [Leaf [], -28, -11, Leaf []])) else True
+after 374 tests.
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................x failed:
+shrinking> if and (valid (Node [Leaf [], -20, -7, Node [Leaf [], 1, 9, Leaf []]])) (valid (Node [Node [Leaf [], -23, 8, Leaf []], 1, 21, Leaf []])) then valid (union (Node [Leaf [], -20, -7, Node [Leaf [], 1, 9, Leaf []]]) (Node [Node [Leaf [], -23, 8, Leaf []], 1, 21, Leaf []])) else True
+after 330 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> ..x failed:
+shrinking> if valid (Node [Leaf [], -17, 16, Leaf []]) then toList (insert (-17) (-16) (Node [Leaf [], -17, 16, Leaf []])) == listInsert (IIP [-17, -16]) (deleteKey (-17) (toList (Node [Leaf [], -17, 16, Leaf []]))) else True
+after 31 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> ....................x failed:
+shrinking> if and (valid (Node [Leaf [], -2, 4, Node [Leaf [], 0, -18, Node [Leaf [], 19, -28, Leaf []]]])) (valid (Node [Leaf [], 0, -15, Leaf []])) then toList (union (Node [Leaf [], -2, 4, Node [Leaf [], 0, -18, Node [Leaf [], 19, -28, Leaf []]]]) (Node [Leaf [], 0, -15, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -2, 4, Node [Leaf [], 0, -18, Node [Leaf [], 19, -28, Leaf []]]])) (toList (Node [Leaf [], 0, -15, Leaf []]))) else True
+after 385 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> ...x failed:
+shrinking> if valid (Node [Leaf [], -6, 4, Leaf []]) then find (-6) (insert (-6) (8) (Node [Leaf [], -6, 4, Leaf []])) == if -6 == -6 then Just [8] else find (-6) (Node [Leaf [], -6, 4, Leaf []]) else True
+after 50 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> ......x failed:
+shrinking> if valid (Node [Leaf [], 23, 0, Leaf []]) then find (23) (insert (23) (20) (Node [Leaf [], 23, 0, Leaf []])) == Just [20] else True
+after 110 tests.
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .......................................x failed:
+shrinking> if valid (Node [Leaf [], -17, -30, Leaf []]) then case find (-17) (Node [Leaf [], -17, -30, Leaf []]) of
+  ; Nothing [] -> Node [Leaf [], -17, -30, Leaf []] == delete (-17) (Node [Leaf [], -17, -30, Leaf []])
+  ; Just [v] -> Node [Leaf [], -17, -30, Leaf []] == insert (-17) (v) (Node [Leaf [], -17, -30, Leaf []]) else True
+after 777 tests.
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> ..x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (-7) (15) (insert (-7) (24) (Leaf []))) (if -7 == -7 then insert (-7) (15) (Leaf []) else insert (-7) (24) (insert (-7) (15) (Leaf []))) else True
+after 40 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> ................................................BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> ....................BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .BST-bug-5.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> ................................................x failed:
+shrinking> if valid (Node [Leaf [], -17, -20, Node [Leaf [], 10, -13, Leaf []]]) then toList (delete (10) (Node [Leaf [], -17, -20, Node [Leaf [], 10, -13, Leaf []]])) == deleteKey (10) (toList (Node [Leaf [], -17, -20, Node [Leaf [], 10, -13, Leaf []]])) else True
+after 954 tests.
+testing:union-model> ...............................BST-bug-6.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ...........................................BST-bug-7.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> ..x failed:
+shrinking> if and (valid (Node [Leaf [], -30, 7, Node [Leaf [], -6, -2, Leaf []]])) (valid (Node [Leaf [], 5, -28, Leaf []])) then valid (union (Node [Leaf [], -30, 7, Node [Leaf [], -6, -2, Leaf []]]) (Node [Leaf [], 5, -28, Leaf []])) else True
+after 21 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> ........................x failed:
+shrinking> if valid (Node [Node [Node [Leaf [], -5, 3, Leaf []], 21, 11, Leaf []], 23, -8, Leaf []]) then toList (delete (23) (Node [Node [Node [Leaf [], -5, 3, Leaf []], 21, 11, Leaf []], 23, -8, Leaf []])) == deleteKey (23) (toList (Node [Node [Node [Leaf [], -5, 3, Leaf []], 21, 11, Leaf []], 23, -8, Leaf []])) else True
+after 473 tests.
+testing:union-model> .x failed:
+shrinking> if and (valid (Node [Leaf [], 11, -19, Leaf []])) (valid (Leaf [])) then toList (union (Node [Leaf [], 11, -19, Leaf []]) (Leaf [])) == sort (unionByFst (toList (Node [Leaf [], 11, -19, Leaf []])) (toList (Leaf []))) else True
+after 3 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> ..............BST-bug-8.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> ..........x failed:
+shrinking> if and (valid (Node [Leaf [], 25, 27, Leaf []])) (valid (Node [Node [Leaf [], -13, -17, Leaf []], 25, -18, Leaf []])) then toList (union (Node [Leaf [], 25, 27, Leaf []]) (Node [Node [Leaf [], -13, -17, Leaf []], 25, -18, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], 25, 27, Leaf []])) (toList (Node [Node [Leaf [], -13, -17, Leaf []], 25, -18, Leaf []]))) else True
+after 182 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .................................................. ok
+testing:insert-delete-weak> ........BST-bug-1.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .x failed:
+shrinking> if valid (Node [Leaf [], 5, 21, Leaf []]) then toList (insert (-9) (-18) (Node [Leaf [], 5, 21, Leaf []])) == listInsert (IIP [-9, -18]) (deleteKey (-9) (toList (Node [Leaf [], 5, 21, Leaf []]))) else True
+after 6 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .x failed:
+shrinking> if and (valid (Node [Leaf [], 12, -21, Leaf []])) (valid (Node [Leaf [], 3, -22, Leaf []])) then toList (union (Node [Leaf [], 12, -21, Leaf []]) (Node [Leaf [], 3, -22, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], 12, -21, Leaf []])) (toList (Node [Leaf [], 3, -22, Leaf []]))) else True
+after 17 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> ..............................x failed:
+shrinking> if valid (Node [Leaf [], -5, -18, Leaf []]) then find (-5) (insert (10) (-2) (Node [Leaf [], -5, -18, Leaf []])) == if 10 == -5 then Just [-2] else find (-5) (Node [Leaf [], -5, -18, Leaf []]) else True
+after 594 tests.
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> ..........................................x failed:
+shrinking> if and (valid (Node [Node [Leaf [], -4, -21, Leaf []], 18, 20, Node [Leaf [], 30, 7, Leaf []]])) (valid (Node [Leaf [], -28, 11, Leaf []])) then find (-28) (union (Node [Node [Leaf [], -4, -21, Leaf []], 18, 20, Node [Leaf [], 30, 7, Leaf []]]) (Node [Leaf [], -28, 11, Leaf []])) == case find (-28) (Node [Node [Leaf [], -4, -21, Leaf []], 18, 20, Node [Leaf [], 30, 7, Leaf []]]) of
+  ; Just [v] -> Just [v]
+  ; Nothing [] -> case find (-28) (Node [Leaf [], -28, 11, Leaf []]) of
+  ; Just [v1] -> Just [v1]
+  ; Nothing [] -> Nothing [] else True
+after 828 tests.
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .x failed:
+shrinking> if and (valid (Leaf [])) (not (30 == -26)) then equalContents (insert (30) (30) (insert (-26) (-21) (Leaf []))) (insert (-26) (-21) (insert (30) (30) (Leaf []))) else True
+after 4 tests.
+testing:insert-insert> .x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (-29) (9) (insert (-16) (29) (Leaf []))) (if -29 == -16 then insert (-29) (9) (Leaf []) else insert (-16) (29) (insert (-29) (9) (Leaf []))) else True
+after 1 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> ..................BST-bug-2.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .......x failed:
+shrinking> if valid (Node [Leaf [], -20, -24, Node [Leaf [], -2, 24, Leaf []]]) then valid (insert (-2) (-8) (Node [Leaf [], -20, -24, Node [Leaf [], -2, 24, Leaf []]])) else True
+after 130 tests.
+testing:delete-valid> .................................................. ok
+testing:union-valid> .x failed:
+shrinking> if and (valid (Node [Leaf [], -27, 2, Leaf []])) (valid (Node [Leaf [], -27, -22, Node [Leaf [], -2, 20, Node [Leaf [], 19, -21, Leaf []]]])) then valid (union (Node [Leaf [], -27, 2, Leaf []]) (Node [Leaf [], -27, -22, Node [Leaf [], -2, 20, Node [Leaf [], 19, -21, Leaf []]]])) else True
+after 4 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .....................x failed:
+shrinking> if valid (Node [Node [Leaf [], -25, -3, Leaf []], -14, -19, Leaf []]) then toList (insert (-25) (8) (Node [Node [Leaf [], -25, -3, Leaf []], -14, -19, Leaf []])) == listInsert (IIP [-25, 8]) (deleteKey (-25) (toList (Node [Node [Leaf [], -25, -3, Leaf []], -14, -19, Leaf []]))) else True
+after 401 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> ................................................x failed:
+shrinking> if and (valid (Node [Leaf [], 24, -27, Leaf []])) (valid (Node [Leaf [], 24, 30, Leaf []])) then toList (union (Node [Leaf [], 24, -27, Leaf []]) (Node [Leaf [], 24, 30, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], 24, -27, Leaf []])) (toList (Node [Leaf [], 24, 30, Leaf []]))) else True
+after 941 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> ............x failed:
+shrinking> if valid (Node [Node [Leaf [], -23, 16, Leaf []], -14, -23, Node [Leaf [], -7, -5, Leaf []]]) then find (-7) (insert (-7) (-6) (Node [Node [Leaf [], -23, 16, Leaf []], -14, -23, Node [Leaf [], -7, -5, Leaf []]])) == if -7 == -7 then Just [-6] else find (-7) (Node [Node [Leaf [], -23, 16, Leaf []], -14, -23, Node [Leaf [], -7, -5, Leaf []]]) else True
+after 221 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> .....x failed:
+shrinking> if valid (Node [Leaf [], 1, -1, Leaf []]) then find (1) (insert (1) (15) (Node [Leaf [], 1, -1, Leaf []])) == Just [15] else True
+after 91 tests.
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> ..............................x failed:
+shrinking> if valid (Node [Leaf [], -10, -21, Leaf []]) then case find (-10) (Node [Leaf [], -10, -21, Leaf []]) of
+  ; Nothing [] -> Node [Leaf [], -10, -21, Leaf []] == delete (-10) (Node [Leaf [], -10, -21, Leaf []])
+  ; Just [v] -> Node [Leaf [], -10, -21, Leaf []] == insert (-10) (v) (Node [Leaf [], -10, -21, Leaf []]) else True
+after 588 tests.
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .........x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (9) (-7) (insert (9) (-22) (Leaf []))) (if 9 == 9 then insert (9) (-7) (Leaf []) else insert (9) (-22) (insert (9) (-7) (Leaf []))) else True
+after 173 tests.
+testing:insert-delete-weak> .............................................BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ............................................BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .BST-bug-5.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> .........x failed:
+shrinking> if and (valid (Node [Leaf [], -12, -11, Leaf []])) (valid (Node [Leaf [], -12, -4, Leaf []])) then toList (union (Node [Leaf [], -12, -11, Leaf []]) (Node [Leaf [], -12, -4, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -12, -11, Leaf []])) (toList (Node [Leaf [], -12, -4, Leaf []]))) else True
+after 174 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .....BST-bug-6.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> ........x failed:
+shrinking> if and (valid (Node [Leaf [], 7, -19, Leaf []])) (valid (Node [Leaf [], -24, -20, Leaf []])) then valid (union (Node [Leaf [], 7, -19, Leaf []]) (Node [Leaf [], -24, -20, Leaf []])) else True
+after 156 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .....................BST-bug-7.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ...........BST-bug-8.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> ................BST-bug-1.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .x failed:
+shrinking> if valid (Node [Leaf [], 10, -17, Leaf []]) then toList (insert (-10) (-30) (Node [Leaf [], 10, -17, Leaf []])) == listInsert (IIP [-10, -30]) (deleteKey (-10) (toList (Node [Leaf [], 10, -17, Leaf []]))) else True
+after 9 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .x failed:
+shrinking> if and (valid (Node [Node [Leaf [], -12, 16, Leaf []], 20, 10, Node [Leaf [], 26, 5, Leaf []]])) (valid (Node [Leaf [], -3, 18, Leaf []])) then toList (union (Node [Node [Leaf [], -12, 16, Leaf []], 20, 10, Node [Leaf [], 26, 5, Leaf []]]) (Node [Leaf [], -3, 18, Leaf []])) == sort (unionByFst (toList (Node [Node [Leaf [], -12, 16, Leaf []], 20, 10, Node [Leaf [], 26, 5, Leaf []]])) (toList (Node [Leaf [], -3, 18, Leaf []]))) else True
+after 3 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> ................................................x failed:
+shrinking> if valid (Node [Node [Node [Leaf [], -25, -16, Leaf []], -20, -16, Leaf []], -10, 28, Leaf []]) then find (-20) (insert (2) (-11) (Node [Node [Node [Leaf [], -25, -16, Leaf []], -20, -16, Leaf []], -10, 28, Leaf []])) == if 2 == -20 then Just [-11] else find (-20) (Node [Node [Node [Leaf [], -25, -16, Leaf []], -20, -16, Leaf []], -10, 28, Leaf []]) else True
+after 945 tests.
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> ....................................BST-bug-2.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ...............x failed:
+shrinking> if valid (Node [Leaf [], -18, 17, Node [Node [Leaf [], -7, 23, Leaf []], -2, 25, Leaf []]]) then valid (insert (-18) (-24) (Node [Leaf [], -18, 17, Node [Node [Leaf [], -7, 23, Leaf []], -2, 25, Leaf []]])) else True
+after 289 tests.
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> ................................x failed:
+shrinking> if valid (Node [Node [Node [Leaf [], -27, -10, Leaf []], -9, -12, Leaf []], 22, 13, Leaf []]) then toList (insert (22) (28) (Node [Node [Node [Leaf [], -27, -10, Leaf []], -9, -12, Leaf []], 22, 13, Leaf []])) == listInsert (IIP [22, 28]) (deleteKey (22) (toList (Node [Node [Node [Leaf [], -27, -10, Leaf []], -9, -12, Leaf []], 22, 13, Leaf []]))) else True
+after 627 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .................................................. ok
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> ...x failed:
+shrinking> if valid (Node [Leaf [], -11, 4, Leaf []]) then find (-11) (insert (-11) (-5) (Node [Leaf [], -11, 4, Leaf []])) == if -11 == -11 then Just [-5] else find (-11) (Node [Leaf [], -11, 4, Leaf []]) else True
+after 48 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> ...x failed:
+shrinking> if valid (Node [Node [Leaf [], -5, 2, Leaf []], 18, -27, Leaf []]) then find (-5) (insert (-5) (6) (Node [Node [Leaf [], -5, 2, Leaf []], 18, -27, Leaf []])) == Just [6] else True
+after 48 tests.
+testing:find-post-absent> ...............................................BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .............................BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .BST-bug-5.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> .................................................. ok
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .................................................. ok
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> ..................BST-bug-6.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ...............................BST-bug-7.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> ...................BST-bug-8.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> ...............................BST-bug-1.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .x failed:
+shrinking> if valid (Node [Leaf [], 18, -24, Leaf []]) then toList (insert (-13) (10) (Node [Leaf [], 18, -24, Leaf []])) == listInsert (IIP [-13, 10]) (deleteKey (-13) (toList (Node [Leaf [], 18, -24, Leaf []]))) else True
+after 18 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .x failed:
+shrinking> if and (valid (Node [Leaf [], -3, 9, Leaf []])) (valid (Node [Leaf [], 22, 18, Leaf []])) then toList (union (Node [Leaf [], -3, 9, Leaf []]) (Node [Leaf [], 22, 18, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -3, 9, Leaf []])) (toList (Node [Leaf [], 22, 18, Leaf []]))) else True
+after 13 tests.
+testing:find-model> .........................................BST-bug-2.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ......................x failed:
+shrinking> if valid (Node [Leaf [], 2, 19, Leaf []]) then valid (insert (2) (-30) (Node [Leaf [], 2, 19, Leaf []])) else True
+after 431 tests.
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> ............x failed:
+shrinking> if valid (Node [Node [Leaf [], -19, 1, Leaf []], -6, 28, Leaf []]) then toList (insert (-6) (4) (Node [Node [Leaf [], -19, 1, Leaf []], -6, 28, Leaf []])) == listInsert (IIP [-6, 4]) (deleteKey (-6) (toList (Node [Node [Leaf [], -19, 1, Leaf []], -6, 28, Leaf []]))) else True
+after 240 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .................................................. ok
+testing:find-model> .................................................. ok
+testing:insert-post> .........BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> ..........x failed:
+shrinking> if valid (Node [Leaf [], 18, 0, Leaf []]) then toList (insert (18) (-17) (Node [Leaf [], 18, 0, Leaf []])) == listInsert (IIP [18, -17]) (deleteKey (18) (toList (Node [Leaf [], 18, 0, Leaf []]))) else True
+after 185 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .................................................. ok
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .............x failed:
+shrinking> if valid (Node [Node [Leaf [], -20, -21, Leaf []], 4, 0, Leaf []]) then find (4) (insert (4) (-3) (Node [Node [Leaf [], -20, -21, Leaf []], 4, 0, Leaf []])) == if 4 == 4 then Just [-3] else find (4) (Node [Node [Leaf [], -20, -21, Leaf []], 4, 0, Leaf []]) else True
+after 256 tests.
+testing:union-post> ...........................BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> ..........BST-bug-5.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> ................................................BST-bug-6.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> ....x failed:
+shrinking> if and (valid (Node [Node [Leaf [], 20, 28, Leaf []], 29, -21, Leaf []])) (valid (Node [Leaf [], -11, -2, Leaf []])) then valid (union (Node [Node [Leaf [], 20, 28, Leaf []], 29, -21, Leaf []]) (Node [Leaf [], -11, -2, Leaf []])) else True
+after 73 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> ...x failed:
+shrinking> if and (valid (Node [Leaf [], -4, 20, Leaf []])) (valid (Node [Leaf [], -14, -24, Leaf []])) then toList (union (Node [Leaf [], -4, 20, Leaf []]) (Node [Leaf [], -14, -24, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -4, 20, Leaf []])) (toList (Node [Leaf [], -14, -24, Leaf []]))) else True
+after 59 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .......................x failed:
+shrinking> if and (valid (Node [Leaf [], -16, -13, Leaf []])) (valid (Node [Leaf [], -23, 8, Leaf []])) then find (-23) (union (Node [Leaf [], -16, -13, Leaf []]) (Node [Leaf [], -23, 8, Leaf []])) == case find (-23) (Node [Leaf [], -16, -13, Leaf []]) of
+  ; Just [v] -> Just [v]
+  ; Nothing [] -> case find (-23) (Node [Leaf [], -23, 8, Leaf []]) of
+  ; Just [v1] -> Just [v1]
+  ; Nothing [] -> Nothing [] else True
+after 449 tests.
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .................................................. ok
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .x failed:
+shrinking> if and (valid (Leaf [])) (valid (Node [Leaf [], -3, 15, Leaf []])) then equalContents (insert (12) (21) (union (Leaf []) (Node [Leaf [], -3, 15, Leaf []]))) (union (insert (12) (21) (Leaf [])) (Node [Leaf [], -3, 15, Leaf []])) else True
+after 9 tests.
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> .......x failed:
+shrinking> if and (valid (Node [Leaf [], 15, -29, Leaf []])) (valid (Node [Leaf [], 14, 27, Leaf []])) then equalContents (delete (14) (union (Node [Leaf [], 15, -29, Leaf []]) (Node [Leaf [], 14, 27, Leaf []]))) (union (delete (14) (Node [Leaf [], 15, -29, Leaf []])) (delete (14) (Node [Leaf [], 14, 27, Leaf []]))) else True
+after 134 tests.
+testing:union-nil-1> .................................................. ok
+testing:union-nil-2> .................................................. ok
+testing:union-delete-insert> .x failed:
+shrinking> if and (valid (Node [Leaf [], 11, 7, Leaf []])) (valid (Leaf [])) then equalContents (union (delete (-1) (Node [Leaf [], 11, 7, Leaf []])) (insert (-1) (12) (Leaf []))) (insert (-1) (12) (union (Node [Leaf [], 11, 7, Leaf []]) (Leaf []))) else True
+after 12 tests.
+testing:union-union-idem> .x failed:
+shrinking> if valid (Node [Leaf [], -14, -11, Node [Leaf [], 10, -24, Leaf []]]) then equalContents (union (Node [Leaf [], -14, -11, Node [Leaf [], 10, -24, Leaf []]]) (Node [Leaf [], -14, -11, Node [Leaf [], 10, -24, Leaf []]])) (Node [Leaf [], -14, -11, Node [Leaf [], 10, -24, Leaf []]]) else True
+after 3 tests.
+testing:union-union-assoc> .................................................. ok
+testing:find-nil> .................................................. ok
+testing:find-insert> .................................................. ok
+testing:find-delete> .......BST-bug-7.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> ..........BST-bug-8.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> ..........................BST-bug-1.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .x failed:
+shrinking> if valid (Node [Leaf [], 18, -28, Leaf []]) then toList (insert (27) (-2) (Node [Leaf [], 18, -28, Leaf []])) == listInsert (IIP [27, -2]) (deleteKey (27) (toList (Node [Leaf [], 18, -28, Leaf []]))) else True
+after 1 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .x failed:
+shrinking> if and (valid (Node [Leaf [], -22, 5, Node [Leaf [], 14, 9, Leaf []]])) (valid (Node [Leaf [], -27, 28, Node [Leaf [], -20, 0, Node [Leaf [], 25, -27, Leaf []]]])) then toList (union (Node [Leaf [], -22, 5, Node [Leaf [], 14, 9, Leaf []]]) (Node [Leaf [], -27, 28, Node [Leaf [], -20, 0, Node [Leaf [], 25, -27, Leaf []]]])) == sort (unionByFst (toList (Node [Leaf [], -22, 5, Node [Leaf [], 14, 9, Leaf []]])) (toList (Node [Leaf [], -27, 28, Node [Leaf [], -20, 0, Node [Leaf [], 25, -27, Leaf []]]]))) else True
+after 16 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> ...x failed:
+shrinking> if valid (Node [Leaf [], 7, -1, Leaf []]) then find (7) (insert (14) (-3) (Node [Leaf [], 7, -1, Leaf []])) == if 14 == 7 then Just [-3] else find (7) (Node [Leaf [], 7, -1, Leaf []]) else True
+after 54 tests.
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> x failed:
+shrinking> if and (valid (Leaf [])) (not (13 == -6)) then equalContents (insert (13) (-29) (insert (-6) (-9) (Leaf []))) (insert (-6) (-9) (insert (13) (-29) (Leaf []))) else True
+after 0 tests.
+testing:insert-insert> .x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (2) (4) (insert (-8) (-25) (Leaf []))) (if 2 == -8 then insert (2) (4) (Leaf []) else insert (-8) (-25) (insert (2) (4) (Leaf []))) else True
+after 1 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .................................................. ok
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> ....x failed:
+shrinking> if valid (Node [Leaf [], 24, 13, Leaf []]) then equalContents (delete (-11) (insert (-11) (25) (Node [Leaf [], 24, 13, Leaf []]))) (if -11 == -11 then delete (-11) (Node [Leaf [], 24, 13, Leaf []]) else insert (-11) (25) (delete (-11) (Node [Leaf [], 24, 13, Leaf []]))) else True
+after 66 tests.
+testing:delete-delete> .................................................. ok
+testing:delete-union> ...............................................BST-bug-2.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ..................................x failed:
+shrinking> if valid (Node [Leaf [], -19, -16, Leaf []]) then valid (insert (-19) (-8) (Node [Leaf [], -19, -16, Leaf []])) else True
+after 675 tests.
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .....................x failed:
+shrinking> if valid (Node [Leaf [], 3, 8, Leaf []]) then toList (insert (3) (23) (Node [Leaf [], 3, 8, Leaf []])) == listInsert (IIP [3, 23]) (deleteKey (3) (toList (Node [Leaf [], 3, 8, Leaf []]))) else True
+after 408 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .................................................. ok
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> ...x failed:
+shrinking> if valid (Node [Node [Leaf [], -9, 12, Leaf []], -4, -2, Leaf []]) then find (-4) (insert (-4) (-1) (Node [Node [Leaf [], -9, 12, Leaf []], -4, -2, Leaf []])) == if -4 == -4 then Just [-1] else find (-4) (Node [Node [Leaf [], -9, 12, Leaf []], -4, -2, Leaf []]) else True
+after 58 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> .......x failed:
+shrinking> if valid (Node [Node [Leaf [], -9, -11, Node [Leaf [], -8, -1, Leaf []]], -4, 11, Leaf []]) then find (-9) (insert (-9) (-22) (Node [Node [Leaf [], -9, -11, Node [Leaf [], -8, -1, Leaf []]], -4, 11, Leaf []])) == Just [-22] else True
+after 128 tests.
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> ....x failed:
+shrinking> if valid (Node [Leaf [], 6, 7, Leaf []]) then case find (6) (Node [Leaf [], 6, 7, Leaf []]) of
+  ; Nothing [] -> Node [Leaf [], 6, 7, Leaf []] == delete (6) (Node [Leaf [], 6, 7, Leaf []])
+  ; Just [v] -> Node [Leaf [], 6, 7, Leaf []] == insert (6) (v) (Node [Leaf [], 6, 7, Leaf []]) else True
+after 65 tests.
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> ......x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (0) (-17) (insert (0) (-27) (Leaf []))) (if 0 == 0 then insert (0) (-17) (Leaf []) else insert (0) (-27) (insert (0) (-17) (Leaf []))) else True
+after 106 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .................................................. ok
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> .................................................. ok
+testing:union-nil-1> .................................................. ok
+testing:union-nil-2> .................................................. ok
+testing:union-delete-insert> ..............................................x failed:
+shrinking> if and (valid (Node [Node [Leaf [], -30, -18, Leaf []], 26, -4, Leaf []])) (valid (Leaf [])) then equalContents (union (delete (-30) (Node [Node [Leaf [], -30, -18, Leaf []], 26, -4, Leaf []])) (insert (-30) (-29) (Leaf []))) (insert (-30) (-29) (union (Node [Node [Leaf [], -30, -18, Leaf []], 26, -4, Leaf []]) (Leaf []))) else True
+after 904 tests.
+testing:union-union-idem> .x failed:
+shrinking> if valid (Node [Node [Node [Leaf [], -23, -5, Leaf []], -11, 14, Leaf []], -6, -10, Leaf []]) then equalContents (union (Node [Node [Node [Leaf [], -23, -5, Leaf []], -11, 14, Leaf []], -6, -10, Leaf []]) (Node [Node [Node [Leaf [], -23, -5, Leaf []], -11, 14, Leaf []], -6, -10, Leaf []])) (Node [Node [Node [Leaf [], -23, -5, Leaf []], -11, 14, Leaf []], -6, -10, Leaf []]) else True
+after 7 tests.
+testing:union-union-assoc> .................................................. ok
+testing:find-nil> .................................................. ok
+testing:find-insert> ..........................................x failed:
+shrinking> if valid (Node [Leaf [], 15, 14, Node [Leaf [], 18, -22, Leaf []]]) then find (15) (insert (15) (17) (Node [Leaf [], 15, 14, Node [Leaf [], 18, -22, Leaf []]])) == if 15 == 15 then Just [17] else find (15) (Node [Leaf [], 15, 14, Node [Leaf [], 18, -22, Leaf []]]) else True
+after 836 tests.
+testing:find-delete> .................................................. ok
+testing:find-union> .................................................. ok
+testing:union-nil> .................................................. ok
+testing:union-insert> .......................................BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> ...................x failed:
+shrinking> if valid (Node [Leaf [], 4, 15, Leaf []]) then toList (insert (4) (-8) (Node [Leaf [], 4, 15, Leaf []])) == listInsert (IIP [4, -8]) (deleteKey (4) (toList (Node [Leaf [], 4, 15, Leaf []]))) else True
+after 361 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> ......x failed:
+shrinking> if and (valid (Node [Node [Leaf [], 2, 11, Leaf []], 29, 5, Leaf []])) (valid (Node [Leaf [], 29, -12, Leaf []])) then toList (union (Node [Node [Leaf [], 2, 11, Leaf []], 29, 5, Leaf []]) (Node [Leaf [], 29, -12, Leaf []])) == sort (unionByFst (toList (Node [Node [Leaf [], 2, 11, Leaf []], 29, 5, Leaf []])) (toList (Node [Leaf [], 29, -12, Leaf []]))) else True
+after 105 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .............x failed:
+shrinking> if valid (Node [Leaf [], 5, -10, Node [Leaf [], 10, 10, Leaf []]]) then find (10) (insert (10) (-15) (Node [Leaf [], 5, -10, Node [Leaf [], 10, 10, Leaf []]])) == if 10 == 10 then Just [-15] else find (10) (Node [Leaf [], 5, -10, Node [Leaf [], 10, 10, Leaf []]]) else True
+after 241 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> .......x failed:
+shrinking> if valid (Node [Leaf [], 1, 14, Leaf []]) then find (1) (insert (1) (-14) (Node [Leaf [], 1, 14, Leaf []])) == Just [-14] else True
+after 129 tests.
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .......x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (27) (-1) (insert (27) (27) (Leaf []))) (if 27 == 27 then insert (27) (-1) (Leaf []) else insert (27) (27) (insert (27) (-1) (Leaf []))) else True
+after 132 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .................................................. ok
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> .......................................BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .BST-bug-5.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .....x failed:
+shrinking> if valid (Node [Leaf [], -24, 9, Node [Leaf [], 20, 13, Leaf []]]) then toList (delete (20) (Node [Leaf [], -24, 9, Node [Leaf [], 20, 13, Leaf []]])) == deleteKey (20) (toList (Node [Leaf [], -24, 9, Node [Leaf [], 20, 13, Leaf []]])) else True
+after 83 tests.
+testing:union-model> ................x failed:
+shrinking> if and (valid (Node [Leaf [], -4, -25, Leaf []])) (valid (Node [Leaf [], -4, 7, Leaf []])) then toList (union (Node [Leaf [], -4, -25, Leaf []]) (Node [Leaf [], -4, 7, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -4, -25, Leaf []])) (toList (Node [Leaf [], -4, 7, Leaf []]))) else True
+after 307 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .................................................. ok
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .................................................. ok
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> ..x failed:
+shrinking> if valid (Node [Node [Leaf [], -10, 6, Leaf []], -1, 4, Leaf []]) then equalContents (delete (-14) (insert (-14) (6) (Node [Node [Leaf [], -10, 6, Leaf []], -1, 4, Leaf []]))) (if -14 == -14 then delete (-14) (Node [Node [Leaf [], -10, 6, Leaf []], -1, 4, Leaf []]) else insert (-14) (6) (delete (-14) (Node [Node [Leaf [], -10, 6, Leaf []], -1, 4, Leaf []]))) else True
+after 38 tests.
+testing:delete-delete> .................................................. ok
+testing:delete-union> ........................x failed:
+shrinking> if and (valid (Node [Leaf [], -16, -6, Leaf []])) (valid (Node [Leaf [], 19, 28, Leaf []])) then equalContents (delete (-16) (union (Node [Leaf [], -16, -6, Leaf []]) (Node [Leaf [], 19, 28, Leaf []]))) (union (delete (-16) (Node [Leaf [], -16, -6, Leaf []])) (delete (-16) (Node [Leaf [], 19, 28, Leaf []]))) else True
+after 470 tests.
+testing:union-nil-1> .................................................. ok
+testing:union-nil-2> .................................................. ok
+testing:union-delete-insert> .................................................. ok
+testing:union-union-idem> .................................................. ok
+testing:union-union-assoc> .........BST-bug-6.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .x failed:
+shrinking> if and (valid (Node [Leaf [], 29, 10, Leaf []])) (valid (Node [Leaf [], 23, 19, Leaf []])) then valid (union (Node [Leaf [], 29, 10, Leaf []]) (Node [Leaf [], 23, 19, Leaf []])) else True
+after 17 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> ..x failed:
+shrinking> if and (valid (Node [Leaf [], 23, 13, Leaf []])) (valid (Node [Leaf [], -26, 18, Leaf []])) then toList (union (Node [Leaf [], 23, 13, Leaf []]) (Node [Leaf [], -26, 18, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], 23, 13, Leaf []])) (toList (Node [Leaf [], -26, 18, Leaf []]))) else True
+after 32 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> ........................BST-bug-7.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> ..............................x failed:
+shrinking> if and (valid (Node [Leaf [], -28, -25, Node [Leaf [], 12, 5, Leaf []]])) (valid (Node [Leaf [], 25, 27, Leaf []])) then valid (union (Node [Leaf [], -28, -25, Node [Leaf [], 12, 5, Leaf []]]) (Node [Leaf [], 25, 27, Leaf []])) else True
+after 582 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> x failed:
+shrinking> if and (valid (Node [Leaf [], 13, -22, Node [Leaf [], 15, -23, Leaf []]])) (valid (Leaf [])) then toList (union (Node [Leaf [], 13, -22, Node [Leaf [], 15, -23, Leaf []]]) (Leaf [])) == sort (unionByFst (toList (Node [Leaf [], 13, -22, Node [Leaf [], 15, -23, Leaf []]])) (toList (Leaf []))) else True
+after 0 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .............................x failed:
+shrinking> if and (valid (Node [Leaf [], -9, 1, Leaf []])) (valid (Leaf [])) then find (-9) (union (Node [Leaf [], -9, 1, Leaf []]) (Leaf [])) == case find (-9) (Node [Leaf [], -9, 1, Leaf []]) of
+  ; Just [v] -> Just [v]
+  ; Nothing [] -> case find (-9) (Leaf []) of
+  ; Just [v1] -> Just [v1]
+  ; Nothing [] -> Nothing [] else True
+after 575 tests.
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .....................................BST-bug-8.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ..............BST-bug-1.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .x failed:
+shrinking> if valid (Node [Leaf [], -23, 12, Node [Leaf [], -16, 6, Leaf []]]) then toList (insert (29) (-11) (Node [Leaf [], -23, 12, Node [Leaf [], -16, 6, Leaf []]])) == listInsert (IIP [29, -11]) (deleteKey (29) (toList (Node [Leaf [], -23, 12, Node [Leaf [], -16, 6, Leaf []]]))) else True
+after 4 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .......x failed:
+shrinking> if and (valid (Node [Node [Node [Leaf [], 5, -24, Leaf []], 23, -9, Leaf []], 28, -17, Leaf []])) (valid (Leaf [])) then toList (union (Node [Node [Node [Leaf [], 5, -24, Leaf []], 23, -9, Leaf []], 28, -17, Leaf []]) (Leaf [])) == sort (unionByFst (toList (Node [Node [Node [Leaf [], 5, -24, Leaf []], 23, -9, Leaf []], 28, -17, Leaf []])) (toList (Leaf []))) else True
+after 121 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> ...............x failed:
+shrinking> if valid (Node [Leaf [], -24, 2, Leaf []]) then find (-24) (insert (16) (11) (Node [Leaf [], -24, 2, Leaf []])) == if 16 == -24 then Just [11] else find (-24) (Node [Leaf [], -24, 2, Leaf []]) else True
+after 297 tests.
+testing:insert-post-same-key> .................BST-bug-2.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ...x failed:
+shrinking> if valid (Node [Leaf [], -9, -30, Leaf []]) then valid (insert (-9) (0) (Node [Leaf [], -9, -30, Leaf []])) else True
+after 43 tests.
+testing:delete-valid> .................................................. ok
+testing:union-valid> .......................................x failed:
+shrinking> if and (valid (Node [Leaf [], 19, -16, Leaf []])) (valid (Node [Node [Leaf [], -10, -11, Leaf []], 19, -24, Leaf []])) then valid (union (Node [Leaf [], 19, -16, Leaf []]) (Node [Node [Leaf [], -10, -11, Leaf []], 19, -24, Leaf []])) else True
+after 777 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> ...x failed:
+shrinking> if valid (Node [Leaf [], 10, -16, Leaf []]) then toList (insert (10) (8) (Node [Leaf [], 10, -16, Leaf []])) == listInsert (IIP [10, 8]) (deleteKey (10) (toList (Node [Leaf [], 10, -16, Leaf []]))) else True
+after 57 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .................................................. ok
+testing:find-model> ....................BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .........................x failed:
+shrinking> if valid (Node [Leaf [], -2, 16, Leaf []]) then toList (insert (-2) (-4) (Node [Leaf [], -2, 16, Leaf []])) == listInsert (IIP [-2, -4]) (deleteKey (-2) (toList (Node [Leaf [], -2, 16, Leaf []]))) else True
+after 498 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .................................................. ok
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .....................x failed:
+shrinking> if valid (Node [Leaf [], 14, 11, Leaf []]) then find (14) (insert (14) (3) (Node [Leaf [], 14, 11, Leaf []])) == if 14 == 14 then Just [3] else find (14) (Node [Leaf [], 14, 11, Leaf []]) else True
+after 406 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> ...x failed:
+shrinking> if valid (Node [Leaf [], 6, -5, Leaf []]) then find (6) (insert (6) (2) (Node [Leaf [], 6, -5, Leaf []])) == Just [2] else True
+after 57 tests.
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> ...x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (30) (-20) (insert (30) (18) (Leaf []))) (if 30 == 30 then insert (30) (-20) (Leaf []) else insert (30) (18) (insert (30) (-20) (Leaf []))) else True
+after 50 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .................................................. ok
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> .................................................. ok
+testing:union-nil-1> .................................................. ok
+testing:union-nil-2> .................................................. ok
+testing:union-delete-insert> ..............x failed:
+shrinking> if and (valid (Node [Leaf [], 1, 28, Leaf []])) (valid (Leaf [])) then equalContents (union (delete (1) (Node [Leaf [], 1, 28, Leaf []])) (insert (1) (-26) (Leaf []))) (insert (1) (-26) (union (Node [Leaf [], 1, 28, Leaf []]) (Leaf []))) else True
+after 272 tests.
+testing:union-union-idem> .................................................. ok
+testing:union-union-assoc> .................................................. ok
+testing:find-nil> .................................................. ok
+testing:find-insert> .................................................. ok
+testing:find-delete> .................................................. ok
+testing:find-union> .................................................. ok
+testing:union-nil> .................................................. ok
+testing:union-insert> .....................................BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .BST-bug-5.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> ..............BST-bug-6.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .....x failed:
+shrinking> if and (valid (Node [Leaf [], 17, 4, Leaf []])) (valid (Node [Leaf [], 6, 28, Leaf []])) then valid (union (Node [Leaf [], 17, 4, Leaf []]) (Node [Leaf [], 6, 28, Leaf []])) else True
+after 99 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> ........x failed:
+shrinking> if and (valid (Node [Leaf [], 1, 20, Leaf []])) (valid (Node [Leaf [], -9, -24, Leaf []])) then toList (union (Node [Leaf [], 1, 20, Leaf []]) (Node [Leaf [], -9, -24, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], 1, 20, Leaf []])) (toList (Node [Leaf [], -9, -24, Leaf []]))) else True
+after 152 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .................................................. ok
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> ..x failed:
+shrinking> if and (valid (Leaf [])) (valid (Node [Node [Leaf [], -21, -2, Leaf []], 15, 11, Leaf []])) then equalContents (insert (-8) (5) (union (Leaf []) (Node [Node [Leaf [], -21, -2, Leaf []], 15, 11, Leaf []]))) (union (insert (-8) (5) (Leaf [])) (Node [Node [Leaf [], -21, -2, Leaf []], 15, 11, Leaf []])) else True
+after 24 tests.
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> .................................................. ok
+testing:union-nil-1> .................................................. ok
+testing:union-nil-2> .................................................. ok
+testing:union-delete-insert> .x failed:
+shrinking> if and (valid (Node [Leaf [], 18, -16, Leaf []])) (valid (Leaf [])) then equalContents (union (delete (7) (Node [Leaf [], 18, -16, Leaf []])) (insert (7) (-7) (Leaf []))) (insert (7) (-7) (union (Node [Leaf [], 18, -16, Leaf []]) (Leaf []))) else True
+after 6 tests.
+testing:union-union-idem> x failed:
+shrinking> if valid (Node [Leaf [], 6, -11, Leaf []]) then equalContents (union (Node [Leaf [], 6, -11, Leaf []]) (Node [Leaf [], 6, -11, Leaf []])) (Node [Leaf [], 6, -11, Leaf []]) else True
+after 0 tests.
+testing:union-union-assoc> .................................................. ok
+testing:find-nil> .................................................. ok
+testing:find-insert> ...................................BST-bug-7.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .......x failed:
+shrinking> if valid (Node [Node [Leaf [], 12, -13, Leaf []], 16, -22, Leaf []]) then toList (delete (16) (Node [Node [Leaf [], 12, -13, Leaf []], 16, -22, Leaf []])) == deleteKey (16) (toList (Node [Node [Leaf [], 12, -13, Leaf []], 16, -22, Leaf []])) else True
+after 123 tests.
+testing:union-model> .x failed:
+shrinking> if and (valid (Node [Leaf [], -6, 12, Leaf []])) (valid (Leaf [])) then toList (union (Node [Leaf [], -6, 12, Leaf []]) (Leaf [])) == sort (unionByFst (toList (Node [Leaf [], -6, 12, Leaf []])) (toList (Leaf []))) else True
+after 6 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> ............BST-bug-8.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> .................................................. ok
+testing:union-model> .........................................x failed:
+shrinking> if and (valid (Node [Leaf [], -5, 26, Leaf []])) (valid (Node [Leaf [], -5, -30, Leaf []])) then toList (union (Node [Leaf [], -5, 26, Leaf []]) (Node [Leaf [], -5, -30, Leaf []])) == sort (unionByFst (toList (Node [Leaf [], -5, 26, Leaf []])) (toList (Node [Leaf [], -5, -30, Leaf []]))) else True
+after 806 tests.
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .................................................. ok
+testing:union-post> .................................................. ok
+testing:find-post-present> .................................................. ok
+testing:find-post-absent> ................................BST-bug-1.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .......................BST-bug-2.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> ........x failed:
+shrinking> if valid (Node [Leaf [], -23, -15, Leaf []]) then valid (insert (-23) (18) (Node [Leaf [], -23, -15, Leaf []])) else True
+after 146 tests.
+testing:delete-valid> .................................................. ok
+testing:union-valid> ............................................x failed:
+shrinking> if and (valid (Node [Leaf [], -4, 22, Node [Leaf [], 17, 3, Leaf []]])) (valid (Node [Leaf [], -4, 12, Leaf []])) then valid (union (Node [Leaf [], -4, 22, Node [Leaf [], 17, 3, Leaf []]]) (Node [Leaf [], -4, 12, Leaf []])) else True
+after 868 tests.
+testing:nil-model> .................................................. ok
+testing:insert-model> ..........x failed:
+shrinking> if valid (Node [Leaf [], 27, 30, Leaf []]) then toList (insert (27) (11) (Node [Leaf [], 27, 30, Leaf []])) == listInsert (IIP [27, 11]) (deleteKey (27) (toList (Node [Leaf [], 27, 30, Leaf []]))) else True
+after 188 tests.
+testing:delete-model> ..........BST-bug-3.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .....x failed:
+shrinking> if valid (Node [Leaf [], -3, 22, Node [Leaf [], 19, -15, Leaf []]]) then toList (insert (-3) (-30) (Node [Leaf [], -3, 22, Node [Leaf [], 19, -15, Leaf []]])) == listInsert (IIP [-3, -30]) (deleteKey (-3) (toList (Node [Leaf [], -3, 22, Node [Leaf [], 19, -15, Leaf []]]))) else True
+after 87 tests.
+testing:delete-model> .................................................. ok
+testing:union-model> .................................................. ok
+testing:find-model> .................................................. ok
+testing:insert-post> .................................................. ok
+testing:insert-post-same-key> .....x failed:
+shrinking> if valid (Node [Leaf [], -12, 23, Leaf []]) then find (-12) (insert (-12) (12) (Node [Leaf [], -12, 23, Leaf []])) == if -12 == -12 then Just [12] else find (-12) (Node [Leaf [], -12, 23, Leaf []]) else True
+after 93 tests.
+testing:union-post> .................................................. ok
+testing:find-post-present> .....x failed:
+shrinking> if valid (Node [Leaf [], -20, -22, Node [Leaf [], -8, 4, Leaf []]]) then find (-8) (insert (-8) (23) (Node [Leaf [], -20, -22, Node [Leaf [], -8, 4, Leaf []]])) == Just [23] else True
+after 83 tests.
+testing:find-post-absent> .................................................. ok
+testing:insert-delete-complete> .................................................. ok
+testing:insert-insert-weak> .................................................. ok
+testing:insert-insert> .x failed:
+shrinking> if valid (Leaf []) then equalContents (insert (-6) (-21) (insert (-6) (7) (Leaf []))) (if -6 == -6 then insert (-6) (-21) (Leaf []) else insert (-6) (7) (insert (-6) (-21) (Leaf []))) else True
+after 10 tests.
+testing:insert-delete-weak> .................................................. ok
+testing:insert-delete> .................................................. ok
+testing:insert-union> .................................................. ok
+testing:delete-nil> .................................................. ok
+testing:delete-insert-weak> .................................................. ok
+testing:delete-insert> .................................................. ok
+testing:delete-delete> .................................................. ok
+testing:delete-union> ..........BST-bug-4.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .BST-bug-5.pun
+testing:nil-valid> .................................................. ok
+testing:insert-valid> .................................................. ok
+testing:delete-valid> .................................................. ok
+testing:union-valid> .................................................. ok
+testing:nil-model> .................................................. ok
+testing:insert-model> .................................................. ok
+testing:delete-model> ................
