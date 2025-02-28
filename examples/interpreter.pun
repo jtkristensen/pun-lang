@@ -1,0 +1,52 @@
+
+data Exp = Const [integer]
+         | Plus [Exp, Exp]
+         | Times [Exp, Exp]
+         | Variable [integer]
+         | Let [integer, Exp, Exp] .
+
+data Env = Empty | Binding [integer, Exp, Env] .
+
+data Maybe = Nothing | Just [Exp] .
+
+data Result = Error | Result [integer].
+
+data Pair = Pair [Result, Result] .
+
+lookup : integer -> Env -> Maybe .
+lookup x r1 =
+  case r1 of
+  ; Empty              -> Nothing
+  ; Binding [y, e, r2] -> if x == y then Just [e] else lookup x r2 .
+
+bind : integer -> (Exp -> (Env -> Env)) .
+bind x e r = Binding [x, e, r] .
+
+eval : Env -> Exp -> Result .
+eval r e =
+  case e of
+  ; Const [n] -> Result [n]
+  ; Plus  [e1, e2] ->
+    (case Pair [eval r e1, eval r e2] of
+     ; Pair [Error, x]  -> Error
+     ; Pair [x, Error]  -> Error
+     ; Pair [Result [m], Result [n]] -> Result [m + n])
+  ; Times  [e1, e2] ->
+    (case Pair [eval r e1, eval r e2] of
+     ; Pair [Error, x]  -> Error
+     ; Pair [x, Error]  -> Error
+     ; Pair [Result [m], Result [n]] -> Result [m + n])
+  ; Variable [x]    ->
+     (case lookup x r of
+      ; Nothing   -> Error
+      ; Just [e]  -> eval r e)
+  ; Let [x, e1, e2] -> eval (bind x e1 r) e2 .
+
+simplify : Exp -> Exp .
+simplify e =
+  case e of
+  ; Plus  [e1, Const[0]] -> simplify e1
+  ; Times [e1, Const[1]] -> simplify e1
+  ; e1                   -> e1 .
+
+property semantics-preserving e r . eval r e == eval r (simplify e) .
