@@ -95,7 +95,7 @@ generateTermGenerator ds s@(is, bs, ts) Boolean' size           =
          return $ Let x t1 t2 Boolean'
     , do x     <- generateName ts
          -- this is the trivially terminating recursive term, because x does not occur !
-         t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Boolean' (size - 1)
+         t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Boolean' (half size)
          return $ Rec x t1 Boolean'
          ]
     ++ ((\a -> (15, return a)) . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
