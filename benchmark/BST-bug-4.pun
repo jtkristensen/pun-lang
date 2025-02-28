@@ -69,7 +69,7 @@ insert k1 v1 t =
              then Node [l2, k2, v2, (insert k1 v1 r2)]
              else Node [l2, k1, v1, r2] .
 
-// delete fails to rebuild the tree above the key being deleted, 
+// delete fails to rebuild the tree above the key being deleted,
 // returning only the remainder of the tree from that point on
 // (an easy mistake for those used to imperative programming to make)
 delete : integer -> BST -> BST .
@@ -88,7 +88,7 @@ union t1 t2 =
     case t1 of
     ; Leaf -> t2
     ; Node [l1, k1, v1, r1] ->
-        union (delete k1 t1) (insert k1 v1 t2) .
+        union l1 (union r1 (insert k1 v1 t2)) .
 
 find : integer -> BST -> Maybe .
 find k t =

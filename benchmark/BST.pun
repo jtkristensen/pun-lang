@@ -85,7 +85,7 @@ union t1 t2 =
     case t1 of
     ; Leaf -> t2
     ; Node [l1, k1, v1, r1] ->
-        union (delete k1 t1) (insert k1 v1 t2) .
+        union l1 (union r1 (insert k1 v1 t2)) .
 
 find : integer -> BST -> Maybe .
 find k t =
