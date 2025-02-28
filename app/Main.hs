@@ -51,10 +51,12 @@ check program =
      breakline
      void $ mapM check1 (properties program)
   where
+    maxval [] = 0
+    maxval xs = maximum xs
     breakline =
-      do putStr $ replicate ((maximum $ map (length . fst) $ properties program)) '_'
+      do putStr $ replicate ((maxval $ map (length . fst) $ properties program)) '_'
          putStrLn $ replicate 56 '_'
-    indentation name = putStr $ replicate ((maximum $ map (length . fst) $ properties program) - length name) ' '
+    indentation name = putStr $ replicate ((maxval $ map (length . fst) $ properties program) - length name) ' '
     check1 (name, (args, body)) =
       do indentation name
          putStr $ name ++ " | "

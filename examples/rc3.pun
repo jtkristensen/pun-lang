@@ -1,0 +1,19 @@
+
+data Exp = Const [integer] | Plus [Exp, Exp] | Times [Exp, Exp] .
+
+eval : Exp -> integer .
+eval e =
+  case e of
+  ; Const [n] -> n
+  ; Plus  [e1, e2] -> eval e1 + eval e2
+  ; Times [e1, e2] -> eval e1 + eval e2 // copy paste bug
+  .
+
+simplify : Exp -> Exp .
+simplify e =
+  case e of
+  ; Plus  [e1, Const[0]] -> simplify e1
+  ; Times [e1, Const[1]] -> simplify e1
+  ; e1                   -> e1 .
+
+property semantics-preserving e . eval e == (eval (simplify e)) .
