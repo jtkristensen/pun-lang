@@ -79,8 +79,7 @@ type_ =
   where
     type' =
       choice
-      [ Unit'     <$  unit
-      , Integer'  <$  symbol "integer"
+      [ Integer'  <$  symbol "integer"
       , Boolean'  <$  symbol "boolean"
       , Variable' <$> nat_
       , parens type_
@@ -92,7 +91,6 @@ simple =
   choice
   [ info $ int_  <&> Number
   , info $ bool_ <&> Boolean
-  , info $ Unit  <$ unit
   , info $ name  <&> Variable
   , info $ Constructor <$> constructorName <*> option [] (brackets (sepBy term_ (symbol ",")))
   , parens term_
@@ -230,9 +228,6 @@ bool_ =
   [ symbol "true"  >> return True
   , symbol "false" >> return False
   ]
-
-unit :: Parser ()
-unit = void $ symbol "unit"
 
 nameStart :: Parser Char
 nameStart = choice [lower, digit, dash, underscore]

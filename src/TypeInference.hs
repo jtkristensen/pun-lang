@@ -37,7 +37,6 @@ haveTypes = zipWithM_ hasType
 annotate :: Term a -> Annotation a (Term Type)
 annotate (Number   n _)  = return $ Number n Integer'
 annotate (Boolean  b _)  = return $ Boolean b Boolean'
-annotate (Unit       _)  = return $ Unit Unit'
 annotate (Variable x _)  =
   do env <- ask
      return $ Variable x $ env x
@@ -115,7 +114,6 @@ solve (constraint : rest) =
   case constraint of
     Integer'      :=: Integer'      -> solve rest
     Boolean'      :=: Boolean'      -> solve rest
-    Unit'         :=: Unit'         -> solve rest
     (Algebraic d) :=: (Algebraic c) | c == d -> solve rest
     (t0 :->: t1)  :=: (t2 :->: t3)  -> solve $ (t0 :=: t2) : (t1 :=: t3) : rest
     (Variable' i) :=: t1            ->
@@ -162,7 +160,6 @@ alpha :: Index -> (Type -> (Index, Type))
 alpha i t = (if null (indices t) then i else i + maximum (indices t) + 1, increment t)
   where increment Integer'        = Integer'
         increment Boolean'        = Boolean'
-        increment Unit'           = Unit'
         increment (Algebraic d)   = Algebraic d
         increment (Variable' j)   = Variable' (i + j)
         increment (t1 :->: t2 )   = increment t1 :->: increment t2
@@ -189,7 +186,6 @@ refine s o = refine' s o
     refine' (_   : rest) (Variable' j)          = refine' rest (Variable' j)
     refine' _            Integer'               = Integer'
     refine' _            Boolean'               = Boolean'
-    refine' _            Unit'                  = Unit'
     refine' _            (Algebraic d)          = Algebraic d
     refine' s'           (t0 :->: t1)           = refine' s' t0 :->: refine' s' t1
 

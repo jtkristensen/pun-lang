@@ -42,7 +42,6 @@ data Type
   = Variable' Index
   | Integer'
   | Boolean'
-  | Unit'
   | Type :->: Type
   | Algebraic D
   deriving (Eq, Show)
@@ -50,7 +49,6 @@ data Type
 data Term a =
     Number    Integer                   a
   | Boolean   Bool                      a
-  | Unit                                a
   | Constructor C [Term a]              a
   | Case (T0 a) [(Pattern a, Term a)]   a
   | Variable  Name                      a
@@ -80,7 +78,6 @@ instance Annotated Term where
   annotations (Number          _ a) = return a
   annotations (Boolean         _ a) = return a
   annotations (Variable        _ a) = return a
-  annotations (Unit              a) = return a
   annotations (Constructor _ ts  a) = a : (ts           >>= annotations)
   annotations (If       t0 t1 t2 a) = a : ([t0, t1, t2] >>= annotations)
   annotations (Plus     t0 t1    a) = a : ([t0, t1]     >>= annotations)
@@ -119,7 +116,6 @@ instance Show (Term a) where
   -- todo (minimally bracketed printer + tests) --
   show (Number  n         _) = show n
   show (Boolean b         _) = show b
-  show (Unit              _) = "unit"
   show (Constructor c ts  _) = c ++ " [" ++ intercalate ", " (map show ts) ++ "]"
   show (Case t cs         _) = "case " ++ show t ++ " of\n" ++ intercalate "\n" (map (\(x, y) -> "  ; " ++ show x ++  " -> " ++ show y) cs)
   show (Variable n        _) = n
@@ -135,7 +131,6 @@ instance Show (Term a) where
 instance Eq (Term a) where
   (Number          n _) == (Number          n' _) = n == n'
   (Boolean         b _) == (Boolean         b' _) = b == b'
-  (Unit              _) == (Unit               _) = True
   (Constructor  c ts _) == (Constructor c' ts' _) = c == c' &&
                                                     and (zipWith (==) ts ts')
   (Variable        x _) == (Variable         y _) = x == y
@@ -159,7 +154,6 @@ instance Eq (Term a) where
 canonical :: Term a -> Bool
 canonical (Number  _        _) = True
 canonical (Boolean _        _) = True
-canonical (Unit             _) = True
 canonical (Constructor _ ts _) = all canonical ts
 canonical (Lambda  {}        ) = True
 canonical _                    = False
@@ -216,7 +210,6 @@ indices :: Type -> [Index]
 indices (Variable' a) = [a]
 indices  Integer'     = []
 indices  Boolean'     = []
-indices  Unit'        = []
 indices (t1 :->:  t2) = indices t1 <> indices t2
 indices (Algebraic _) = []
 
@@ -234,7 +227,6 @@ instance Monoid (Program a) where
 freeVariables :: Term a -> [Name]
 freeVariables (Number  _ _) = mempty
 freeVariables (Boolean _ _) = mempty
-freeVariables (Unit      _) = mempty
 freeVariables (Constructor _ ts _) =
   foldr (\t fvs -> fvs <> freeVariables t) mempty ts
 freeVariables (Case t cs _) =
