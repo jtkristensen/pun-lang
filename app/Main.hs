@@ -33,7 +33,11 @@ run a = a >>= \what ->
     (Shell         program) -> shell program
 
 numberOfTests :: Integer
-numberOfTests = 10000
+numberOfTests = 1000
+
+-- test output contains a dot for every ... tests.
+dotForEvery :: Integer
+dotForEvery = 20
 
 strengthen :: Monad m => (a, m b) -> m (a, b)
 strengthen (a, mb) = mb <&> (,) a
@@ -50,7 +54,7 @@ check program = void $ mapM check1 (properties program)
         genParts  = mapM strengthen $ second (generateGenerator dataDecls config) <$> args
         term      = uncurry $ foldr (\(x, v) t -> substitute x t v)
         eval      = normalize program
-        putDot n  = if n `mod` 100 == 0 then putStr "." else pure ()
+        putDot n  = if n `mod` dotForEvery == 0 then putStr "." else pure ()
         iter 0    = putStrLn " ok"
         iter n    =
           do parts <- generate genParts
