@@ -50,6 +50,7 @@ foldr f acc l =
     ; Empty        -> acc
     ; Cons [x, xs] -> f x (foldr f acc xs) .
 
+
 // ----------------------- BST and operations -----------------------
 
 data BST = Leaf | Node [BST, integer, integer, BST] .
@@ -128,7 +129,6 @@ equalContents t1 t2 = (toList t1) == (toList t2) .
 
 // -------------------------- List and operations --------------------------
 
-
 data List = Empty | Cons [IntIntPair, List] .
 
 listInsert : IntIntPair -> List -> List .
@@ -139,7 +139,6 @@ listInsert x list =
         if   (fst x) <= (fst y)
         then Cons [x, (listInsert y ys)]
         else Cons [y, (listInsert x ys)] .
-
 
 listDelete : IntIntPair -> List -> List .
 listDelete x list =
@@ -240,7 +239,6 @@ elem n l =
     case l of
     ; Empty        -> false
     ; Cons [x, xs] ->
-
         (if  ((fst x) == n)
          then true
          else (elem n xs)) .
@@ -254,9 +252,10 @@ removeDuplicates l =
         then (removeDuplicates xs)
         else (Cons [x, (removeDuplicates xs)])) .
 
+data BSTBSTPair = BBP [BST, BST].
+
 equivs : List -> BSTBSTPair .
 equivs xs = let ys = (removeDuplicates xs) in BBP [tree ys, tree (shuffle ys)] .
-
 
 // ============================ BST properties ============================
 
@@ -477,7 +476,6 @@ property union-insert t t1 k v .
 
 flip2 : (10 -> 11 -> 12) -> (11 -> 10 -> 12) .
 flip2 f x y = f y x .
-
 
 property insert-complete t .
     if   (valid t)
