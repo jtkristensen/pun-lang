@@ -43,10 +43,21 @@ strengthen :: Monad m => (a, m b) -> m (a, b)
 strengthen (a, mb) = mb <&> (,) a
 
 check :: Program Type -> IO ()
-check program = void $ mapM check1 (properties program)
+check program =
+  do breakline
+     indentation "property"
+     putStr "property"
+     putStrLn " | status"
+     breakline
+     void $ mapM check1 (properties program)
   where
+    breakline =
+      do putStr $ replicate ((maximum $ map (length . fst) $ properties program)) '_'
+         putStrLn $ replicate 56 '_'
+    indentation name = putStr $ replicate ((maximum $ map (length . fst) $ properties program) - length name) ' '
     check1 (name, (args, body)) =
-      do putStr $ "testing:" ++ name ++ "> "
+      do indentation name
+         putStr $ name ++ " | "
          iter numberOfTests
       where
         dataDecls = dataDeclarations program
