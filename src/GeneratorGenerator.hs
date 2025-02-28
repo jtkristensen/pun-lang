@@ -39,10 +39,9 @@ generateCanonicalGenerator ds s (Algebraic d) size =
     smallest _ = error "todo : deal with void."
 generateCanonicalGenerator ds (is, bs, ts) (type1 :->: type2) size =
   do x  <- generateName ts
-     t0 <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) type2 (size - 1)
+     t0 <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) type2 (half size)
      return $ Lambda x t0 (type1 :->: type2)
--- This remaining case is Variable'
-generateCanonicalGenerator ds s (Variable' _) size = generateTermGenerator ds s Integer' size
+generateCanonicalGenerator ds s (Variable' _) size = generateCanonicalGenerator ds s Integer' size
 
 generateTermGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
 generateTermGenerator ds s              t        0    = generateCanonicalGenerator ds s t 0
@@ -67,7 +66,7 @@ generateTermGenerator ds s@(is, bs, ts) Integer' size =
          return $ Let x t1 t2 Integer'
     , do x     <- generateName ts
          -- this is the trivially terminating recursive term, because x does not occur !
-         t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Integer' (size - 1)
+         t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Integer' (half size)
          return $ Rec x t1 Integer'
          ]
     ++ ((\a -> (15, return a)) . flip Variable Integer' <$> [ n | (n, t) <- bs , t == Integer' ])
