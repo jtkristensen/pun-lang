@@ -69,16 +69,19 @@ insert k1 v1 t =
              then Node [l2, k2, v2, (insert k1 v1 r2)]
              else Node [l2, k1, v1, r2] .
 
+// delete fails to rebuild the tree above the key being deleted, 
+// returning only the remainder of the tree from that point on
+// (an easy mistake for those used to imperative programming to make)
 delete : integer -> BST -> BST .
 delete k t =
     case t of
     ; Leaf                  -> Leaf
     ; Node [l1, k1, v1, r1] ->
-        if   less k k1
-        then Node [(delete k l1), k1, v1, r1]
-        else if   greater k k1
-             then Node [l1, k1, v1, (delete k r1)]
-             else (union l1 r1) .
+        (if   (less k k1)
+         then (delete k l1)
+         else (if  (greater k k1)
+              then (delete k r1)
+              else (Node [l1, k1, v1, r1]))) .
 
 union : BST -> BST -> BST .
 union t1 t2 =
@@ -175,7 +178,7 @@ unionByFst l1 l2 =
     case l1 of
     ; Empty          -> l2
     ; Cons [p, rest] ->
-        listInsert p (unionByFst rest l2) .
+        unionByFst (listDelete p l1) (listInsert p l2) .
 
 toList : BST -> List .
 toList t =
@@ -296,7 +299,7 @@ property delete-model k t .
 
 // property union-model t1 t2 .
 //     if   (and (valid t1) (valid t2))
-//     then toList (union t1 t2) == (sort (unionByFst (toList t1) (toList t2)))
+//     then (toList (union t1 t2)) == (sort (unionByFst (toList t1) (toList t2)))
 //     else true .
 
 property find-model k t .

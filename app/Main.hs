@@ -33,16 +33,31 @@ run a = a >>= \what ->
     (Shell         program) -> shell program
 
 numberOfTests :: Integer
-numberOfTests = 10000
+numberOfTests = 100000
+
+-- test output contains a dot for every ... tests.
+dotForEvery :: Integer
+dotForEvery = 2000
 
 strengthen :: Monad m => (a, m b) -> m (a, b)
 strengthen (a, mb) = mb <&> (,) a
 
 check :: Program Type -> IO ()
-check program = void $ mapM check1 (properties program)
+check program =
+  do breakline
+     indentation "property"
+     putStr "property"
+     putStrLn " | status"
+     breakline
+     void $ mapM check1 (properties program)
   where
+    breakline =
+      do putStr $ replicate ((maximum $ map (length . fst) $ properties program)) '_'
+         putStrLn $ replicate 56 '_'
+    indentation name = putStr $ replicate ((maximum $ map (length . fst) $ properties program) - length name) ' '
     check1 (name, (args, body)) =
-      do putStr $ "testing:" ++ name ++ "> "
+      do indentation name
+         putStr $ name ++ " | "
          iter numberOfTests
       where
         dataDecls = dataDeclarations program
@@ -50,12 +65,13 @@ check program = void $ mapM check1 (properties program)
         genParts  = mapM strengthen $ second (generateGenerator dataDecls config) <$> args
         term      = uncurry $ foldr (\(x, v) t -> substitute x t v)
         eval      = normalize program
+        putDot n  = if n `mod` dotForEvery == 0 then putStr "." else pure ()
         iter 0    = putStrLn " ok"
         iter n    =
           do parts <- generate genParts
              test  <- term <$> return (body, parts)
              case eval test of
-               Boolean True _ -> putStr "." >> hFlush stdout >> iter (n - 1)
+               Boolean True _ -> putDot n >> hFlush stdout >> iter (n - 1)
                _              ->
                  do putStrLn "x failed:"
                     putStr "shrinking> " >> hFlush stdout

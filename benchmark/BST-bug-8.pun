@@ -80,12 +80,16 @@ delete k t =
              then Node [l1, k1, v1, (delete k r1)]
              else (union l1 r1) .
 
+// union works correctly, except that when both trees contain
+// the same key, the left argument does not always take priority
 union : BST -> BST -> BST .
 union t1 t2 =
     case t1 of
-    ; Leaf -> t2
-    ; Node [l1, k1, v1, r1] ->
-        union (delete k1 t1) (insert k1 v1 t2) .
+    ; Leaf                  -> t2
+    ; Node [l1, k1, v1, r1] -> 
+        (case (find k1 t2) of
+        ; Nothing  -> (union (delete k1 t1) (insert k1 v1 t2))
+        ; Just [v] -> (union (delete k1 t1) (t2))) .
 
 find : integer -> BST -> Maybe .
 find k t =
@@ -175,7 +179,7 @@ unionByFst l1 l2 =
     case l1 of
     ; Empty          -> l2
     ; Cons [p, rest] ->
-        listInsert p (unionByFst rest l2) .
+        unionByFst (listDelete p l1) (listInsert p l2) .
 
 toList : BST -> List .
 toList t =
@@ -296,7 +300,7 @@ property delete-model k t .
 
 // property union-model t1 t2 .
 //     if   (and (valid t1) (valid t2))
-//     then toList (union t1 t2) == (sort (unionByFst (toList t1) (toList t2)))
+//     then (toList (union t1 t2)) == (sort (unionByFst (toList t1) (toList t2)))
 //     else true .
 
 property find-model k t .

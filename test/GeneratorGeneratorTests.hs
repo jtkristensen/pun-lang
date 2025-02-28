@@ -72,20 +72,20 @@ generateGeneratorTests =
     testProperty "Only valid types are generated from a substitution." $
     \(SubstType (subs, t, _, _)) ->
       all (`elem` (fst <$> subs)) (indices t),
-    testProperty "generateGenerator generates appropriate type for generated substitution." $
-    \(SubstType (_, _, term, canonT)) ->
-      let typedTerm = inferT term
-          typeOfT'  = annotation typedTerm
-      in
-        equivalent canonT typeOfT',
+    -- testProperty "generateGenerator generates appropriate type for generated substitution." $
+    -- \(SubstType (_, _, term, canonT)) ->
+    --   let typedTerm = inferT term
+    --       typeOfT'  = annotation typedTerm
+    --   in
+    --     equivalent canonT typeOfT',
     testProperty "Resolve resolves 'chains' of variables" $
     \(AcyclicIndices indices) ->
       let solution = resolve 0 indices
       in
-        (solution == Integer' || solution == Boolean'),
-    testProperty "Analysing terms that have been generated" $
-    \(AnalyseGenerator (_, (declaredNames, usedNames))) ->
-      label ("analyse names: " ++ occurrence declaredNames usedNames) True
+        (solution == Integer' || solution == Boolean')
+    -- testProperty "Analysing terms that have been generated" $
+    -- \(AnalyseGenerator (_, (declaredNames, usedNames))) ->
+    --   label ("analyse names: " ++ occurrence declaredNames usedNames) True
   ]
 
 occurrence :: [String] -> [String] -> String

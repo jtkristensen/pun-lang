@@ -67,7 +67,7 @@ insert k1 v1 t =
         then Node [(insert k1 v1 l2), k2, v2, r2]
         else if   greater k1 k2
              then Node [l2, k2, v2, (insert k1 v1 r2)]
-             else Node [l2, k1, v1, r2] .
+             else Node [l2, k2, v2, r2] .
 
 delete : integer -> BST -> BST .
 delete k t =
@@ -175,7 +175,7 @@ unionByFst l1 l2 =
     case l1 of
     ; Empty          -> l2
     ; Cons [p, rest] ->
-        listInsert p (unionByFst rest l2) .
+        unionByFst (listDelete p l1) (listInsert p l2) .
 
 toList : BST -> List .
 toList t =
@@ -296,7 +296,7 @@ property delete-model k t .
 
 // property union-model t1 t2 .
 //     if   (and (valid t1) (valid t2))
-//     then toList (union t1 t2) == (sort (unionByFst (toList t1) (toList t2)))
+//     then (toList (union t1 t2)) == (sort (unionByFst (toList t1) (toList t2)))
 //     else true .
 
 property find-model k t .
