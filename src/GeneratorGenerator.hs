@@ -40,12 +40,11 @@ generateCanonicalGenerator ds (is, bs, ts) (type1 :->: type2) size =
      t0 <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) type2 (decrease size)
      return $ Lambda x t0 (type1 :->: type2)
 -- This remaining case is Variable'
-generateCanonicalGenerator ds s tau size = generateTermGenerator ds s tau size
+generateCanonicalGenerator ds s (Variable' _) size = generateTermGenerator ds s Integer' size
 
 generateTermGenerator :: DataDeclarations -> ProgramConfiguration -> (Type -> (Int -> Gen (Term Type)))
+generateTermGenerator ds s              t        0    = generateCanonicalGenerator ds s t 0
 generateTermGenerator _  _              Unit'    _    = return $ Unit Unit'
-generateTermGenerator ds s              Integer' 0    = generateTermGenerator ds s Integer' 1
-generateTermGenerator _  _              Integer' 1    = flip Number  Integer' <$> arbitrary
 generateTermGenerator ds s@(is, bs, ts) Integer' size =
   frequency $ zip [1..]
     [ flip Number  Integer' <$> arbitrary
@@ -65,14 +64,12 @@ generateTermGenerator ds s@(is, bs, ts) Integer' size =
          t1    <- generateTermGenerator ds s type1 (decrease size)
          t2    <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) Integer' (decrease size)
          return $ Let x t1 t2 Integer'
-    -- , do x     <- generateName ts
-    --      -- this is the trivially terminating recursive term, because x does not occur !
-    --      t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Integer' (decrease size)
-    --      return $ Rec x t1 Integer'
+    , do x     <- generateName ts
+         -- this is the trivially terminating recursive term, because x does not occur !
+         t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Integer' (decrease size)
+         return $ Rec x t1 Integer'
          ]
     ++ ((\a -> (15, return a)) . flip Variable Integer' <$> [ n | (n, t) <- bs , t == Integer' ])
-generateTermGenerator ds s          Boolean' 0 = generateTermGenerator ds s Boolean' 1
-generateTermGenerator _  _          Boolean' 1 = flip Boolean Boolean' <$> arbitrary
 generateTermGenerator ds s@(is, bs, ts) Boolean' size           =
   frequency $ zip [1..]
     [ flip Boolean  Boolean' <$> arbitrary
@@ -96,10 +93,10 @@ generateTermGenerator ds s@(is, bs, ts) Boolean' size           =
          t1    <- generateTermGenerator ds s type1 (decrease size)
          t2    <- generateTermGenerator ds (is, (x, type1) : filter ((/=x) . fst) bs, ts) Boolean' (decrease size)
          return $ Let x t1 t2 Boolean'
-    -- , do x     <- generateName ts
-    --      -- this is the trivially terminating recursive term, because x does not occur !
-    --      t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Boolean' (decrease size)
-    --      return $ Rec x t1 Boolean'
+    , do x     <- generateName ts
+         -- this is the trivially terminating recursive term, because x does not occur !
+         t1    <- generateTermGenerator ds (is, filter ((/=x) . fst) bs, ts) Boolean' (decrease size)
+         return $ Rec x t1 Boolean'
          ]
     ++ ((\a -> (15, return a)) . flip Variable Boolean' <$> [ n | (n, t) <- bs , t == Boolean' ])
 generateTermGenerator ds s@(is, _, _) (Variable' index) size   =
