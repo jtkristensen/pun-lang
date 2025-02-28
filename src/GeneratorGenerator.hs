@@ -27,7 +27,7 @@ generateCanonicalGenerator ds s (Algebraic d) size =
   else oneof (map ctrGen (constructors ds d))
   where
     ctrGen (TypeConstructor c types) =
-      do ts <- mapM (\tau -> generateCanonicalGenerator ds s tau (size `div` (length types))) types
+      do ts <- mapM (\tau -> generateCanonicalGenerator ds s tau (size `div` length types)) types
          return $ Constructor c ts (Algebraic d)
     smallest [t] = t
     smallest (TypeConstructor c ts : TypeConstructor c' ts' : rest) =
