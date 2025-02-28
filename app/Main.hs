@@ -33,11 +33,11 @@ run a = a >>= \what ->
     (Shell         program) -> shell program
 
 numberOfTests :: Integer
-numberOfTests = 1000
+numberOfTests = 10000
 
 -- test output contains a dot for every ... tests.
 dotForEvery :: Integer
-dotForEvery = 20
+dotForEvery = 200
 
 strengthen :: Monad m => (a, m b) -> m (a, b)
 strengthen (a, mb) = mb <&> (,) a
