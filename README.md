@@ -46,6 +46,7 @@ For the smaller examples inlined in the text, run
 ```bash
 pun --check examples/rc1.pun
 pun --check examples/rc2.pun
+pun --check examples/rc3.pun
 ```
 
 For the benchmark, demonstrating pun on the binary search tree properties defined in Hughes's *How to Specify It!* (2019), run
