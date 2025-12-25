@@ -2,7 +2,7 @@
 
 module Syntax where
 
-import Data.List (intercalate)
+import Data.List (intercalate, find)
 
 -- Abbreviations.
 type Name             = String
@@ -26,6 +26,7 @@ type Node           a = (Pattern a, Term a)
 type Pattern        a = Term a
 type Canonical      a = Term a
 type DataDeclarations = [(D, [TypeConstructor])]
+type Property'      a = (P, ([(X, a)], Term a))
 
 data Program a
   = Data        D [TypeConstructor] (Program a)
@@ -199,7 +200,16 @@ declarations (Declaration x t rest) = (x, t) : declarations rest
 declarations (Property  _ _ _ rest) = declarations rest
 declarations _                      = mempty
 
-properties :: Program a -> [(P, ([(X, a)], Term a))]
+property :: Name -> Program a -> Property' a
+property name program = 
+  case property' name (properties program) of
+    Just    property'' -> property''
+    Nothing            -> error $ "No property named " ++ name
+
+property' :: Name -> [Property' a] -> Maybe (Property' a)
+property' name properties' = find (\(name', _) -> name' == name) properties'
+
+properties :: Program a -> [Property' a]
 properties (Data        _ _ rest) = properties rest
 properties (Definition  _ _ rest) = properties rest
 properties (Declaration _ _ rest) = properties rest
