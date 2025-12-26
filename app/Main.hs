@@ -5,7 +5,6 @@ import Parser                (parsePunProgram, Info , parseShellCommand)
 import TypeInference         (inferP, inferT)
 import Interpreter           (normalize, substitute)
 import GeneratorGenerator    (generateGenerator)
-import Control.Monad         (void)
 import Control.Arrow         (second)
 import Data.Functor          ((<&>))
 import System.Exit           (die)
@@ -29,7 +28,7 @@ run :: IO Action -> IO ()
 run a = a >>= \what ->
   case what of
     (PropertyCheck  program     ) -> check program (properties program)
-    (PropertyCheck' program name) -> check program [(property name program)]
+    (PropertyCheck' program name) -> check program [property name program]
     (TypeCheck      program     ) -> typed program >>= print
     (Fail           message     ) -> die message
     (Shell          program     ) -> shell program
@@ -51,7 +50,7 @@ check program properties' =
      putStr      "property"
      putStrLn    " | status"
      breakline
-     void $ mapM check1 properties'
+     mapM_ check1 properties'
   where
     maxval [] = 0
     maxval xs = maximum xs
@@ -73,7 +72,7 @@ check program properties' =
         iter 0    = putStrLn " ok"
         iter n    =
           do parts <- generate genParts
-             test  <- term <$> return (body, parts)
+             test  <- return (term (body, parts))
              case eval test of
                Boolean True _ -> putDot n >> hFlush stdout >> iter (n - 1)
                _              ->
@@ -85,7 +84,7 @@ check program properties' =
         smaller parts =
           -- TODO: better shrink (and message)
           do putStr ""
-             term <$> return (body, map (second eval) parts)
+             return (term (body, map (second eval) parts))
 
 parse :: String -> IO (Program Info)
 parse file =
@@ -128,7 +127,7 @@ loadProgram file = parse file >>= typed
 
 -- todo: refactor.
 action :: [String] -> IO Action
-action ["--check", file, propertyName] = PropertyCheck' <$> (parse file >>= typed) <*> (return propertyName)
+action ["--check", file, propertyName] = PropertyCheck' <$> (parse file >>= typed) <*> return propertyName
 action ["--check", file]               = PropertyCheck  <$> (parse file >>= typed)
 action ["--types", file]               = TypeCheck      <$>  parse file
 action [           file]               = Shell          <$> (parse file >>= typed)

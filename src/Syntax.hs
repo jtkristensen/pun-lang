@@ -207,7 +207,7 @@ property name program =
     Nothing            -> error $ "No property named " ++ name
 
 property' :: Name -> [Property' a] -> Maybe (Property' a)
-property' name properties' = find (\(name', _) -> name' == name) properties'
+property' name = find (\ (name', _) -> name' == name)
 
 properties :: Program a -> [Property' a]
 properties (Data        _ _ rest) = properties rest
