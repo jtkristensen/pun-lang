@@ -13,14 +13,9 @@ jobs:
     strategy:
       matrix:
         ghc:      ['9.4.5']
-        cabal:    ['3.0.0.0']
         os:       [ubuntu-latest]
         resolver: [lts-21.1]
-        exclude:
-          # GHC 8.8+ only works with cabal v3+
-          - ghc:   8.8.3
-            cabal: 2.4.1.0
-    name: Using resolver ${{ matrix.resolver }} with ghc version ${{ matrix.ghc }} and cabal ${{ matrix.cabal }}
+    name: Using resolver ${{ matrix.resolver }} with ghc version ${{ matrix.ghc }}
     steps:
 
       - name: Check out
@@ -30,14 +25,12 @@ jobs:
         uses: haskell-actions/setup@v2
         with:
           ghc-version:   ${{ matrix.ghc }}
-          cabal-version: ${{ matrix.cabal }}
           enable-stack: true
 
       - name: Versions
         run: |
           stack --version
-          cabal --version
-          ghc --version
+          ghc   --version
 
       - name: Initalize stack for LTS
         run: |

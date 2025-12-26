@@ -5,7 +5,6 @@ import Parser                (parsePunProgram, Info , parseShellCommand)
 import TypeInference         (inferP, inferT)
 import Interpreter           (normalize, substitute)
 import GeneratorGenerator    (generateGenerator)
-import Control.Monad         (void)
 import Control.Arrow         (second)
 import Data.Functor          ((<&>))
 import System.Exit           (die)
@@ -16,10 +15,11 @@ import Test.Tasty.QuickCheck (generate)
 type ErrorMessage = String
 
 data Action =
-    Shell         (Program Type)
-  | PropertyCheck (Program Type)
-  | TypeCheck     (Program Info)
-  | Fail          ErrorMessage
+    Shell          (Program Type)
+  | PropertyCheck  (Program Type)
+  | PropertyCheck' (Program Type) Name
+  | TypeCheck      (Program Info)
+  | Fail            ErrorMessage
 
 main :: IO ()
 main = getArgs >>= run . action
@@ -27,10 +27,11 @@ main = getArgs >>= run . action
 run :: IO Action -> IO ()
 run a = a >>= \what ->
   case what of
-    (PropertyCheck program) -> check program
-    (TypeCheck     program) -> typed program >>= print
-    (Fail          message) -> die message
-    (Shell         program) -> shell program
+    (PropertyCheck  program     ) -> check program (properties program)
+    (PropertyCheck' program name) -> check program [property name program]
+    (TypeCheck      program     ) -> typed program >>= print
+    (Fail           message     ) -> die message
+    (Shell          program     ) -> shell program
 
 numberOfTests :: Integer
 numberOfTests = 100000
@@ -42,14 +43,14 @@ dotForEvery = 2000
 strengthen :: Monad m => (a, m b) -> m (a, b)
 strengthen (a, mb) = mb <&> (,) a
 
-check :: Program Type -> IO ()
-check program =
+check :: Program Type -> [Property' Type] -> IO ()
+check program properties' =
   do breakline
      indentation "property"
-     putStr "property"
-     putStrLn " | status"
+     putStr      "property"
+     putStrLn    " | status"
      breakline
-     void $ mapM check1 (properties program)
+     mapM_ check1 properties'
   where
     maxval [] = 0
     maxval xs = maximum xs
@@ -71,7 +72,7 @@ check program =
         iter 0    = putStrLn " ok"
         iter n    =
           do parts <- generate genParts
-             test  <- term <$> return (body, parts)
+             test  <- return (term (body, parts))
              case eval test of
                Boolean True _ -> putDot n >> hFlush stdout >> iter (n - 1)
                _              ->
@@ -83,7 +84,7 @@ check program =
         smaller parts =
           -- TODO: better shrink (and message)
           do putStr ""
-             term <$> return (body, map (second eval) parts)
+             return (term (body, map (second eval) parts))
 
 parse :: String -> IO (Program Info)
 parse file =
@@ -126,11 +127,13 @@ loadProgram file = parse file >>= typed
 
 -- todo: refactor.
 action :: [String] -> IO Action
-action ["--check", file] = PropertyCheck <$> (parse file >>= typed)
-action ["--types", file] = TypeCheck     <$> parse file
-action [           file] = Shell         <$> (parse file >>= typed)
-action [ ]               = return $ Shell EndOfProgram
-action _                 = return $ Fail
+action ["--check", file, propertyName] = PropertyCheck' <$> (parse file >>= typed) <*> return propertyName
+action ["--check", file]               = PropertyCheck  <$> (parse file >>= typed)
+action ["--types", file]               = TypeCheck      <$>  parse file
+action [           file]               = Shell          <$> (parse file >>= typed)
+action [ ]                             = return $ Shell EndOfProgram
+action _                               = return $ Fail
   "Usage:\n\
+     \ pun --check <program>.pun <property-name> (checks single property) \n\
      \ pun --check <program>.pun (checks properties)\n\
      \ pun --types <program>.pun (checks types)"
