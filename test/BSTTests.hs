@@ -5,9 +5,9 @@ module BSTTests where
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
-import qualified Data.List as L (insert, sort, unionBy, lookup)
+import qualified Data.List as List (insert, sort, unionBy, lookup)
 import Data.Function (on)
-import Control.Applicative
+import Control.Applicative ((<|>))
 import BST
 
 -- ------------------ Validity properties  ------------------
@@ -216,17 +216,17 @@ prop_NilModel = toList (nil :: Tree) === []
 
 prop_InsertModel :: Key -> Val -> Tree -> Property
 prop_InsertModel k v t =
-    toList (insert' k v t) === L.insert (k, v) (deleteKey k $ toList t)
+    toList (insert' k v t) === List.insert (k, v) (deleteKey k $ toList t)
 
 prop_DeleteModel :: Key -> Tree -> Property
 prop_DeleteModel k t = toList (delete k t) === deleteKey k (toList t)
 
 prop_UnionModel :: Tree -> Tree -> Property
 prop_UnionModel t t' =
-    toList (union t t') === L.sort (L.unionBy ((≡) `on` fst) (toList t) (toList t'))
+    toList (union t t') === List.sort (List.unionBy ((≡) `on` fst) (toList t) (toList t'))
 
 prop_FindModel :: Key -> Tree -> Property
-prop_FindModel k t = find k t === L.lookup k (toList t)
+prop_FindModel k t = find k t === List.lookup k (toList t)
 
 modelBasedProperties :: TestTree
 modelBasedProperties = testGroup "\nModel-based properties" [
@@ -235,6 +235,18 @@ modelBasedProperties = testGroup "\nModel-based properties" [
     testProperty "Delete model" prop_DeleteModel,
     testProperty "Union model"  prop_UnionModel,
     testProperty "Find model"   prop_FindModel]
+
+-- ---------- Coverage of equivalent trees generator ----------
+
+prop_GeneratedEquivTreesDifferInShape :: Equivs Int Int -> Property
+prop_GeneratedEquivTreesDifferInShape (t1 :~=: t2) = checkCoverage $
+    cover 1 (t1 /= t2) "of generated equivalent trees differ in shape" True
+
+coverageOfEquivTreesGenerator :: TestTree
+coverageOfEquivTreesGenerator = testGroup "\nCoverage of equivalent trees generator" [
+    testProperty
+    "At least 1% of generated equivalent trees differ in shape"
+    prop_GeneratedEquivTreesDifferInShape]
 
 -- ---------------------- All properties  ----------------------
 bst_tests :: TestTree
@@ -245,4 +257,5 @@ bst_tests =
     metamorphicProperties,
     preservationOfEquivalence,
     inductiveTesting,
-    modelBasedProperties]
+    modelBasedProperties,
+    coverageOfEquivTreesGenerator]
