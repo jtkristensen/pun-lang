@@ -4,8 +4,8 @@ module BST where
 
 import GHC.Generics
 import Test.Tasty.QuickCheck
-import Data.List as L (nubBy)
 import Data.Function (on)
+import Data.List (nubBy)
 
 -- ---------------------------------------------------
 -- From 'How to Specify It! ...' by John Hughes
@@ -29,7 +29,7 @@ instance (Ord k, Arbitrary k, Arbitrary v) => Arbitrary (BST k v) where
 data Equivs k v = BST k v :~=: BST k v deriving Show
 instance (Arbitrary k, Arbitrary v, Ord k) => Arbitrary (Equivs k v) where
     arbitrary = do
-        kvs  <- L.nubBy ((==) `on` fst) <$> arbitrary
+        kvs  <- nubBy ((==) `on` fst) <$> arbitrary
         kvs' <- shuffle kvs
         return (tree kvs :~=: tree kvs')
         where tree = foldr (uncurry insert') nil
