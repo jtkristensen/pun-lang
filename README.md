@@ -39,7 +39,7 @@ from within the repository.
 
 # Artifact
 
-To reproduce the results the paper currently submitted to RC 2025, first install `pun` and use the `--check` flag to check all the properties in a given file.
+To reproduce the results the paper currently submitted to RC 2026, first install `pun` and use the `--check` flag to check all the properties in a given file.
 
 For the smaller examples inlined in the text, run
 
@@ -57,7 +57,7 @@ pun --check benchmark/BST.pun
 
 # Getting started.
 
-To typecheck a a program, run:
+To typecheck a program, run:
 
 ```bash
 > pun --types <program-name>.pun
